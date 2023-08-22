@@ -13,6 +13,9 @@ class Lane:
     def roll_turn(self, log: list[str]) -> None:
         done_attacking_by_player = {0: False, 1: False}
         self.resolve_combat(done_attacking_by_player, log)
+        for player_num in done_attacking_by_player:
+            for character in self.characters_by_player[player_num]:
+                character.roll_turn(log)
 
 
     def resolve_combat(self, done_attacking_by_player: dict[int, bool], log: list[str], attacking_player: Optional[int] = None) -> None:
@@ -29,7 +32,13 @@ class Lane:
 
 
     def player_single_attack(self, attacking_player: int, done_attacking_by_player: dict[int, bool], log: list[str]):
-        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if not character.has_attacked]            
+        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if not character.has_attacked and character.shackled_turns == 0]            
+        shackled_characters = [character for character in self.characters_by_player[attacking_player] if character.shackled_turns > 0]
+        
+        for character in shackled_characters:
+            log.append(f"{character.template.name} is shackled for {character.shackled_turns} more turns.")            
+            character.shackled_turns -= 1
+
         if len(characters_that_can_attack) == 0:
             done_attacking_by_player[attacking_player] = True
         else:
@@ -39,6 +48,10 @@ class Lane:
 
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]
+
+
+    def get_random_enemy_character(self, player_num: int) -> Character:
+        return random.choice(self.characters_by_player[1 - player_num])
 
 
     def to_json(self):

@@ -15,7 +15,6 @@ class Game:
     def to_json(self):
         return {
             "id": self.id,
-            "player_1_username": self.player_1_username,
-            "player_2_username": self.player_2_username,
+            "usernames_by_player": self.usernames_by_player,
             "game_state": self.game_state.to_json(),
         }

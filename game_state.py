@@ -13,6 +13,8 @@ class GameState:
         self.hands_by_player = {0: self.player_0_hand, 1: self.player_1_hand}
         self.draw_piles_by_player = {0: self.player_0_draw_pile, 1: self.player_1_draw_pile}
         self.log: list[str] = []
+        self.mana_by_player = {0: 0, 1: 0}
+        self.roll_turn()
 
     def draw_initial_hand(self, deck: Deck):
         draw_pile = deck.to_draw_pile()
@@ -35,8 +37,16 @@ class GameState:
         for player_num in [0, 1]:
             self.draw_card(player_num)
         self.log.append(f"Turn {self.turn}")
+        for player_num in [0, 1]:
+            self.mana_by_player[player_num] = self.turn
 
-
+    def play_card(self, player_num: int, card_id: str, lane_number: int):
+        card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
+        self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
+        character = card.to_character(self.lanes[lane_number], player_num, self.usernames_by_player[player_num])
+        self.lanes[lane_number].characters_by_player[player_num].append(character)
+        character.do_on_reveal(self.log)
+        self.log.append(f"Player {player_num + 1} played {card.template.name} in Lane {lane_number}")
 
     def to_json(self):
         return {
