@@ -1,6 +1,7 @@
 import random
 from deck import Deck
 from lane import Lane
+from card import Card
 
 
 class GameState:
@@ -12,6 +13,7 @@ class GameState:
         self.player_1_hand, self.player_1_draw_pile = self.draw_initial_hand(decks_by_player[1])
         self.hands_by_player = {0: self.player_0_hand, 1: self.player_1_hand}
         self.draw_piles_by_player = {0: self.player_0_draw_pile, 1: self.player_1_draw_pile}
+        self.has_moved_by_player = {0: False, 1: False}
         self.log: list[str] = []
         self.mana_by_player = {0: 0, 1: 0}
         self.roll_turn()
@@ -39,6 +41,7 @@ class GameState:
         self.log.append(f"Turn {self.turn}")
         for player_num in [0, 1]:
             self.mana_by_player[player_num] = self.turn
+        self.has_moved_by_player = {0: False, 1: False}
 
     def play_card(self, player_num: int, card_id: str, lane_number: int):
         card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
@@ -48,6 +51,9 @@ class GameState:
         character.do_on_reveal(self.log)
         self.log.append(f"Player {player_num + 1} played {card.template.name} in Lane {lane_number}")
 
+    def all_players_have_moved(self) -> bool:
+        return all([self.has_moved_by_player[player_num] for player_num in [0, 1]])
+
     def to_json(self):
         return {
             "lanes": [lane.to_json() for lane in self.lanes],
@@ -55,4 +61,19 @@ class GameState:
             "hands_by_player": {player_num: [card.to_json() for card in self.hands_by_player[player_num]] for player_num in self.hands_by_player},
             "draw_piles_by_player": {player_num: [card.to_json() for card in self.draw_piles_by_player[player_num]] for player_num in self.draw_piles_by_player},
             "log": self.log,
+            "mana_by_player": self.mana_by_player,
+            "has_moved_by_player": self.has_moved_by_player,
         }
+    
+    @staticmethod
+    def from_json(json):
+        game_state = GameState(json['usernames_by_player'], json['decks_by_player'])
+        game_state.lanes = [Lane.from_json(lane_json) for lane_json in json['lanes']]
+        game_state.turn = json['turn']
+        game_state.hands_by_player = {player_num: [Card.from_json(card_json) for card_json in json['hands_by_player'][player_num]] for player_num in json['hands_by_player']}
+        game_state.draw_piles_by_player = {player_num: [Card.from_json(card_json) for card_json in json['draw_piles_by_player'][player_num]] for player_num in json['draw_piles_by_player']}
+        game_state.log = json['log']
+        game_state.mana_by_player = json['mana_by_player']
+        game_state.has_moved_by_player = json['has_moved_by_player']
+
+        return game_state

@@ -20,3 +20,8 @@ class Card:
             "template": self.template.to_json()
         }
     
+    @staticmethod
+    def from_json(json):
+        card = Card(json['template'])
+        card.id = json['id']
+        return card

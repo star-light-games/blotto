@@ -29,3 +29,8 @@ class CardTemplate:
             "health": self.health,
             "creature_types": self.creature_types,
         }
+    
+    @staticmethod
+    def from_json(json: dict):
+        return CardTemplate(json["name"], [ability["name"] for ability in json["abilities"]], json["cost"], json["attack"], json["health"], json["creature_types"])
+    

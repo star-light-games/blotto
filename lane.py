@@ -50,12 +50,21 @@ class Lane:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]
 
 
-    def get_random_enemy_character(self, player_num: int) -> Character:
-        return random.choice(self.characters_by_player[1 - player_num])
+    def get_random_enemy_character(self, player_num: int) -> Optional[Character]:
+        characters_available = [character for character in self.characters_by_player[1 - player_num] if not character.new]
+        return random.choice(characters_available) if len(characters_available) > 0 else None
 
 
     def to_json(self):
         return {
             "damage_by_player": self.damage_by_player,
             "characters_by_player": {player: [character.to_json() for character in self.characters_by_player[player]] for player in self.characters_by_player},
+            "lane_number": self.lane_number,
         }
+
+    @staticmethod
+    def from_json(json):
+        lane = Lane(json["lane_number"])
+        lane.damage_by_player = json["damage_by_player"]
+        lane.characters_by_player = {player: [Character.from_json(character, lane) for character in json["characters_by_player"][player]] for player in json["characters_by_player"]}
+        return lane

@@ -59,6 +59,7 @@ def create_deck():
         decks = rget_json('decks') or {}
         deck = Deck(cards, username, deck_name)
         deck_id = deck.id
+        decks[deck_id] = deck.to_json()
         rset_json('decks', decks)
 
     return jsonify({"deckId": deck_id})
@@ -91,13 +92,14 @@ def host_game():
     
     with rlock('games'):
         decks = rget_json('decks') or {}
-        deck = decks.get(deck_id)
-        if not deck:
+        deck_json = decks.get(deck_id)
+        if not deck_json:
             return jsonify({"error": "Deck not found"}), 404
+        deck = Deck.from_json(deck_json)
 
         game = Game({0: username, 1: None}, {0: deck, 1: None})
         games = rget_json('games') or {}
-        games[game.id] = game
+        games[game.id] = game.to_json()
         rset_json('games', games)
     
     return jsonify({"gameId": game.id})
@@ -135,32 +137,80 @@ def join_game():
 
     with rlock('games'):
         games = rget_json('games') or {}
-        game = games.get(game_id)
-        if not game:
+        game_json = games.get(game_id)
+        if not game_json:
             return jsonify({"error": "Game not found"}), 404
+        
+        game = Game.from_json(game_json)
+
+        decks = rget_json('decks') or {}
+        deck_json = decks.get(deck_id)
+        if not deck_json:
+            return jsonify({"error": "Deck not found"}), 404
+        deck = Deck.from_json(deck_json)
 
         game.usernames_by_player[1] = username
-        game.deck_by_player[1] = deck_id
+        game.decks_by_player[1] = deck
         game.start()
         rset_json('games', games)
     
     return jsonify({"gameId": game.id})
 
 
-@app.route('/api/submit', methods=['POST'])
-def submit():
+@app.route('/api/games/<game_id>', methods=['GET'])
+@api_endpoint
+def get_game(game_id):
+    games = rget_json('games') or {}
+    game = games.get(game_id)
+    if not game:
+        return jsonify({"error": "Game not found"}), 404
+    return game
+
+
+@app.route('/api/games/<game_id>/take_turn', methods=['POST'])
+@api_endpoint
+def take_turn(game_id):
     data = request.json
+
     if not data:
         return jsonify({"error": "Invalid data"}), 400
+    
+    username = data.get('username')
 
-    lanes = data.get('lanes')
-    if not lanes:
-        return jsonify({"error": "Lanes data is required"}), 400
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
 
-    # Process the lanes data as needed, e.g., save to a database or check game state
-    print("Received lanes data:", lanes)
+    cards_to_lanes = data.get('cardsToLanes')
 
-    return jsonify({"message": "Data received successfully"})
+    if not cards_to_lanes:
+        return jsonify({"error": "Cards mapping is required"}), 400
+    
+    with rlock('games'):
+        games = rget_json('games') or {}
+        game_json = games.get(game_id)
+        if not game_json:
+            return jsonify({"error": "Game not found"}), 404
+
+        game = Game.from_json(game_json)
+
+        player_num = game.username_to_player_num(username)
+        assert player_num is not None
+        assert game.game_state is not None
+
+        for card_id, lane_number in cards_to_lanes.items():
+            game.game_state.play_card(player_num, card_id, lane_number)
+
+        game.game_state.has_moved_by_player[player_num] = True
+        if game.game_state.all_players_have_moved():
+            game.game_state.roll_turn()
+            
+        games[game_id] = game.to_json()
+
+        rset_json('games', games)
+    
+    return jsonify({"gameId": game.id})
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

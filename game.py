@@ -20,9 +20,15 @@ class Game:
         self.game_state = GameState(self.usernames_by_player, self.decks_by_player)  # type: ignore
 
 
+    def username_to_player_num(self, username: str) -> Optional[int]:
+        return next((player_num for player_num, player_username in self.usernames_by_player.items() if player_username == username), None)
+
+
     def to_json(self):
         return {
             "id": self.id,
             "usernames_by_player": self.usernames_by_player,
+            "decks_by_player": self.decks_by_player,
             "game_state": self.game_state.to_json() if self.game_state is not None else None,
         }
+    
