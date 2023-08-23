@@ -14,6 +14,8 @@ import {
 import TcgCard from './TcgCard';
 
 import { URL } from './settings';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function DeckBuilder({ cards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
@@ -27,10 +29,13 @@ function DeckBuilder({ cards }) {
   const [hostGameId, setHostGameId] = useState(''); // For displaying gameId
   const [joinGameId, setJoinGameId] = useState(''); // For entering gameId
 
+  const navigate = useNavigate();
+
   const hostGame = () => {
     const data = {
       deckId: selectedDeck.id, // Assuming each deck object has an 'id' property
-      username: userName
+      username: userName,
+      rand: Math.random(), // To prevent caching
     };
 
     fetch(`${URL}/api/host_game`, {
@@ -61,7 +66,8 @@ function DeckBuilder({ cards }) {
     const data = {
       deckId: selectedDeck.id,
       username: userName,
-      gameId: joinGameId
+      gameId: joinGameId,
+      rand: Math.random(), // To prevent caching
     };
 
     fetch(`${URL}/api/join_game`, {
@@ -79,6 +85,9 @@ function DeckBuilder({ cards }) {
       }
       // Handle successful join, if necessary
     })
+    .then(() => {
+      navigate(`/game/${joinGameId}`); // Redirect to the game page
+    })
     .catch(error => {
       setErrorMessage(error.message);
       setToastOpen(true);
@@ -93,7 +102,7 @@ function DeckBuilder({ cards }) {
   }, [userName]);
 
   const fetchDecks = () => {
-    fetch(`${URL}/api/decks?username=${userName}`)
+    fetch(`${URL}/api/decks?username=${userName}&rand=${Math.random()}}`)
       .then(response => response.json())
       .then(data => setDecks(data))
       .catch(error => {
@@ -113,6 +122,7 @@ function DeckBuilder({ cards }) {
       name: deckName,
       username: userName,
       cards: currentDeck,
+      rand: Math.random(), // To prevent caching
     };
 
     fetch(`${URL}/api/decks`, {
@@ -194,7 +204,7 @@ function DeckBuilder({ cards }) {
       {/* Display Game ID when hosting a game */}
       {hostGameId && (
         <Typography variant="h6" style={{ marginTop: '20px' }}>
-          Game ID: {hostGameId}
+          Game ID: <Link to={`/game/${hostGameId}`}>{hostGameId}</Link>
         </Typography>
       )}
 

@@ -6,6 +6,9 @@ import { Container, Grid, CircularProgress, Snackbar, Alert } from '@mui/materia
 import TcgCard from './TcgCard';
 import DeckBuilder from './DeckBuilder';
 import { URL } from './settings';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import GamePage from './GamePage';
+
 
 function CardPoolPage() {
   const [cards, setCards] = useState([]);
@@ -76,7 +79,12 @@ function CardPoolPage() {
 
 function App() {
   return (
-    <CardPoolPage />
+    <Router>
+      <Routes>
+        <Route exact path="/" element={<CardPoolPage />} />
+        <Route path="/game/:gameId" element={<GamePage />} />
+      </Routes>
+    </Router>
   );
 }
 

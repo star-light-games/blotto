@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from card_templates_list import CARD_TEMPLATES
 from deck import Deck
 from flask import Flask, jsonify, request
@@ -98,6 +99,13 @@ def host_game():
         game = Game({0: username, 1: None}, {0: deck, 1: None})
         games = rget_json('games') or {}
         games[game.id] = game.to_json()
+
+        for game_id in games:
+            # Delete games that are more than 1 day old
+
+            if datetime.now() - datetime.fromtimestamp(games[game_id]['created_at']) > timedelta(days=1):
+                del games[game.id]
+
         rset_json('games', games)
     
     return jsonify({"gameId": game.id})

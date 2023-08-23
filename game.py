@@ -3,6 +3,7 @@ from game_state import GameState
 from lane import Lane
 from utils import generate_unique_id
 from typing import Optional
+from datetime import datetime
 
 
 class Game:
@@ -11,6 +12,7 @@ class Game:
         self.usernames_by_player = usernames_by_player
         self.decks_by_player = decks_by_player
         self.game_state = None
+        self.created_at = datetime.now().timestamp()
 
 
     def start(self):
@@ -30,13 +32,15 @@ class Game:
             "usernames_by_player": self.usernames_by_player,
             "decks_by_player": {k: v.to_json() if v is not None else None for k, v in self.decks_by_player.items()},
             "game_state": self.game_state.to_json() if self.game_state is not None else None,
+            "created_at": self.created_at
         }
     
 
     @staticmethod
     def from_json(json):
-        game = Game(json['usernames_by_player'], json['decks_by_player'])
+        game = Game(json['usernames_by_player'], {k: Deck.from_json(v) if v is not None else None for k, v in json['decks_by_player'].items()})
         game.id = json['id']
         game.game_state = GameState.from_json(json['game_state']) if json['game_state'] is not None else None
+        game.created_at = json['created_at']
         return game
 
