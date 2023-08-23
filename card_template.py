@@ -1,9 +1,5 @@
-from ability import Ability
+
 from abilities_list import ABILITIES
-
-from typing import TYPE_CHECKING
-
-from card import Card
 
 
 class CardTemplate:
@@ -15,11 +11,6 @@ class CardTemplate:
         self.health = health
         self.creature_types = creature_types
 
-
-    def to_card(self) -> Card:
-        return Card(self)
-
-
     def to_json(self):
         return {
             "name": self.name,
@@ -27,10 +18,10 @@ class CardTemplate:
             "cost": self.cost,
             "attack": self.attack,
             "health": self.health,
-            "creature_types": self.creature_types,
+            "creatureTypes": self.creature_types,
         }
     
     @staticmethod
     def from_json(json: dict):
-        return CardTemplate(json["name"], [ability["name"] for ability in json["abilities"]], json["cost"], json["attack"], json["health"], json["creature_types"])
+        return CardTemplate(json["name"], [ability["name"] for ability in json["abilities"]], json["cost"], json["attack"], json["health"], json["creatureTypes"])
     

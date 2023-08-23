@@ -25,3 +25,7 @@ class Card:
         card = Card(json['template'])
         card.id = json['id']
         return card
+
+    @staticmethod
+    def from_template(template: 'CardTemplate'):
+        return Card(template)

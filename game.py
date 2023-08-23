@@ -28,7 +28,15 @@ class Game:
         return {
             "id": self.id,
             "usernames_by_player": self.usernames_by_player,
-            "decks_by_player": self.decks_by_player,
+            "decks_by_player": {k: v.to_json() if v is not None else None for k, v in self.decks_by_player.items()},
             "game_state": self.game_state.to_json() if self.game_state is not None else None,
         }
     
+
+    @staticmethod
+    def from_json(json):
+        game = Game(json['usernames_by_player'], json['decks_by_player'])
+        game.id = json['id']
+        game.game_state = GameState.from_json(json['game_state']) if json['game_state'] is not None else None
+        return game
+

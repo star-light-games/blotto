@@ -88,5 +88,29 @@ class Character:
             "template": self.template.to_json(),
             "current_health": self.current_health,
             "shackled_turns": self.shackled_turns,
+            "max_health": self.max_health,
+            "current_attack": self.current_attack,
+            "has_attacked": self.has_attacked,
+            "owner_number": self.owner_number,
+            "owner_username": self.owner_username,
+            "new": self.new,            
             # Can't put lane in here because of infinite recursion
         }
+
+
+    @staticmethod
+    def from_json(json: dict, lane: 'Lane'):
+        character = Character(
+            template=CardTemplate.from_json(json['template']),
+            lane=lane,
+            owner_number=json['owner_number'],
+            owner_username=json['owner_username'],
+        )
+        character.id = json['id']
+        character.current_health = json['current_health']
+        character.shackled_turns = json['shackled_turns']
+        character.max_health = json['max_health']
+        character.current_attack = json['current_attack']
+        character.has_attacked = json['has_attacked']
+        character.new = json['new']
+        return character

@@ -15,11 +15,12 @@ def rget_json(key: str):
     return json.loads(raw_result) if raw_result is not None else None
 
 
-def rset(key: str, value: Any, *, game_id: Optional[str], ex: int = 3600) -> None:
-    redis.set(key, value, ex=ex)
+def rset(key: str, value: Any) -> None:
+    redis.set(key, value)
 
 
-rset
+def rset_json(key: str, value: Any) -> None:
+    rset(key, json.dumps(value))
 
 
 def rlock(key: str):

@@ -1,6 +1,8 @@
 from card_templates_list import CARD_TEMPLATES
 from utils import generate_unique_id
 
+from card import Card
+from card_template import CardTemplate
 
 class Deck:
     def __init__(self, cards: list[str], username: str, name: str):
@@ -10,7 +12,7 @@ class Deck:
         self.name = name
         
     def to_draw_pile(self):
-        return [card_template.to_card() for card_template in self.card_templates]
+        return [Card.from_template(card_template) for card_template in self.card_templates]
     
     def to_json(self):
         return {
@@ -19,3 +21,9 @@ class Deck:
             "username": self.username,
             "name": self.name,
         }
+    
+    @staticmethod
+    def from_json(json):
+        deck = Deck([CardTemplate.from_json(card_template).name for card_template in json['card_templates']], json['username'], json['name'])
+        deck.id = json['id']
+        return deck

@@ -4,8 +4,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from game import Game
 
-from redis_utils import rget, rget_json, rlock, rset_json
+from redis_utils import rget_json, rlock, rset_json
 from utils import generate_unique_id
+
 
 app = Flask(__name__)
 CORS(app)
@@ -30,13 +31,11 @@ def api_endpoint(func):
 
 
 @app.route('/api/card_pool', methods=['GET'])
-@api_endpoint
 def get_card_pool():
     return recurse_to_json(CARD_TEMPLATES)
 
 
 @app.route('/api/decks', methods=['POST'])
-@api_endpoint
 def create_deck():
     data = request.json
     if not data:
@@ -62,18 +61,17 @@ def create_deck():
         decks[deck_id] = deck.to_json()
         rset_json('decks', decks)
 
-    return jsonify({"deckId": deck_id})
+    return jsonify(deck.to_json())
 
 
 @app.route('/api/decks', methods=['GET'])
-@api_endpoint
 def get_decks():
-    decks = rget_json('decks') or {}
-    return [deck for deck in list(decks.values()) if deck.username == request.args.get('username')]
+    decks_json = rget_json('decks') or {}
+    decks = [Deck.from_json(deck_json) for deck_json in decks_json.values()]
+    return recurse_to_json([deck for deck in decks if deck.username == request.args.get('username')])
 
 
 @app.route('/api/host_game', methods=['POST'])
-@api_endpoint
 def host_game():
     data = request.json
 
@@ -106,14 +104,12 @@ def host_game():
 
 
 @app.route('/api/games', methods=['GET'])
-@api_endpoint
 def get_games():
     games = rget_json('games') or {}
-    return list(games.values())
+    return jsonify(list(games.values()))
 
 
 @app.route('/api/join_game', methods=['POST'])
-@api_endpoint
 def join_game():
     data = request.json
 
@@ -158,17 +154,15 @@ def join_game():
 
 
 @app.route('/api/games/<game_id>', methods=['GET'])
-@api_endpoint
 def get_game(game_id):
     games = rget_json('games') or {}
     game = games.get(game_id)
     if not game:
         return jsonify({"error": "Game not found"}), 404
-    return game
+    return recurse_to_json(game)
 
 
 @app.route('/api/games/<game_id>/take_turn', methods=['POST'])
-@api_endpoint
 def take_turn(game_id):
     data = request.json
 
@@ -203,7 +197,7 @@ def take_turn(game_id):
         game.game_state.has_moved_by_player[player_num] = True
         if game.game_state.all_players_have_moved():
             game.game_state.roll_turn()
-            
+
         games[game_id] = game.to_json()
 
         rset_json('games', games)
