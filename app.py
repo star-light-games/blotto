@@ -156,6 +156,8 @@ def join_game():
         game.usernames_by_player[1] = username
         game.decks_by_player[1] = deck
         game.start()
+
+        games[game_id] = game.to_json()
         rset_json('games', games)
     
     return jsonify({"gameId": game.id})
