@@ -1,10 +1,20 @@
 import { Card, CardContent, Typography, Box } from '@mui/material';
 
-function TcgCard({ card }) {
-    console.log(card);
-    console.log(card.creatureTypes)
+function TcgCard({ card, isSelected, onCardClick }) {
+    // console.log(card);
+    // console.log(card.creatureTypes)
     // console.log(card.creatureTypes.join(', '))
+
     return (
+      <div 
+          style={{
+              border: isSelected ? '2px solid black' : 'none',
+              cursor: 'pointer'
+          }}
+          onClick={onCardClick ? () => onCardClick(card) : null}
+          onMouseEnter={e => e.currentTarget.style.border = '2px solid blue'}
+          onMouseLeave={e => e.currentTarget.style.border = isSelected ? '2px solid black' : 'none'}
+      >
         <Card 
         variant="outlined" 
         style={{ 
@@ -47,6 +57,7 @@ function TcgCard({ card }) {
             </Box>
         </CardContent>
         </Card>
+      </div>
     );
     }
   
