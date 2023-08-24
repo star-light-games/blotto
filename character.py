@@ -37,8 +37,10 @@ class Character:
         self.has_attacked = True
         defenders = [character for character in defending_characters if character.is_defender()]
         if len(defenders) == 0 and not self.is_attacker():
-            damage_by_player[attacking_player] += self.current_attack
-            log.append(f"{self.owner_username}'s {self.template.name} dealt {self.template.attack} damage to the enemy player in Lane {lane_number + 1}.")
+            multiplier = 2 if self.has_ability('DoubleTowerDamage') else 1
+            damage_dealt = self.current_attack * multiplier
+            damage_by_player[attacking_player] += damage_dealt
+            log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
         else:
             if len(defenders) == 0:
                 if len(defending_characters) > 0:
