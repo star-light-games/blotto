@@ -43,10 +43,10 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
             backgroundColor: backgroundColor,
         }}
           onMouseEnter={e => {
-            setHoveredCard(character);
+            setHoveredCard(character.template);
           }}>
-            <span>{character.name}</span>
-            <span>{character.current_attack == null ? character.attack : character.current_attack}/{character.current_health == null ? character.health : character.current_health}</span>
+            <span>{character.template.name}</span>
+            <span>{character.current_attack == null ? character.template.attack : character.current_attack}/{character.current_health == null ? character.template.health : character.current_health}</span>
         </div>
     );
 }
@@ -106,13 +106,13 @@ function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard,
 
             <h4>Opponent's Damage: {laneData.damage_by_player[opponentNum]}</h4>
             {laneData.characters_by_player[opponentNum].map((card, index) => (
-              <CharacterDisplay key={index} character={card.template} setHoveredCard={setHoveredCard} type="opponent"/>
+              <CharacterDisplay key={index} character={card} setHoveredCard={setHoveredCard} type="opponent"/>
             ))}
           </div>
           <div>
             <h4>Your Damage: {laneData.damage_by_player[playerNum]}</h4>
             {laneData.characters_by_player[playerNum].map((card, index) => (
-              <CharacterDisplay key={index} character={card.template} setHoveredCard={setHoveredCard} type="player" />
+              <CharacterDisplay key={index} character={card} setHoveredCard={setHoveredCard} type="player" />
             ))}
           </div>
         </div>
@@ -203,6 +203,7 @@ export default function GamePage({}) {
     const opponentNum = playerNum === 0 ? 1 : 0;
 
     const [game, setGame] = useState({});
+    console.log(game);
     const [loading, setLoading] = useState(true);
 
     const username = localStorage.getItem('username'); // Retrieving username from localStorage
