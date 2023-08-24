@@ -4,6 +4,8 @@ from deck import Deck
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from game import Game
+import traceback
+from functools import wraps
 
 from redis_utils import rget_json, rlock, rset_json
 from utils import generate_unique_id
@@ -26,17 +28,25 @@ def recurse_to_json(obj):
 
 # decorator that takes in an api endpoint and calls recurse_to_json on its result
 def api_endpoint(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        return jsonify(recurse_to_json(func(*args, **kwargs)))
+        try: 
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(traceback.print_exc())
+            return jsonify({"error": "Unexpected error"}), 500
+
     return wrapper
 
 
 @app.route('/api/card_pool', methods=['GET'])
+@api_endpoint
 def get_card_pool():
     return recurse_to_json(CARD_TEMPLATES)
 
 
 @app.route('/api/decks', methods=['POST'])
+@api_endpoint
 def create_deck():
     data = request.json
     if not data:
@@ -66,6 +76,7 @@ def create_deck():
 
 
 @app.route('/api/decks', methods=['GET'])
+@api_endpoint
 def get_decks():
     decks_json = rget_json('decks') or {}
     decks = [Deck.from_json(deck_json) for deck_json in decks_json.values()]
@@ -73,6 +84,7 @@ def get_decks():
 
 
 @app.route('/api/host_game', methods=['POST'])
+@api_endpoint
 def host_game():
     data = request.json
 
@@ -112,12 +124,14 @@ def host_game():
 
 
 @app.route('/api/games', methods=['GET'])
+@api_endpoint
 def get_games():
     games = rget_json('games') or {}
     return jsonify(list(games.values()))
 
 
 @app.route('/api/join_game', methods=['POST'])
+@api_endpoint
 def join_game():
     data = request.json
 
@@ -164,6 +178,7 @@ def join_game():
 
 
 @app.route('/api/games/<game_id>', methods=['GET'])
+@api_endpoint
 def get_game(game_id):
     games = rget_json('games') or {}
     game = games.get(game_id)
@@ -173,6 +188,7 @@ def get_game(game_id):
 
 
 @app.route('/api/games/<game_id>/take_turn', methods=['POST'])
+@api_endpoint
 def take_turn(game_id):
     data = request.json
 
@@ -186,7 +202,7 @@ def take_turn(game_id):
 
     cards_to_lanes = data.get('cardsToLanes')
 
-    if not cards_to_lanes:
+    if cards_to_lanes is None:
         return jsonify({"error": "Cards mapping is required"}), 400
     
     with rlock('games'):

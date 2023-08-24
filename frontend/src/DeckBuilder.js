@@ -86,7 +86,7 @@ function DeckBuilder({ cards }) {
       // Handle successful join, if necessary
     })
     .then(() => {
-      navigate(`/game/${joinGameId}`); // Redirect to the game page
+      navigate(`/game/${joinGameId}?playerNum=1`); // Redirect to the game page
     })
     .catch(error => {
       setErrorMessage(error.message);
@@ -204,7 +204,7 @@ function DeckBuilder({ cards }) {
       {/* Display Game ID when hosting a game */}
       {hostGameId && (
         <Typography variant="h6" style={{ marginTop: '20px' }}>
-          Game ID: <Link to={`/game/${hostGameId}`}>{hostGameId}</Link>
+          Game ID: <Link to={`/game/${hostGameId}?playerNum=0`}>{hostGameId}</Link>
         </Typography>
       )}
 

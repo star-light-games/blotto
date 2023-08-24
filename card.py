@@ -2,8 +2,7 @@ from typing import TYPE_CHECKING
 from character import Character
 
 from utils import generate_unique_id
-if TYPE_CHECKING:
-    from card_template import CardTemplate
+from card_template import CardTemplate
 
 
 class Card:
@@ -22,7 +21,7 @@ class Card:
     
     @staticmethod
     def from_json(json):
-        card = Card(json['template'])
+        card = Card(CardTemplate.from_json(json['template']))
         card.id = json['id']
         return card
 

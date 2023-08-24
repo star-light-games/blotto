@@ -32,7 +32,7 @@ class Lane:
 
 
     def player_single_attack(self, attacking_player: int, done_attacking_by_player: dict[int, bool], log: list[str]):
-        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if not character.has_attacked and character.shackled_turns == 0]            
+        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if not character.has_attacked and character.shackled_turns == 0 and character.current_health > 0]            
         shackled_characters = [character for character in self.characters_by_player[attacking_player] if character.shackled_turns > 0]
         
         for character in shackled_characters:

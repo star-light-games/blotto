@@ -3,6 +3,13 @@ import { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import TcgCard from './TcgCard';
 import { URL } from './settings';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 function GameInfo({ game, playerNum }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
@@ -20,7 +27,8 @@ function GameInfo({ game, playerNum }) {
     );
 }
 
-function CharacterDisplay({ character }) {
+function CharacterDisplay({ character, setHoveredCard, type }) {
+    const backgroundColor = type === 'player' ? '#d7ffd9' : '#ffd7d7'; // light green for player, light red for opponent
     return (
         <div style={{ 
             display: 'flex', 
@@ -32,10 +40,13 @@ function CharacterDisplay({ character }) {
             borderRadius: '5px',
             padding: '5px',
             marginBottom: '5px',
-            backgroundColor: '#f5f5f5'
-        }}>
+            backgroundColor: backgroundColor,
+        }}
+          onMouseEnter={e => {
+            setHoveredCard(character);
+          }}>
             <span>{character.name}</span>
-            <span>{character.attack}/{character.health}</span>
+            <span>{character.current_attack == null ? character.attack : character.current_attack}/{character.current_health == null ? character.health : character.current_health}</span>
         </div>
     );
 }
@@ -50,7 +61,8 @@ onMouseEnter={e => e.currentTarget.style.border = '2px solid blue'}
 onMouseLeave={e => e.currentTarget.style.border = isSelected ? '2px solid black' : 'none'}
 > */
 
-function Lane({ laneData, playerNum, opponentNum, selectedCard }) {    
+function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, allLanesData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes }) {  
+    
     return (
       <div style={{ display: 'flex', 
                     flexDirection: 'column', 
@@ -69,19 +81,38 @@ function Lane({ laneData, playerNum, opponentNum, selectedCard }) {
             }}
             onMouseLeave={e => {
                 e.currentTarget.style.outline = 'none';
+            }}
+            onClick={e => {
+                if (selectedCard) {
+                    e.currentTarget.style.outline = 'none';
+                    const newLaneData = JSON.parse(JSON.stringify(allLanesData));
+                    newLaneData[laneData.lane_number].characters_by_player[playerNum].push(selectedCard);
+                    setLaneData(newLaneData);
+
+                    let newHandData = JSON.parse(JSON.stringify(handData));
+                    newHandData = newHandData.filter(card => card.id !== selectedCard.id);
+                    setHandData(newHandData);
+
+                    let newCardsToLanes = cardsToLanes;
+                    newCardsToLanes[selectedCard.id] = laneData.lane_number;
+
+                    setCardsToLanes(newCardsToLanes)
+
+                    setSelectedCard(null);
+                }
             }}>
           <div>
             <h3>Lane {laneData.lane_number + 1}</h3> {/* +1 assuming lane_number starts from 0 */}
 
             <h4>Opponent's Damage: {laneData.damage_by_player[opponentNum]}</h4>
-            {laneData.characters_by_player[opponentNum].map((character, index) => (
-              <CharacterDisplay key={index} card={character} />
+            {laneData.characters_by_player[opponentNum].map((card, index) => (
+              <CharacterDisplay key={index} character={card.template} setHoveredCard={setHoveredCard} type="opponent"/>
             ))}
           </div>
           <div>
             <h4>Your Damage: {laneData.damage_by_player[playerNum]}</h4>
-            {laneData.characters_by_player[playerNum].map((character, index) => (
-              <CharacterDisplay key={index} card={character} />
+            {laneData.characters_by_player[playerNum].map((card, index) => (
+              <CharacterDisplay key={index} character={card.template} setHoveredCard={setHoveredCard} type="player" />
             ))}
           </div>
         </div>
@@ -89,23 +120,76 @@ function Lane({ laneData, playerNum, opponentNum, selectedCard }) {
     );
 }
 
-function LanesDisplay({ lanes, playerNum, opponentNum, selectedCard }) {
+function LanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes }) {
     return (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
         {lanes.map((lane, index) => (
-            <Lane key={index} laneData={lane} playerNum={playerNum} opponentNum={opponentNum} selectedCard={selectedCard} />
+            <Lane 
+                key={index} 
+                laneData={lane} 
+                playerNum={playerNum} 
+                opponentNum={opponentNum} 
+                selectedCard={selectedCard} 
+                setSelectedCard={setSelectedCard}
+                setLaneData={setLaneData} 
+                allLanesData={lanes}
+                handData={handData}
+                setHandData={setHandData}
+                setHoveredCard={setHoveredCard}
+                cardsToLanes={cardsToLanes}
+                setCardsToLanes={setCardsToLanes}
+            />
         ))}
         </div>
     );
 }
 
-function HandDisplay({ cards, selectedCard, setSelectedCard }) {
+function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard }) {
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap' }}>
             {cards.map((card, index) => (
                 <div key={index} style={{ margin: '5px' }}>
-                    <TcgCard card={card.template} isSelected={selectedCard ? selectedCard.id === card.id : false} onCardClick={() => setSelectedCard(card)} />
+                    <TcgCard card={card.template} isSelected={selectedCard ? selectedCard.id === card.id : false} onMouseEnter={() => setHoveredCard(card.template)} onCardClick={() => setSelectedCard(card)} />
                 </div>
+            ))}
+        </div>
+    );
+}
+
+function ResetButton({ onReset }) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '10px' }}>
+        <Button 
+          variant="contained" 
+          size="large" 
+          onClick={onReset}
+        >
+          <Typography variant="h6">
+            Reset
+          </Typography>
+        </Button>
+      </div>
+    );
+  }
+
+  function GameLog({ log }) {
+    const containerStyle = {
+        position: 'fixed',
+        top: '10px',
+        right: '10px',
+        width: '250px',
+        maxHeight: '300px',
+        overflowY: 'auto', // This makes the container scrollable if the content exceeds its height
+        border: '1px solid black',
+        borderRadius: '5px',
+        padding: '10px',
+        backgroundColor: '#f5f5f5'
+    };
+
+    return (
+        <div style={containerStyle}>
+            {log.map((entry, index) => (
+                <p key={index}>{entry}</p>
             ))}
         </div>
     );
@@ -124,7 +208,61 @@ export default function GamePage({}) {
     const username = localStorage.getItem('username'); // Retrieving username from localStorage
 
     const [selectedCard, setSelectedCard] = useState(null);
-    console.log(selectedCard);
+    const [laneData, setLaneData] = useState(null);
+    const [handData, setHandData] = useState(null);
+    const [hoveredCard, setHoveredCard] = useState(null);
+    const [cardsToLanes, setCardsToLanes] = useState({});
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const [submittedMove, setSubmittedMove] = useState(false);
+
+
+    console.log(cardsToLanes);
+
+    const handleReset = () => {
+        setLaneData(null);
+        setSelectedCard(null);
+        setHandData(null);
+        setCardsToLanes({});
+    // If you also want to reset hand data or any other state, do it here.
+    };
+
+    const pollApiForGameUpdates = async () => {
+        try {
+            const response = await fetch(`${URL}/api/games/${gameId}`);
+            const data = await response.json();
+            
+            // Check the data for the conditions you want. For example:
+            if (!data.game_state.has_moved_by_player[playerNum]) {
+                // Do something based on the response
+                // e.g., set some state, or trigger some other effect
+    
+                // And stop the polling if needed
+                setSubmittedMove(false);
+                setGame(data);
+                handleReset();
+            }
+        } catch (error) {
+            console.error("Error while polling:", error);
+            // Depending on the error, you may choose to stop polling
+        }
+    };
+
+    useEffect(() => {
+        let pollingInterval;
+    
+        if (submittedMove) {
+            pollingInterval = setInterval(pollApiForGameUpdates, 500); // Poll every 0.5 seconds
+        }
+    
+        return () => {
+            // This is the cleanup function that will run if the component is unmounted
+            // or if the dependencies of the useEffect change.
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        };
+    }, [submittedMove]); // Depend on submittedMove, so the effect re-runs if its value changes
 
     useEffect(() => {
         // Fetch the game data from your backend.
@@ -133,6 +271,10 @@ export default function GamePage({}) {
             .then(data => {
                 setGame(data);
                 setLoading(false);
+                setLaneData(data.game_state.lanes);
+                if (data.game_state.has_moved_by_player[playerNum]) {
+                    setSubmittedMove(true);
+                }
             })
             .catch(error => {
                 console.error("There was an error fetching game data:", error);
@@ -149,15 +291,96 @@ export default function GamePage({}) {
         )
     }
 
-    // console.log(game);
-    // console.log(game.game_state)
-    console.log(game.game_state.hands_by_player[playerNum])
+    const handleOpenDialog = () => {
+        setDialogOpen(true);
+    };
+    
+    const handleCloseDialog = () => {
+        setDialogOpen(false);
+    };
+    
+    const handleSubmit = () => {
+        // Close the dialog first
+        handleCloseDialog();
+    
+        // Construct the payload
+        const payload = {
+            username: game.usernames_by_player[playerNum], // assuming username is in the local scope
+            cardsToLanes: cardsToLanes // adjust as per your setup
+        };
+    
+        // Make the API call
+        fetch(`${URL}/api/games/${gameId}/take_turn`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            setSubmittedMove(true);
+            // Handle the response as required (e.g. update local state, or navigate elsewhere)
+        })
+        .catch(error => {
+            console.error("There was an error making the submit API call:", error);
+        });
+    };
 
     return (
-        <div>
-            <GameInfo game={game} playerNum={playerNum} />
-            <LanesDisplay lanes={game.game_state.lanes} playerNum={playerNum} opponentNum={opponentNum} selectedCard={selectedCard}/>
-            <HandDisplay cards={game.game_state.hands_by_player[playerNum]} selectedCard={selectedCard} setSelectedCard={setSelectedCard} />
+        <div style={{ display: 'flex' }}>
+            <div style={{ flex: 1 }}>
+                {hoveredCard && <TcgCard card={hoveredCard} />}
+            </div>
+            <div style={{ flex: 3 }}>
+                <GameInfo game={game} playerNum={playerNum} />
+                <GameLog log={game.game_state.log} />
+                <LanesDisplay 
+                    lanes={laneData ? laneData : game.game_state.lanes} 
+                    playerNum={playerNum} 
+                    opponentNum={opponentNum} 
+                    selectedCard={selectedCard} 
+                    setSelectedCard={setSelectedCard}
+                    setLaneData={setLaneData}
+                    handData={handData ? handData : game.game_state.hands_by_player[playerNum]}
+                    setHandData={setHandData}
+                    setHoveredCard={setHoveredCard}
+                    cardsToLanes={cardsToLanes}
+                    setCardsToLanes={setCardsToLanes}
+                />
+                <HandDisplay 
+                    cards={handData ? handData : game.game_state.hands_by_player[playerNum]} 
+                    selectedCard={selectedCard} 
+                    setSelectedCard={setSelectedCard} 
+                    setHoveredCard={setHoveredCard}
+                />
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
+                    <ResetButton onReset={handleReset} />
+                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog}>
+                        <Typography variant="h6">
+                            Submit
+                        </Typography>
+                    </Button>
+                </div>
+
+                <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+                    <DialogTitle>Confirm Action</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Are you sure you want to submit your turn?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseDialog} color="primary">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSubmit} color="primary">
+                            Confirm
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
         </div>
     );
 }

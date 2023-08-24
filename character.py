@@ -1,7 +1,7 @@
 import random
 from card_template import CardTemplate
 from utils import generate_unique_id
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from lane import Lane
 
@@ -36,24 +36,33 @@ class Character:
                log: list[str]):
         self.has_attacked = True
         defenders = [character for character in defending_characters if character.is_defender()]
-        if len(defenders) == 0 and not self.is_attacker:
+        if len(defenders) == 0 and not self.is_attacker():
             damage_by_player[attacking_player] += self.current_attack
-            log.append(f"{self.owner_username}'s {self.template.name} dealt {self.template.attack} damage to the enemy player in Lane {lane_number}.")
+            log.append(f"{self.owner_username}'s {self.template.name} dealt {self.template.attack} damage to the enemy player in Lane {lane_number + 1}.")
         else:
             if len(defenders) == 0:
-                target_character = random.choice(defending_characters)
+                if len(defending_characters) > 0:
+                    target_character = random.choice(defending_characters)
+                else:
+                    target_character = None
             else:
                 target_character = random.choice(defenders)
-            self.fight(target_character, log)
-            log.append(f"{self.owner_username}'s {self.template.name} dealt {self.template.attack} damage to the enemy {target_character.template.name} in Lane {lane_number}.")
+            if target_character is not None:
+                self.fight(target_character, lane_number, log)
+            if self.is_attacker():
+                damage_by_player[attacking_player] += self.current_attack
+                log.append(f"{self.owner_username}'s {self.template.name} also dealt {self.template.attack} damage to the enemy player in Lane {lane_number + 1}.")
                 
                 
-    def punch(self, defending_character: 'Character', log: list[str]):
+    def punch(self, defending_character: 'Character', lane_number: int, log: list[str],
+              starting_current_attack: Optional[int] = None):
         if self.has_ability('Deathtouch'):
             defending_character.current_health = 0
             log.append(f"{self.owner_username}'s {self.template.name} deathtouched {defending_character.owner_username}'s {defending_character.template.name}.")
         else:
-            defending_character.current_health -= self.current_attack
+            defending_character.current_health -= starting_current_attack if starting_current_attack is not None else self.current_attack
+            log.append(f"{self.owner_username}'s {self.template.name} dealt {self.template.attack} damage to the enemy {defending_character.template.name} in Lane {lane_number + 1}. "
+                       f"{defending_character.template.name}'s health is now {defending_character.current_health}.")
 
         if defending_character.has_ability('OnSurviveDamagePump'):
             defending_character.current_attack += 1
@@ -61,9 +70,10 @@ class Character:
             defending_character.max_health += 1
             log.append(f"{defending_character.owner_username}'s {defending_character.template.name} got +1/+1 for surviving damage.")
 
-    def fight(self, defending_character: 'Character', log: list[str]):
-        defending_character.punch(self, log)
-        self.punch(defending_character, log)
+    def fight(self, defending_character: 'Character', lane_number: int, log: list[str]):
+        starting_current_attack = self.current_attack
+        defending_character.punch(self, lane_number, log)
+        self.punch(defending_character, lane_number, log, starting_current_attack=starting_current_attack)
 
 
     def roll_turn(self, log: list[str]):
