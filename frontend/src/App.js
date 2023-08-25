@@ -23,7 +23,7 @@ function CardPoolPage() {
   const [error, setError] = useState(null);
   const [toastOpen, setToastOpen] = useState(false);
 
-  console.log(cards);
+  // console.log(cards);
 
   useEffect(() => {
     fetch(`${URL}/api/card_pool`)
