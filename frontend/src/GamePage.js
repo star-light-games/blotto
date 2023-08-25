@@ -286,6 +286,14 @@ export default function GamePage({}) {
 
     const opponentManaAmount = game?.game_state?.mana_by_player?.[opponentNum] || 1;
 
+    const gameOver = game?.game_state?.turn > 8;
+    const lane1winner = game?.game_state?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_state?.[0]?.damage_by_player?.[opponentNum];
+    const lane2winner = game?.game_state?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.[1]?.damage_by_player?.[opponentNum];
+    const lane3winner = game?.game_state?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.[2]?.damage_by_player?.[opponentNum];
+
+    const winner = lane1winner + lane2winner + lane3winner > 1;
+
+
     console.log(cardsToLanes);
 
     const handleReset = () => {
@@ -416,6 +424,15 @@ export default function GamePage({}) {
                 <div  style={{margin:'10px'}} >
                     <GameInfo game={game} playerNum={playerNum} yourManaAmount={yourManaAmount} opponentManaAmount={opponentManaAmount}/>
                 </div>
+                {gameOver && <div style={{margin: '10px'}}>
+                    <Card variant="outlined">
+                        <CardContent>
+                            <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center'}}>
+                                {winner ? 'You won!' : 'You lost!'}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </div>}
                 <GameLog log={game.game_state.log} />
                 <LanesDisplay 
                     lanes={laneData ? laneData : game.game_state.lanes} 
@@ -440,8 +457,8 @@ export default function GamePage({}) {
                     yourManaAmount={yourManaAmount}
                 />
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
-                    <ResetButton onReset={handleReset} disabled={submittedMove} />
-                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog} disabled={submittedMove}>
+                    <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />
+                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog} disabled={submittedMove || gameOver}>
                         <Typography variant="h6">
                             Submit
                         </Typography>
