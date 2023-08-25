@@ -11,7 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-function GameInfo({ game, playerNum }) {
+function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
     const opponentUsername = game.usernames_by_player[opponentNum];
     const opponentHandSize = (game.game_state && game.game_state.hands_by_player) 
@@ -23,6 +23,8 @@ function GameInfo({ game, playerNum }) {
             <p>Your username: {game.usernames_by_player[playerNum]}</p>
             <p>Opponent's username: {opponentUsername}</p>
             <p>Opponent's hand size: {opponentHandSize}</p>
+            <p>You have {yourManaAmount} mana.</p>
+            <p>Opponent has {opponentManaAmount} mana.</p>
         </div>
     );
 }
@@ -61,7 +63,7 @@ onMouseEnter={e => e.currentTarget.style.border = '2px solid blue'}
 onMouseLeave={e => e.currentTarget.style.border = isSelected ? '2px solid black' : 'none'}
 > */
 
-function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, allLanesData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes }) {  
+function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, allLanesData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {  
     
     return (
       <div style={{ display: 'flex', 
@@ -93,6 +95,8 @@ function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard,
                     newHandData = newHandData.filter(card => card.id !== selectedCard.id);
                     setHandData(newHandData);
 
+                    setYourManaAmount(yourManaAmount - selectedCard.template.cost);
+
                     let newCardsToLanes = cardsToLanes;
                     newCardsToLanes[selectedCard.id] = laneData.lane_number;
 
@@ -104,13 +108,13 @@ function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard,
           <div>
             <h3>Lane {laneData.lane_number + 1}</h3> {/* +1 assuming lane_number starts from 0 */}
 
-            <h4>Opponent's Damage: {laneData.damage_by_player[opponentNum]}</h4>
+            <h4>Opponent's Score: {laneData.damage_by_player[opponentNum]}</h4>
             {laneData.characters_by_player[opponentNum].map((card, index) => (
               <CharacterDisplay key={index} character={card} setHoveredCard={setHoveredCard} type="opponent"/>
             ))}
           </div>
           <div>
-            <h4>Your Damage: {laneData.damage_by_player[playerNum]}</h4>
+            <h4>Your Score: {laneData.damage_by_player[playerNum]}</h4>
             {laneData.characters_by_player[playerNum].map((card, index) => (
               <CharacterDisplay key={index} character={card} setHoveredCard={setHoveredCard} type="player" />
             ))}
@@ -120,7 +124,7 @@ function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard,
     );
 }
 
-function LanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes }) {
+function LanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
     return (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
         {lanes.map((lane, index) => (
@@ -138,18 +142,26 @@ function LanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelected
                 setHoveredCard={setHoveredCard}
                 cardsToLanes={cardsToLanes}
                 setCardsToLanes={setCardsToLanes}
+                yourManaAmount={yourManaAmount}
+                setYourManaAmount={setYourManaAmount}
             />
         ))}
         </div>
     );
 }
 
-function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard }) {
+function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, yourManaAmount }) {
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap' }}>
             {cards.map((card, index) => (
                 <div key={index} style={{ margin: '5px' }}>
-                    <TcgCard card={card.template} isSelected={selectedCard ? selectedCard.id === card.id : false} onMouseEnter={() => setHoveredCard(card.template)} onCardClick={() => setSelectedCard(card)} />
+                    <TcgCard 
+                        card={card.template} 
+                        isSelected={selectedCard ? selectedCard.id === card.id : false} 
+                        onMouseEnter={() => setHoveredCard(card.template)} 
+                        onCardClick={yourManaAmount >= card.template.cost ? () => setSelectedCard(card) : () => {}} 
+                        doNotBorderOnHighlight={yourManaAmount < card.template.cost}
+                    />
                 </div>
             ))}
         </div>
@@ -217,6 +229,9 @@ export default function GamePage({}) {
 
     const [submittedMove, setSubmittedMove] = useState(false);
 
+    const [yourManaAmount, setYourManaAmount] = useState(0);
+
+    const opponentManaAmount = game?.game_state?.mana_by_player?.[opponentNum] || 0;
 
     console.log(cardsToLanes);
 
@@ -225,6 +240,7 @@ export default function GamePage({}) {
         setSelectedCard(null);
         setHandData(null);
         setCardsToLanes({});
+        setYourManaAmount(game?.game_state.mana_by_player?.[playerNum] || 0);
     // If you also want to reset hand data or any other state, do it here.
     };
 
@@ -242,6 +258,7 @@ export default function GamePage({}) {
                 setSubmittedMove(false);
                 setGame(data);
                 handleReset();
+                setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 0);
             }
         } catch (error) {
             console.error("Error while polling:", error);
@@ -335,7 +352,7 @@ export default function GamePage({}) {
                 {hoveredCard && <TcgCard card={hoveredCard} />}
             </div>
             <div style={{ flex: 3 }}>
-                <GameInfo game={game} playerNum={playerNum} />
+                <GameInfo game={game} playerNum={playerNum} yourManaAmount={yourManaAmount} opponentManaAmount={opponentManaAmount} />
                 <GameLog log={game.game_state.log} />
                 <LanesDisplay 
                     lanes={laneData ? laneData : game.game_state.lanes} 
@@ -349,12 +366,15 @@ export default function GamePage({}) {
                     setHoveredCard={setHoveredCard}
                     cardsToLanes={cardsToLanes}
                     setCardsToLanes={setCardsToLanes}
+                    yourManaAmount={yourManaAmount}
+                    setYourManaAmount={setYourManaAmount}
                 />
                 <HandDisplay 
                     cards={handData ? handData : game.game_state.hands_by_player[playerNum]} 
                     selectedCard={selectedCard} 
                     setSelectedCard={setSelectedCard} 
                     setHoveredCard={setHoveredCard}
+                    yourManaAmount={yourManaAmount}
                 />
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
                     <ResetButton onReset={handleReset} />

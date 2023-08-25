@@ -35,7 +35,8 @@ class Character:
                lane_number: int,
                log: list[str]):
         self.has_attacked = True
-        defenders = [character for character in defending_characters if character.is_defender()]
+        maybe_also = ''
+        defenders = [character for character in defending_characters if character.is_defender() and character.can_fight()]
         if len(defenders) == 0 and not self.is_attacker():
             multiplier = 2 if self.has_ability('DoubleTowerDamage') else 1
             damage_dealt = self.current_attack * multiplier
@@ -50,10 +51,11 @@ class Character:
             else:
                 target_character = random.choice(defenders)
             if target_character is not None:
+                maybe_also = ' also'
                 self.fight(target_character, lane_number, log)
             if self.is_attacker():
                 damage_by_player[attacking_player] += self.current_attack
-                log.append(f"{self.owner_username}'s {self.template.name} also dealt {self.template.attack} damage to the enemy player in Lane {lane_number + 1}.")
+                log.append(f"{self.owner_username}'s {self.template.name}{maybe_also} dealt {self.template.attack} damage to the enemy player in Lane {lane_number + 1}.")
                 
                 
     def punch(self, defending_character: 'Character', lane_number: int, log: list[str],
@@ -66,16 +68,25 @@ class Character:
             log.append(f"{self.owner_username}'s {self.template.name} dealt {self.template.attack} damage to the enemy {defending_character.template.name} in Lane {lane_number + 1}. "
                        f"{defending_character.template.name}'s health is now {defending_character.current_health}.")
 
-        if defending_character.has_ability('OnSurviveDamagePump'):
+        if defending_character.has_ability('OnSurviveDamagePump') and defending_character.current_health > 0:
             defending_character.current_attack += 1
             defending_character.current_health += 1
             defending_character.max_health += 1
             log.append(f"{defending_character.owner_username}'s {defending_character.template.name} got +1/+1 for surviving damage.")
 
     def fight(self, defending_character: 'Character', lane_number: int, log: list[str]):
-        starting_current_attack = self.current_attack
-        defending_character.punch(self, lane_number, log)
-        self.punch(defending_character, lane_number, log, starting_current_attack=starting_current_attack)
+        defender_starting_current_attack = defending_character.current_attack
+        self.punch(defending_character, lane_number, log)
+        if not self.has_ability('InvincibilityWhileAttacking'):
+            defending_character.punch(self, lane_number, log, starting_current_attack=defender_starting_current_attack)
+
+
+    def can_fight(self):
+        return self.current_health > 0
+
+
+    def can_attack(self):
+        return self.can_fight() and not self.has_attacked and self.shackled_turns == 0
 
 
     def roll_turn(self, log: list[str]):
@@ -84,14 +95,20 @@ class Character:
         if self.has_ability('StartOfTurnFullHeal'):
             self.current_health = self.template.health
             log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
+        
+        if self.shackled_turns > 0:
+            log.append(f"{self.owner_username}'s {self.template.name} is shackled for {self.shackled_turns} more turns.")
+            self.shackled_turns -= 1
+
 
 
     def do_on_reveal(self, log: list[str]):
-        if self.has_ability('OnRevealShackle'):
-            random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
-            if random_enemy_character is not None:
-                random_enemy_character.shackled_turns += 1
-                log.append(f"{self.owner_username}'s {self.template.name} shackled {random_enemy_character.owner_username}'s {random_enemy_character.template.name}.")
+        if self.new:
+            if self.has_ability('OnRevealShackle'):
+                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
+                if random_enemy_character is not None:
+                    random_enemy_character.shackled_turns += 1
+                    log.append(f"{self.owner_username}'s {self.template.name} shackled {random_enemy_character.owner_username}'s {random_enemy_character.template.name}.")
 
 
     def to_json(self):

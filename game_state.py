@@ -49,7 +49,6 @@ class GameState:
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
         character = card.to_character(self.lanes[lane_number], player_num, self.usernames_by_player[player_num])
         self.lanes[lane_number].characters_by_player[player_num].append(character)
-        character.do_on_reveal(self.log)
         self.log.append(f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.")
 
     def all_players_have_moved(self) -> bool:

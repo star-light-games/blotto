@@ -12,7 +12,13 @@ class Lane:
 
     def roll_turn(self, log: list[str]) -> None:
         done_attacking_by_player = {0: False, 1: False}
+
+        for player_num in done_attacking_by_player:
+            for character in self.characters_by_player[player_num]:
+                character.do_on_reveal(log)        
+
         self.resolve_combat(done_attacking_by_player, log)
+
         for player_num in done_attacking_by_player:
             for character in self.characters_by_player[player_num]:
                 character.roll_turn(log)
@@ -32,18 +38,14 @@ class Lane:
 
 
     def player_single_attack(self, attacking_player: int, done_attacking_by_player: dict[int, bool], log: list[str]):
-        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if not character.has_attacked and character.shackled_turns == 0 and character.current_health > 0]            
-        shackled_characters = [character for character in self.characters_by_player[attacking_player] if character.shackled_turns > 0]
+        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack()]            
         
-        for character in shackled_characters:
-            log.append(f"{character.template.name} is shackled for {character.shackled_turns} more turns.")            
-            character.shackled_turns -= 1
-
         if len(characters_that_can_attack) == 0:
             done_attacking_by_player[attacking_player] = True
         else:
+            characters_that_can_attack = [character for character in characters_that_can_attack if character.can_attack()]
             character = random.choice(characters_that_can_attack)
-            defending_characters = self.characters_by_player[1 - attacking_player]
+            defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
             character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log)
 
         for player_num in self.characters_by_player:
@@ -51,7 +53,7 @@ class Lane:
 
 
     def get_random_enemy_character(self, player_num: int) -> Optional[Character]:
-        characters_available = [character for character in self.characters_by_player[1 - player_num] if not character.new]
+        characters_available = [character for character in self.characters_by_player[1 - player_num] if character.can_fight()]
         return random.choice(characters_available) if len(characters_available) > 0 else None
 
 

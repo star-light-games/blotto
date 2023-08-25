@@ -1,6 +1,6 @@
 import { Card, CardContent, Typography, Box } from '@mui/material';
 
-function TcgCard({ card, isSelected, onCardClick, onMouseEnter }) {
+function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight }) {
 
     return (
       <div 
@@ -10,7 +10,9 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter }) {
           }}
           onClick={onCardClick ? () => onCardClick(card) : null}
           onMouseEnter={e => {
-            e.currentTarget.style.border = '2px solid blue';
+            if (!doNotBorderOnHighlight) {
+                e.currentTarget.style.border = '2px solid blue';    
+            }
             onMouseEnter && onMouseEnter();
           }}
           onMouseLeave={e => e.currentTarget.style.border = isSelected ? '2px solid black' : 'none'}
