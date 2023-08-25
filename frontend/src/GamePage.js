@@ -291,6 +291,12 @@ export default function GamePage({}) {
     const lane2winner = game?.game_state?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.[1]?.damage_by_player?.[opponentNum];
     const lane3winner = game?.game_state?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.[2]?.damage_by_player?.[opponentNum];
 
+    console.log(game?.game_state?.lanes?.[0]?.damage_by_player?.[playerNum]);
+    console.log(game?.game_state?.[0]?.damage_by_player?.[opponentNum]);
+    console.log(game?.game_state?.lanes?.[1]?.damage_by_player?.[playerNum]);
+    console.log(game?.game_state?.[1]?.damage_by_player?.[opponentNum]);
+    console.log(lane1winner + lane2winner + lane3winner);
+
     const winner = lane1winner + lane2winner + lane3winner > 1;
 
 
