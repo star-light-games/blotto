@@ -17,9 +17,11 @@ function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
     const opponentHandSize = (game.game_state && game.game_state.hands_by_player) 
                              ? game.game_state.hands_by_player[opponentNum].length 
                              : 0;
+    const turnNumber = game?.game_state?.turn_number || 0;
 
     return (
         <div>
+            <p>Turn {turnNumber}</p>
             <p>Your username: {game.usernames_by_player[playerNum]}</p>
             <p>Opponent's username: {opponentUsername}</p>
             <p>Opponent's hand size: {opponentHandSize}</p>
@@ -269,7 +271,7 @@ export default function GamePage({}) {
     useEffect(() => {
         let pollingInterval;
     
-        if (submittedMove) {
+        if (submittedMove || !game.game_state) {
             pollingInterval = setInterval(pollApiForGameUpdates, 500); // Poll every 0.5 seconds
         }
     
@@ -280,7 +282,7 @@ export default function GamePage({}) {
                 clearInterval(pollingInterval);
             }
         };
-    }, [submittedMove]); // Depend on submittedMove, so the effect re-runs if its value changes
+    }, [submittedMove, !!game.game_state]); // Depend on submittedMove, so the effect re-runs if its value changes
 
     useEffect(() => {
         // Fetch the game data from your backend.
@@ -305,7 +307,14 @@ export default function GamePage({}) {
 
     if (!game.game_state) {
         return (
-            <div>Waiting for another player to join...</div>
+            <div >
+                <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center'}}>
+                    Waiting for another player to join...
+                </Typography>
+                <Typography variant="h6" style={{ display: 'flex', justifyContent: 'center'}}>
+                    Game ID: {gameId}
+                </Typography>
+            </div>
         )
     }
 
