@@ -17,7 +17,7 @@ function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
     const opponentHandSize = (game.game_state && game.game_state.hands_by_player) 
                              ? game.game_state.hands_by_player[opponentNum].length 
                              : 0;
-    const turnNumber = game?.game_state?.turn_number || 0;
+    const turnNumber = game?.game_state?.turn || 0;
 
     return (
         <div>
@@ -231,9 +231,9 @@ export default function GamePage({}) {
 
     const [submittedMove, setSubmittedMove] = useState(false);
 
-    const [yourManaAmount, setYourManaAmount] = useState(0);
+    const [yourManaAmount, setYourManaAmount] = useState(1);
 
-    const opponentManaAmount = game?.game_state?.mana_by_player?.[opponentNum] || 0;
+    const opponentManaAmount = game?.game_state?.mana_by_player?.[opponentNum] || 1;
 
     console.log(cardsToLanes);
 
@@ -242,7 +242,7 @@ export default function GamePage({}) {
         setSelectedCard(null);
         setHandData(null);
         setCardsToLanes({});
-        setYourManaAmount(game?.game_state.mana_by_player?.[playerNum] || 0);
+        setYourManaAmount(game?.game_state.mana_by_player?.[playerNum] || 1);
     // If you also want to reset hand data or any other state, do it here.
     };
 
@@ -260,7 +260,7 @@ export default function GamePage({}) {
                 setSubmittedMove(false);
                 setGame(data);
                 handleReset();
-                setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 0);
+                setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
             }
         } catch (error) {
             console.error("Error while polling:", error);
@@ -292,6 +292,7 @@ export default function GamePage({}) {
                 setGame(data);
                 setLoading(false);
                 setLaneData(data.game_state.lanes);
+                setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
                 if (data.game_state.has_moved_by_player[playerNum]) {
                     setSubmittedMove(true);
                 }
@@ -361,7 +362,9 @@ export default function GamePage({}) {
                 {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} />}
             </div>
             <div style={{ flex: 3 }}>
-                <GameInfo game={game} playerNum={playerNum} yourManaAmount={yourManaAmount} opponentManaAmount={opponentManaAmount} />
+                <div  style={{margin:'10px'}} >
+                    <GameInfo game={game} playerNum={playerNum} yourManaAmount={yourManaAmount} opponentManaAmount={opponentManaAmount}/>
+                </div>
                 <GameLog log={game.game_state.log} />
                 <LanesDisplay 
                     lanes={laneData ? laneData : game.game_state.lanes} 
