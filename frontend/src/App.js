@@ -8,6 +8,12 @@ import DeckBuilder from './DeckBuilder';
 import { URL } from './settings';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import GamePage from './GamePage';
+import ThemeProvider from './ThemeProvider';
+import { CssBaseline } from '@mui/material';
+import { DarkModeContext, DarkModeProvider } from './DarkModeContext';
+
+
+
 
 
 function CardPoolPage() {
@@ -79,12 +85,18 @@ function CardPoolPage() {
 
 function App() {
   return (
+    <DarkModeProvider> 
+      <ThemeProvider>
+
+      <CssBaseline />
     <Router>
       <Routes>
         <Route exact path="/" element={<CardPoolPage />} />
         <Route path="/game/:gameId" element={<GamePage />} />
       </Routes>
     </Router>
+    </ThemeProvider>
+    </DarkModeProvider>
   );
 }
 

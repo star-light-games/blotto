@@ -1,6 +1,11 @@
-import { Card, CardContent, Typography, Box } from '@mui/material';
+import { Card, CardContent, Typography, Box, useTheme } from '@mui/material';
 
 function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight }) {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+
+    // Define card background color based on theme mode
+    const cardBackgroundColor = isDarkMode ? '#555' : '#eee';
 
     return (
       <div 
@@ -23,8 +28,9 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
             width: 250, 
             height: 300, 
             position: 'relative', 
-            backgroundColor: '#eee',
-            overflow: 'hidden'
+            backgroundColor: cardBackgroundColor,  // Use the defined card background color
+            overflow: 'hidden',
+            color: theme.palette.text.primary
         }}
         >
         <CardContent>
@@ -61,6 +67,6 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
         </Card>
       </div>
     );
-    }
-  
+}
+
 export default TcgCard;

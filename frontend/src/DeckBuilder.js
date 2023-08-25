@@ -10,12 +10,17 @@ import {
   Snackbar,
   Alert,
   Box,
+  CardContent,
+  Card,
 } from '@mui/material';
 import TcgCard from './TcgCard';
 
 import { URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+
+import TopBar from './TopBar.js';
+
 
 function DeckBuilder({ cards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
@@ -157,65 +162,21 @@ function DeckBuilder({ cards }) {
 
   return (
     <Container>
+      <TopBar />
       <Typography variant="h5">Deck Builder</Typography>
       
-      <TextField 
-        label="User Name" 
-        variant="outlined" 
-        margin="normal"
-        value={userName}
-        onChange={(e) => setUserName(e.target.value)}
-      />
       
-      <TextField 
-        label="Deck Name" 
-        variant="outlined" 
-        margin="normal"
-        value={deckName}
-        onChange={(e) => setDeckName(e.target.value)}
-      />
-      
-      <Button variant="contained" color="primary" onClick={saveDeck} style={{ marginBottom: '20px' }} disabled={!userName || !deckName || !currentDeck || currentDeck.length === 0}>
-        {!userName ? 'Enter User Name' : !deckName ? 'Enter Deck Name' : !currentDeck || currentDeck.length === 0 ? 'Add Cards to Deck' : 'Save Deck'}
-      </Button>
+  <TextField 
+    label="User Name" 
+    variant="outlined" 
+    margin="normal"
+    value={userName}
+    onChange={(e) => setUserName(e.target.value)}
+  />
 
-      {/* Host and Join game actions */}
-      <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
-        <Grid item>
-          <Button variant="contained" color="primary" onClick={hostGame} disabled={!selectedDeck}>
-            {selectedDeck ? 'Host Game' : 'Select Deck'}
-          </Button>
-        </Grid>
-        <Grid item>
-          <TextField 
-            variant="outlined"
-            label="Game ID"
-            value={joinGameId}
-            onChange={(e) => setJoinGameId(e.target.value)}
-          />
-        </Grid>
-        <Grid item>
-          <Button variant="contained" color="secondary" onClick={joinGame} disabled={!selectedDeck}>
-            {selectedDeck ? 'Join Game' : 'Select Deck'}
-          </Button>
-        </Grid>
-      </Grid>
-
-      {/* Display Game ID when hosting a game */}
-      {hostGameId && (
-        <Typography variant="h6" style={{ marginTop: '20px' }}>
-          Game ID: <Link to={`/game/${hostGameId}?playerNum=0`}>{hostGameId}</Link>
-        </Typography>
-      )}
-
-      <Typography variant="h6">Current Deck:</Typography>
-      <List>
-        {currentDeck.map((cardName, index) => (
-          <ListItem key={index}>{cardName}</ListItem>
-        ))}
-      </List>
-
-      <Typography variant="h6" style={{ marginTop: '20px' }}>All Decks:</Typography>
+  <Card>
+    <CardContent>
+    <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Created Decks:</Typography>
       {decks.map((deck, index) => (
         <Box 
           key={index}
@@ -231,8 +192,82 @@ function DeckBuilder({ cards }) {
           {deck.name}
         </Box>
       ))}
+      {/* Host and Join game actions */}
+      <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
+        <Grid item>
+          <Button variant="contained" color="primary" onClick={hostGame} disabled={!selectedDeck}>
+            {selectedDeck ? 'Host Game' : 'Select Deck'}
+          </Button>
+        </Grid>
+        <Grid item>
+          {/* Display Game ID when hosting a game */}
+          {hostGameId && (
+            <Typography variant="h6" style={{ marginTop: '20px' }}>
+              Game ID: <Link to={`/game/${hostGameId}?playerNum=0`}>{hostGameId}</Link>
+            </Typography>
+          )}
+        </Grid>
+        </Grid>
 
-      <Typography variant="h6" style={{ marginTop: '20px' }}>Available Cards:</Typography>
+      <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
+        <Grid item>
+          <TextField 
+            variant="outlined"
+            label="Game ID"
+            value={joinGameId}
+            onChange={(e) => setJoinGameId(e.target.value)}
+          />
+        </Grid>
+        <Grid item>
+          <Button variant="contained" color="secondary" onClick={joinGame} disabled={!selectedDeck}>
+            {selectedDeck ? 'Join Game' : 'Select Deck'}
+          </Button>
+        </Grid>
+      </Grid>
+    </CardContent>
+  </Card>
+  
+  {/*space between the two cards*/}
+  <br></br>
+
+  {/* A card with the title create a new deck 
+  that contains a text feild and create deck button */}
+<Card>
+  <CardContent>
+    <Typography variant="h6" style={{ marginTop: '20px' }}>Create a New Deck:</Typography>
+    
+    <Grid container alignItems="center" spacing={2}>
+      <Grid item>
+        <TextField 
+          label="Deck Name" 
+          variant="outlined" 
+          value={deckName}
+          onChange={(e) => setDeckName(e.target.value)}
+        />
+      </Grid>
+      
+      <Grid item>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={saveDeck} 
+          disabled={!userName || !deckName || !currentDeck || currentDeck.length === 0}>
+          {!userName ? 'Enter User Name' : !deckName ? 'Enter Deck Name' : !currentDeck || currentDeck.length === 0 ? 'Add Cards to Deck' : 'Save Deck'}
+        </Button>
+      </Grid>
+    </Grid>
+    </CardContent>
+    <CardContent>
+    <Typography variant="h6">Deck You Are Building:</Typography>
+      <List>
+        {currentDeck.map((cardName, index) => (
+          <ListItem key={index}>{cardName}</ListItem>
+        ))}
+      </List>
+  </CardContent>
+
+  <CardContent>
+     <Typography variant="h6" style={{ marginTop: '20px' }}>Available Cards:</Typography>
       <Grid container spacing={3}>
         {cards.map((card) => (
           <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
@@ -240,6 +275,9 @@ function DeckBuilder({ cards }) {
           </Grid>
         ))}
       </Grid>
+  </CardContent>
+</Card>
+      
 
       <Snackbar 
         open={toastOpen}
