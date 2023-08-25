@@ -289,7 +289,7 @@ export default function GamePage({}) {
     console.log(cardsToLanes);
 
     const handleReset = () => {
-        setLaneData(null);
+        setLaneData(game?.game_state ? game?.game_state.lanes : null);
         setSelectedCard(null);
         setHandData(null);
         setCardsToLanes({});
