@@ -170,13 +170,14 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
     );
 }
 
-function ResetButton({ onReset }) {
+function ResetButton({ onReset, disabled }) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', margin: '10px' }}>
         <Button 
           variant="contained" 
           size="large" 
           onClick={onReset}
+          disabled={disabled}
         >
           <Typography variant="h6">
             Reset
@@ -389,8 +390,8 @@ export default function GamePage({}) {
                     yourManaAmount={yourManaAmount}
                 />
                 <div style={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
-                    <ResetButton onReset={handleReset} />
-                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog}>
+                    <ResetButton onReset={handleReset} disabled={submittedMove} />
+                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog} disabled={submittedMove}>
                         <Typography variant="h6">
                             Submit
                         </Typography>
