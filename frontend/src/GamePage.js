@@ -287,15 +287,9 @@ export default function GamePage({}) {
     const opponentManaAmount = game?.game_state?.mana_by_player?.[opponentNum] || 1;
 
     const gameOver = game?.game_state?.turn > 8;
-    const lane1winner = game?.game_state?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_state?.[0]?.damage_by_player?.[opponentNum];
-    const lane2winner = game?.game_state?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.[1]?.damage_by_player?.[opponentNum];
-    const lane3winner = game?.game_state?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.[2]?.damage_by_player?.[opponentNum];
-
-    console.log(game?.game_state?.lanes?.[0]?.damage_by_player?.[playerNum]);
-    console.log(game?.game_state?.[0]?.damage_by_player?.[opponentNum]);
-    console.log(game?.game_state?.lanes?.[1]?.damage_by_player?.[playerNum]);
-    console.log(game?.game_state?.[1]?.damage_by_player?.[opponentNum]);
-    console.log(lane1winner + lane2winner + lane3winner);
+    const lane1winner = game?.game_state?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
+    const lane2winner = game?.game_state?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
+    const lane3winner = game?.game_state?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
 
     const winner = lane1winner + lane2winner + lane3winner > 1;
 
