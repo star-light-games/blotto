@@ -4,12 +4,15 @@ import { useLocation, useParams } from 'react-router-dom';
 import TcgCard from './TcgCard';
 import { URL } from './settings';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { useTheme } from '@mui/material';
+
+
+import { Card, CardContent, Grid, Typography } from '@mui/material';
 
 function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
@@ -20,19 +23,40 @@ function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
     const turnNumber = game?.game_state?.turn || 0;
 
     return (
-        <div>
-            <p>Turn {turnNumber}</p>
-            <p>Your username: {game.usernames_by_player[playerNum]}</p>
-            <p>Opponent's username: {opponentUsername}</p>
-            <p>Opponent's hand size: {opponentHandSize}</p>
-            <p>You have {yourManaAmount} mana.</p>
-            <p>Opponent has {opponentManaAmount} mana.</p>
-        </div>
+        <Card variant="outlined">
+            <CardContent>
+                <Typography variant="h5" align="left" gutterBottom>
+                    Turn {turnNumber}
+                    </Typography>
+                <Grid container spacing={3}>
+                    {/* Your Info Column */}
+                    <Grid item xs={6}>
+                        <Typography variant="h6">You</Typography>
+                        <Typography>Username: {game.usernames_by_player[playerNum]}</Typography>
+                        <Typography>Mana: {yourManaAmount}</Typography>
+                    </Grid>
+
+                    {/* Opponent Info Column */}
+                    <Grid item xs={6}>
+                        <Typography variant="h6">Opponent</Typography>
+                        <Typography>Username: {opponentUsername}</Typography>
+                        <Typography>Hand size: {opponentHandSize}</Typography>
+                        <Typography>Mana: {opponentManaAmount}</Typography>
+                    </Grid>
+                </Grid>
+            </CardContent>
+        </Card>
     );
 }
 
 function CharacterDisplay({ character, setHoveredCard, type }) {
-    const backgroundColor = type === 'player' ? '#d7ffd9' : '#ffd7d7'; // light green for player, light red for opponent
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+    
+    const backgroundColor = type === 'player' 
+        ? (isDarkMode ? '#226422' : '#d7ffd9')  // darker green for player in dark mode
+        : (isDarkMode ? '#995555' : '#ffd7d7'); // darker red for opponent in dark mode
+
     return (
         <div style={{ 
             display: 'flex', 
@@ -55,6 +79,7 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
     );
 }
 
+
 /*       <div 
 style={{
     border: isSelected ? '2px solid black' : 'none',
@@ -65,70 +90,87 @@ onMouseEnter={e => e.currentTarget.style.border = '2px solid blue'}
 onMouseLeave={e => e.currentTarget.style.border = isSelected ? '2px solid black' : 'none'}
 > */
 
-function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, allLanesData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {  
-    
+function LaneCard({ children, selectedCard, onClick }) {
+    const outlineStyle = selectedCard ? { outline: '2px solid blue' } : {};
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+
+    const cardBackgroundColor = isDarkMode ? '#555' : '#eee';
+
     return (
-      <div style={{ display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    margin: '10px' }}>        
-        <div 
-            style={{ 
-                outline: 'none',
-                width: '100%',
-                padding: '10px'
-            }}
-            onMouseEnter={e => {
-                if (selectedCard) {
-                    e.currentTarget.style.outline = '2px solid blue';
-                }
-            }}
-            onMouseLeave={e => {
-                e.currentTarget.style.outline = 'none';
-            }}
-            onClick={e => {
-                if (selectedCard) {
-                    e.currentTarget.style.outline = 'none';
-                    const newLaneData = JSON.parse(JSON.stringify(allLanesData));
-                    newLaneData[laneData.lane_number].characters_by_player[playerNum].push(selectedCard);
-                    setLaneData(newLaneData);
-
-                    let newHandData = JSON.parse(JSON.stringify(handData));
-                    newHandData = newHandData.filter(card => card.id !== selectedCard.id);
-                    setHandData(newHandData);
-
-                    setYourManaAmount(yourManaAmount - selectedCard.template.cost);
-
-                    let newCardsToLanes = cardsToLanes;
-                    newCardsToLanes[selectedCard.id] = laneData.lane_number;
-
-                    setCardsToLanes(newCardsToLanes)
-
-                    setSelectedCard(null);
-                }
-            }}>
+      <Card
+        style={{
+          outline: 'none',
+          width: '100%',
+          padding: '10px',
+          backgroundColor: cardBackgroundColor,
+          ...outlineStyle,
+        }}
+        onMouseEnter={e => {
+          if (selectedCard) {
+            e.currentTarget.style.outline = '2px solid blue';
+          }
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.outline = 'none';
+        }}
+        onClick={onClick}
+      >
+        {children}
+      </Card>
+    );
+  }
+  
+  function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, allLanesData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
+    const laneNumber = laneData.lane_number;
+    
+    const handleLaneCardClick = () => {
+      if (selectedCard) {
+        const newLaneData = [...allLanesData];
+        newLaneData[laneNumber].characters_by_player[playerNum].push(selectedCard);
+        setLaneData(newLaneData);
+  
+        const newHandData = handData.filter(card => card.id !== selectedCard.id);
+        setHandData(newHandData);
+  
+        setYourManaAmount(yourManaAmount - selectedCard.template.cost);
+  
+        const newCardsToLanes = { ...cardsToLanes, [selectedCard.id]: laneNumber };
+        setCardsToLanes(newCardsToLanes);
+  
+        setSelectedCard(null);
+      }
+    };
+    
+    const renderCharacterCards = (characters, type) => (
+      <Card>
+        <CardContent>
+        <h4>{type === 'opponent' ? "Opponent's" : 'Your'} Score: {laneData.damage_by_player[type === 'opponent' ? opponentNum : playerNum]}</h4>
+        {characters.map((card, index) => (
+          <CharacterDisplay key={index} character={card} setHoveredCard={setHoveredCard} type={type} />
+        ))}
+        </CardContent>
+      </Card>
+    );
+  
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '10px' }}>
+        <LaneCard selectedCard={selectedCard} onClick={handleLaneCardClick}>
+            <h3>Lane {laneNumber + 1}</h3> {/* +1 assuming lane_number starts from 0 */}
+            {renderCharacterCards(laneData.characters_by_player[opponentNum], 'opponent')}
+          <br/>
           <div>
-            <h3>Lane {laneData.lane_number + 1}</h3> {/* +1 assuming lane_number starts from 0 */}
-
-            <h4>Opponent's Score: {laneData.damage_by_player[opponentNum]}</h4>
-            {laneData.characters_by_player[opponentNum].map((card, index) => (
-              <CharacterDisplay key={index} character={card} setHoveredCard={setHoveredCard} type="opponent"/>
-            ))}
+            {renderCharacterCards(laneData.characters_by_player[playerNum], 'player')}
           </div>
-          <div>
-            <h4>Your Score: {laneData.damage_by_player[playerNum]}</h4>
-            {laneData.characters_by_player[playerNum].map((card, index) => (
-              <CharacterDisplay key={index} character={card} setHoveredCard={setHoveredCard} type="player" />
-            ))}
-          </div>
-        </div>
+        </LaneCard>
       </div>
     );
-}
+  }
+  
 
 function LanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
     return (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'flex'}}>
         {lanes.map((lane, index) => (
             <Lane 
                 key={index} 
@@ -188,17 +230,25 @@ function ResetButton({ onReset, disabled }) {
   }
 
   function GameLog({ log }) {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+
+    // Define GameLog background color based on theme mode
+    const logBackgroundColor = isDarkMode ? '#555' : '#f5f5f5';
+    const logTextColor = theme.palette.text.primary;
+
     const containerStyle = {
         position: 'fixed',
-        top: '10px',
-        right: '10px',
+        top: '400px',
+        left: '10px',
         width: '250px',
         maxHeight: '300px',
-        overflowY: 'auto', // This makes the container scrollable if the content exceeds its height
+        overflowY: 'auto',
         border: '1px solid black',
         borderRadius: '5px',
         padding: '10px',
-        backgroundColor: '#f5f5f5'
+        backgroundColor: logBackgroundColor,
+        color: logTextColor
     };
 
     return (

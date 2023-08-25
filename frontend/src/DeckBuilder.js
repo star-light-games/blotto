@@ -162,7 +162,6 @@ function DeckBuilder({ cards }) {
 
   return (
     <Container>
-      <TopBar />
       <Typography variant="h5">Deck Builder</Typography>
       
       

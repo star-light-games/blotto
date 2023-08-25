@@ -12,6 +12,7 @@ import ThemeProvider from './ThemeProvider';
 import { CssBaseline } from '@mui/material';
 import { DarkModeContext, DarkModeProvider } from './DarkModeContext';
 
+import TopBar from './TopBar.js';
 
 
 
@@ -89,6 +90,8 @@ function App() {
       <ThemeProvider>
 
       <CssBaseline />
+
+      <TopBar />
     <Router>
       <Routes>
         <Route exact path="/" element={<CardPoolPage />} />
