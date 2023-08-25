@@ -126,7 +126,7 @@ function LaneCard({ children, selectedCard, onClick }) {
     
     const handleLaneCardClick = () => {
       if (selectedCard) {
-        const newLaneData = [...allLanesData];
+        const newLaneData = JSON.parse(JSON.stringify(allLanesData));
         newLaneData[laneNumber].characters_by_player[playerNum].push(selectedCard);
         setLaneData(newLaneData);
   
@@ -289,7 +289,7 @@ export default function GamePage({}) {
     console.log(cardsToLanes);
 
     const handleReset = () => {
-        setLaneData(game?.game_state ? game?.game_state.lanes : null);
+        setLaneData(null);
         setSelectedCard(null);
         setHandData(null);
         setCardsToLanes({});
