@@ -175,15 +175,15 @@ function DeckBuilder({ cards }) {
         onChange={(e) => setDeckName(e.target.value)}
       />
       
-      <Button variant="contained" color="primary" onClick={saveDeck} style={{ marginBottom: '20px' }}>
-        Save Deck
+      <Button variant="contained" color="primary" onClick={saveDeck} style={{ marginBottom: '20px' }} disabled={!userName || !deckName || !currentDeck || currentDeck.length === 0}>
+        {!userName ? 'Enter User Name' : !deckName ? 'Enter Deck Name' : !currentDeck || currentDeck.length === 0 ? 'Add Cards to Deck' : 'Save Deck'}
       </Button>
 
       {/* Host and Join game actions */}
       <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
         <Grid item>
-          <Button variant="contained" color="primary" onClick={hostGame}>
-            Host Game
+          <Button variant="contained" color="primary" onClick={hostGame} disabled={!selectedDeck}>
+            {selectedDeck ? 'Host Game' : 'Select Deck'}
           </Button>
         </Grid>
         <Grid item>
@@ -195,8 +195,8 @@ function DeckBuilder({ cards }) {
           />
         </Grid>
         <Grid item>
-          <Button variant="contained" color="secondary" onClick={joinGame}>
-            Join Game
+          <Button variant="contained" color="secondary" onClick={joinGame} disabled={!selectedDeck}>
+            {selectedDeck ? 'Join Game' : 'Select Deck'}
           </Button>
         </Grid>
       </Grid>

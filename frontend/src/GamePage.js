@@ -349,7 +349,7 @@ export default function GamePage({}) {
     return (
         <div style={{ display: 'flex' }}>
             <div style={{ flex: 1 }}>
-                {hoveredCard && <TcgCard card={hoveredCard} />}
+                {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} />}
             </div>
             <div style={{ flex: 3 }}>
                 <GameInfo game={game} playerNum={playerNum} yourManaAmount={yourManaAmount} opponentManaAmount={opponentManaAmount} />
