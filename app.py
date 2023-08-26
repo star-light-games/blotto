@@ -112,11 +112,16 @@ def host_game():
         games = rget_json('games') or {}
         games[game.id] = game.to_json()
 
+        game_ids_to_delete = []
+
         for game_id in games:
             # Delete games that are more than 1 day old
 
             if datetime.now() - datetime.fromtimestamp(games[game_id]['created_at']) > timedelta(days=1):
-                del games[game.id]
+                game_ids_to_delete.append(game_id)
+        
+        for game_id in game_ids_to_delete:
+            del games[game_id]
 
         rset_json('games', games)
     
