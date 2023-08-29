@@ -238,5 +238,7 @@ def take_turn(game_id):
 
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    app.run(host='0.0.0.0', port=5007)
+    if LOCAL:
+        app.run(debug=True)
+    else:
+        app.run(host='0.0.0.0', port=5007)
