@@ -17,6 +17,12 @@ import { snakeCase } from './utils';
 
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 
+const playerColor = (isDarkMode) => isDarkMode ? '#226422' : '#d7ffd9'
+const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
+
+const playerColorToneReversed = (isDarkMode) => isDarkMode ? '#d7ffd9' : '#226422'
+const opponentColorToneReversed = (isDarkMode) => isDarkMode ? '#ffd7d7' : '#995555'
+
 function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
     const opponentUsername = game.usernames_by_player[opponentNum];
@@ -57,8 +63,8 @@ function CharacterDisplayOld({ character, setHoveredCard, type }) {
     const isDarkMode = theme.palette.mode === 'dark';
     
     const backgroundColor = type === 'player' 
-        ? (isDarkMode ? '#226422' : '#d7ffd9')  // darker green for player in dark mode
-        : (isDarkMode ? '#995555' : '#ffd7d7'); // darker red for opponent in dark mode
+        ? playerColor(isDarkMode)  // darker green for player in dark mode
+        : opponentColor(isDarkMode); // darker red for opponent in dark mode
 
     return (
         <div style={{ 
@@ -86,13 +92,14 @@ function CharacterDisplayOld({ character, setHoveredCard, type }) {
 const CHARACTER_BOX_SIZE = 175;
 
 
+
 function CharacterDisplay({ character, setHoveredCard, type }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     
     const backgroundColor = type === 'player' 
-        ? (isDarkMode ? '#226422' : '#d7ffd9')  // darker green for player in dark mode
-        : (isDarkMode ? '#995555' : '#ffd7d7'); // darker red for opponent in dark mode
+        ? playerColor(isDarkMode)  // darker green for player in dark mode
+        : opponentColor(isDarkMode); // darker red for opponent in dark mode
 
     return (
         <Grid container style={{ 
@@ -490,6 +497,10 @@ function Lane({
       }
     };
 
+    const isDarkMode = useTheme().palette.mode === 'dark';
+    const playerFontColor = playerColorToneReversed(isDarkMode);
+    const opponentFontColor = opponentColorToneReversed(isDarkMode);
+
     return (
         <LaneCard 
             selectedCard={selectedCard} 
@@ -497,43 +508,79 @@ function Lane({
             doNotOutlineOnHover={allLanesData[laneNumber].characters_by_player[playerNum].length >= 4}
         >
             <Grid container direction="column" spacing={1}>
-                <Grid item>
-                    <LaneForOneSide 
-                        playersSide={false}
-                        laneData={laneData}
-                        playerNum={playerNum} 
-                        opponentNum={opponentNum} 
-                        selectedCard={selectedCard} 
-                        setSelectedCard={setSelectedCard}
-                        setLaneData={setLaneData} 
-                        allLanesData={allLanesData}
-                        handData={handData}
-                        setHandData={setHandData}
-                        setHoveredCard={setHoveredCard}
-                        cardsToLanes={cardsToLanes}
-                        setCardsToLanes={setCardsToLanes}
-                        yourManaAmount={yourManaAmount}
-                        setYourManaAmount={setYourManaAmount}
-                    />
+                <Grid item container direction="row" spacing={1} alignItems="center">
+                    <Grid item>
+                        <LaneForOneSide 
+                            playersSide={false}
+                            laneData={laneData}
+                            playerNum={playerNum} 
+                            opponentNum={opponentNum} 
+                            selectedCard={selectedCard} 
+                            setSelectedCard={setSelectedCard}
+                            setLaneData={setLaneData} 
+                            allLanesData={allLanesData}
+                            handData={handData}
+                            setHandData={setHandData}
+                            setHoveredCard={setHoveredCard}
+                            cardsToLanes={cardsToLanes}
+                            setCardsToLanes={setCardsToLanes}
+                            yourManaAmount={yourManaAmount}
+                            setYourManaAmount={setYourManaAmount}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <Card style={{ height: '75px' }}>
+                            <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                <Typography variant="h4" style={{ 
+                                    fontWeight: 'bold', 
+                                    fontFamily: 'Arial', 
+                                    marginTop: '7px',
+                                    color: opponentFontColor,
+                                }}>
+                                    <div>
+                                        {laneData.damage_by_player[playerNum]}
+                                    </div>
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
                 </Grid>
-                <Grid item>
-                    <LaneForOneSide 
-                        playersSide={true}
-                        laneData={laneData}
-                        playerNum={playerNum} 
-                        opponentNum={opponentNum} 
-                        selectedCard={selectedCard} 
-                        setSelectedCard={setSelectedCard}
-                        setLaneData={setLaneData} 
-                        allLanesData={allLanesData}
-                        handData={handData}
-                        setHandData={setHandData}
-                        setHoveredCard={setHoveredCard}
-                        cardsToLanes={cardsToLanes}
-                        setCardsToLanes={setCardsToLanes}
-                        yourManaAmount={yourManaAmount}
-                        setYourManaAmount={setYourManaAmount}
-                    />
+                <Grid item container direction="row" spacing={1} alignItems="center">
+                    <Grid item>
+                        <LaneForOneSide 
+                            playersSide={true}
+                            laneData={laneData}
+                            playerNum={playerNum} 
+                            opponentNum={opponentNum} 
+                            selectedCard={selectedCard} 
+                            setSelectedCard={setSelectedCard}
+                            setLaneData={setLaneData} 
+                            allLanesData={allLanesData}
+                            handData={handData}
+                            setHandData={setHandData}
+                            setHoveredCard={setHoveredCard}
+                            cardsToLanes={cardsToLanes}
+                            setCardsToLanes={setCardsToLanes}
+                            yourManaAmount={yourManaAmount}
+                            setYourManaAmount={setYourManaAmount}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <Card style={{ height: '75px' }}>
+                            <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                <Typography variant="h4" style={{ 
+                                    fontWeight: 'bold', 
+                                    fontFamily: 'Arial', 
+                                    marginTop: '7px',
+                                    color: playerFontColor,
+                                }}>
+                                    <div>
+                                        {laneData.damage_by_player[opponentNum]}
+                                    </div>
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
                 </Grid>
             </Grid>
         </LaneCard>
