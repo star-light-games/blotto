@@ -529,7 +529,7 @@ function Lane({
                         />
                     </Grid>
                     <Grid item>
-                        <Card style={{ height: '75px' }}>
+                        <Card style={{ height: '75px', width: '70px' }}>
                             <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="h4" style={{ 
                                     fontWeight: 'bold', 
@@ -566,7 +566,7 @@ function Lane({
                         />
                     </Grid>
                     <Grid item>
-                        <Card style={{ height: '75px' }}>
+                        <Card style={{ height: '75px', width: '70px' }}>
                             <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="h4" style={{ 
                                     fontWeight: 'bold', 
