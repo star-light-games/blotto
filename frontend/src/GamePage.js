@@ -131,6 +131,7 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
 }
 
 
+
 /*       <div 
 style={{
     border: isSelected ? '2px solid black' : 'none',
@@ -311,20 +312,68 @@ function ResetButton({ onReset, disabled }) {
     );
 }
 
-function LanesDisplay() {
+// function OldLanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
+//     return (
+//         <div style={{ display: 'flex'}}>
+//         {lanes.map((lane, index) => (
+//             <OldLane 
+//                 key={index} 
+//                 laneData={lane} 
+//                 playerNum={playerNum} 
+//                 opponentNum={opponentNum} 
+//                 selectedCard={selectedCard} 
+//                 setSelectedCard={setSelectedCard}
+//                 setLaneData={setLaneData} 
+//                 allLanesData={lanes}
+//                 handData={handData}
+//                 setHandData={setHandData}
+//                 setHoveredCard={setHoveredCard}
+//                 cardsToLanes={cardsToLanes}
+//                 setCardsToLanes={setCardsToLanes}
+//                 yourManaAmount={yourManaAmount}
+//                 setYourManaAmount={setYourManaAmount}
+//             />
+//         ))}
+//         </div>
+//     );
+// }
+
+function LanesDisplay({ 
+    lanes, 
+    playerNum, 
+    opponentNum, 
+    selectedCard, 
+    setSelectedCard, 
+    setLaneData, 
+    handData, 
+    setHandData, 
+    setHoveredCard, 
+    cardsToLanes, 
+    setCardsToLanes, 
+    yourManaAmount, 
+    setYourManaAmount 
+}) {
+    if (!lanes) return null;
     return (
       <Grid container direction="row" justifyContent="center" spacing={5}>
-        <Grid item>
-          <Lane />
-        </Grid>
-        {/* <Divider orientation="vertical" flexItem /> */}
-        <Grid item>
-          <Lane />
-        </Grid>
-        {/* <Divider orientation="vertical" flexItem /> */}
-        <Grid item>
-          <Lane />
-        </Grid>
+        {[0,1,2].map((i) => (<Grid item>
+          <Lane 
+            laneData={lanes[i]} 
+            playerNum={playerNum} 
+            opponentNum={opponentNum} 
+            selectedCard={selectedCard} 
+            setSelectedCard={setSelectedCard}
+            setLaneData={setLaneData} 
+            allLanesData={lanes}
+            handData={handData}
+            setHandData={setHandData}
+            setHoveredCard={setHoveredCard}
+            cardsToLanes={cardsToLanes}
+            setCardsToLanes={setCardsToLanes}
+            yourManaAmount={yourManaAmount}
+            setYourManaAmount={setYourManaAmount}
+          />
+        </Grid>))}
       </Grid>
     );
   }
@@ -336,46 +385,38 @@ function LaneForOneSide() {
         <Grid container direction="column" spacing={1}>
             <Grid item container direction="row" spacing={1}>
                 <Grid item>
-                        <Paper style={{ 
+                    <Paper style={{ 
                         height: `${boxSize}px`, 
                         width: `${boxSize}px`, 
                         textAlign: 'center', 
                         lineHeight: `${boxSize}px`
-                    }}>
-                    {/* Your character or other content here */}
-                    </Paper>                    
+                    }} />
                 </Grid>
                 <Grid item>
-                        <Paper style={{ 
+                    <Paper style={{ 
                         height: `${boxSize}px`, 
                         width: `${boxSize}px`, 
                         textAlign: 'center', 
                         lineHeight: `${boxSize}px`
-                    }}>
-                    {/* Your character or other content here */}
-                    </Paper>                    
+                    }} />
                 </Grid>                
             </Grid>
             <Grid item container direction="row" spacing={1}>
                 <Grid item>
-                        <Paper style={{ 
+                    <Paper style={{ 
                         height: `${boxSize}px`, 
                         width: `${boxSize}px`, 
                         textAlign: 'center', 
                         lineHeight: `${boxSize}px`
-                    }}>
-                    {/* Your character or other content here */}
-                    </Paper>                    
+                    }} />
                 </Grid>
                 <Grid item>
-                        <Paper style={{ 
+                    <Paper style={{ 
                         height: `${boxSize}px`, 
                         width: `${boxSize}px`, 
                         textAlign: 'center', 
                         lineHeight: `${boxSize}px`
-                    }}>
-                    {/* Your character or other content here */}
-                    </Paper>                    
+                    }} />
                 </Grid>                
             </Grid>            
         </Grid>
@@ -624,7 +665,21 @@ export default function GamePage({}) {
                     </Button>
                 </div>
 
-                <LanesDisplay />                
+                <LanesDisplay 
+                    lanes={laneData ? laneData : game.game_state.lanes} 
+                    playerNum={playerNum} 
+                    opponentNum={opponentNum} 
+                    selectedCard={selectedCard} 
+                    setSelectedCard={setSelectedCard}
+                    setLaneData={setLaneData}
+                    handData={handData ? handData : game.game_state.hands_by_player[playerNum]}
+                    setHandData={setHandData}
+                    setHoveredCard={setHoveredCard}
+                    cardsToLanes={cardsToLanes}
+                    setCardsToLanes={setCardsToLanes}
+                    yourManaAmount={yourManaAmount}
+                    setYourManaAmount={setYourManaAmount}                
+                />                
 
                 <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                     <DialogTitle>Confirm Action</DialogTitle>
