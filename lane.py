@@ -10,7 +10,7 @@ class Lane:
         self.lane_number = lane_number
 
 
-    def roll_turn(self, log: list[str]) -> None:
+    def roll_turn(self, log: list) -> None:
         done_attacking_by_player = {0: False, 1: False}
 
         for player_num in done_attacking_by_player:
@@ -24,7 +24,7 @@ class Lane:
                 character.roll_turn(log)
 
 
-    def resolve_combat(self, done_attacking_by_player: dict[int, bool], log: list[str], attacking_player: Optional[int] = None) -> None:
+    def resolve_combat(self, done_attacking_by_player: dict[int, bool], log: list, attacking_player: Optional[int] = None) -> None:
         if attacking_player is None:
             attacking_player = random.randint(0, 1)
         self.player_single_attack(attacking_player, done_attacking_by_player, log)
@@ -37,7 +37,7 @@ class Lane:
             self.resolve_combat(done_attacking_by_player, log, 1 - attacking_player)
 
 
-    def player_single_attack(self, attacking_player: int, done_attacking_by_player: dict[int, bool], log: list[str]):
+    def player_single_attack(self, attacking_player: int, done_attacking_by_player: dict[int, bool], log: list):
         characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack()]            
         
         if len(characters_that_can_attack) == 0:

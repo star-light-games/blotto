@@ -14,7 +14,7 @@ class GameState:
         self.hands_by_player = {0: self.player_0_hand, 1: self.player_1_hand}
         self.draw_piles_by_player = {0: self.player_0_draw_pile, 1: self.player_1_draw_pile}
         self.has_moved_by_player = {0: False, 1: False}
-        self.log: list[str] = []
+        self.log: list = []
         self.mana_by_player = {0: 0, 1: 0}
         self.decks_by_player = decks_by_player
         self.roll_turn()
@@ -31,7 +31,10 @@ class GameState:
             self.hands_by_player[player_num].append(self.draw_piles_by_player[player_num][0])
             self.draw_piles_by_player[player_num] = self.draw_piles_by_player[player_num][1:]
         else:
-            self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
+            self.log.append([f"{self.usernames_by_player[player_num]} has no cards left in their deck.",
+                             {
+                                 "event_type": "no_cards_left",
+                             }])
 
     def roll_turn(self):
         self.turn += 1
@@ -39,7 +42,10 @@ class GameState:
             lane.roll_turn(self.log)
         for player_num in [0, 1]:
             self.draw_card(player_num)
-        self.log.append(f"Turn {self.turn}")
+        self.log.append([f"Turn {self.turn}",
+                         {
+                             "event_type": "turn",
+                         }])
         for player_num in [0, 1]:
             self.mana_by_player[player_num] = self.turn
         self.has_moved_by_player = {0: False, 1: False}
@@ -49,7 +55,10 @@ class GameState:
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
         character = card.to_character(self.lanes[lane_number], player_num, self.usernames_by_player[player_num])
         self.lanes[lane_number].characters_by_player[player_num].append(character)
-        self.log.append(f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.")
+        self.log.append([f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.",
+                         {
+                             "event_type": "play_card",
+                         }])
 
     def all_players_have_moved(self) -> bool:
         return all([self.has_moved_by_player[player_num] for player_num in [0, 1]])
