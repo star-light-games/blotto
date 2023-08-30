@@ -12,6 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material';
+import Box from '@mui/material/Box';
 
 
 import { Card, CardContent, Grid, Typography } from '@mui/material';
@@ -51,7 +52,7 @@ function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
     );
 }
 
-function CharacterDisplay({ character, setHoveredCard, type }) {
+function CharacterDisplayOld({ character, setHoveredCard, type }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
     
@@ -78,6 +79,54 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
             <span>{character.template.name}</span>
             <span>{character.current_attack == null ? character.template.attack : character.current_attack}/{character.current_health == null ? character.template.health : character.current_health}</span>
         </div>
+    );
+}
+
+
+function CharacterDisplay({ character, setHoveredCard, type }) {
+    const theme = useTheme();
+    const isDarkMode = theme.palette.mode === 'dark';
+    
+    const backgroundColor = type === 'player' 
+        ? (isDarkMode ? '#226422' : '#d7ffd9')  // darker green for player in dark mode
+        : (isDarkMode ? '#995555' : '#ffd7d7'); // darker red for opponent in dark mode
+
+    return (
+        <Grid container style={{ 
+            width: '200px', 
+            height: '200px', 
+            border: '1px solid black',
+            borderRadius: '5px',
+            padding: '5px',
+            marginBottom: '5px',
+            backgroundColor: backgroundColor,
+        }}
+        onMouseEnter={e => {
+            setHoveredCard(character.template);
+        }}
+        >
+            <Grid item xs={12}>
+                <Box 
+                    display="flex" 
+                    justifyContent="space-between" 
+                    alignItems="center" 
+                    height="30px">
+                    <span>{character.template.name}</span>
+                    <span>{character.current_attack == null ? character.template.attack : character.current_attack}/{character.current_health == null ? character.template.health : character.current_health}</span>
+                </Box>
+            </Grid>
+            <Grid item xs={12}>
+                {/* Add your art here. For demonstration, I'm using a placeholder */}
+                <Box 
+                    display="flex" 
+                    justifyContent="center" 
+                    alignItems="center" 
+                    height="100%" 
+                    width="100%">
+                    <img src="/images/meelo.png" alt="character-art" style={{maxWidth: '100%', maxHeight: '100%'}} />
+                </Box>
+            </Grid>
+        </Grid>
     );
 }
 
