@@ -9,6 +9,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material';
 
 
@@ -121,7 +123,7 @@ function LaneCard({ children, selectedCard, onClick }) {
     );
   }
   
-  function Lane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, allLanesData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
+function OldLane({ laneData, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, allLanesData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
     const laneNumber = laneData.lane_number;
     
     const handleLaneCardClick = () => {
@@ -168,11 +170,11 @@ function LaneCard({ children, selectedCard, onClick }) {
   }
   
 
-function LanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
+function OldLanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
     return (
         <div style={{ display: 'flex'}}>
         {lanes.map((lane, index) => (
-            <Lane 
+            <OldLane 
                 key={index} 
                 laneData={lane} 
                 playerNum={playerNum} 
@@ -241,7 +243,7 @@ function ResetButton({ onReset, disabled }) {
         position: 'fixed',
         top: '400px',
         left: '10px',
-        width: '250px',
+        width: '300px',
         maxHeight: '300px',
         overflowY: 'auto',
         border: '1px solid black',
@@ -260,6 +262,114 @@ function ResetButton({ onReset, disabled }) {
     );
 }
 
+function LanesDisplay() {
+    return (
+      <Grid container direction="row" justifyContent="center" spacing={5}>
+        <Grid item>
+          <Lane />
+        </Grid>
+        {/* <Divider orientation="vertical" flexItem /> */}
+        <Grid item>
+          <Lane />
+        </Grid>
+        {/* <Divider orientation="vertical" flexItem /> */}
+        <Grid item>
+          <Lane />
+        </Grid>
+      </Grid>
+    );
+  }
+
+function LaneForOneSide() {
+    const boxSize = 200; // Change this to set the size of each box
+
+    return (
+        <Grid container direction="column" spacing={1}>
+            <Grid item container direction="row" spacing={1}>
+                <Grid item>
+                        <Paper style={{ 
+                        height: `${boxSize}px`, 
+                        width: `${boxSize}px`, 
+                        textAlign: 'center', 
+                        lineHeight: `${boxSize}px`
+                    }}>
+                    {/* Your character or other content here */}
+                    </Paper>                    
+                </Grid>
+                <Grid item>
+                        <Paper style={{ 
+                        height: `${boxSize}px`, 
+                        width: `${boxSize}px`, 
+                        textAlign: 'center', 
+                        lineHeight: `${boxSize}px`
+                    }}>
+                    {/* Your character or other content here */}
+                    </Paper>                    
+                </Grid>                
+            </Grid>
+            <Grid item container direction="row" spacing={1}>
+                <Grid item>
+                        <Paper style={{ 
+                        height: `${boxSize}px`, 
+                        width: `${boxSize}px`, 
+                        textAlign: 'center', 
+                        lineHeight: `${boxSize}px`
+                    }}>
+                    {/* Your character or other content here */}
+                    </Paper>                    
+                </Grid>
+                <Grid item>
+                        <Paper style={{ 
+                        height: `${boxSize}px`, 
+                        width: `${boxSize}px`, 
+                        textAlign: 'center', 
+                        lineHeight: `${boxSize}px`
+                    }}>
+                    {/* Your character or other content here */}
+                    </Paper>                    
+                </Grid>                
+            </Grid>            
+        </Grid>
+    )
+}
+
+function Lane() {
+
+    return (
+        <Grid container direction="column" spacing={3}>
+            <Grid item>
+                <LaneForOneSide />
+            </Grid>
+            <Grid item>
+                <LaneForOneSide />
+            </Grid>
+        </Grid>
+    )
+}
+
+
+//   function Lane() {
+//     const boxSize = 100; // Change this to set the size of each box
+  
+//     return (
+//       <Grid container spacing={1}>
+//         {/* Create a 4x2 grid */}
+//         {Array.from({ length: 6 }, (_, index) => (
+//           <Grid item key={index}>
+//             <Paper style={{ 
+//                 height: `${boxSize}px`, 
+//                 width: `${boxSize}px`, 
+//                 textAlign: 'center', 
+//                 lineHeight: `${boxSize}px`
+//               }}>
+//               {/* Your character or other content here */}
+//             </Paper>
+//           </Grid>
+//         ))}
+//       </Grid>
+//     );
+//   }
+  
 export default function GamePage({}) {
     const { gameId } = useParams();
     const location = useLocation();
@@ -434,7 +544,7 @@ export default function GamePage({}) {
                     </Card>
                 </div>}
                 <GameLog log={game.game_state.log} />
-                <LanesDisplay 
+                <OldLanesDisplay 
                     lanes={laneData ? laneData : game.game_state.lanes} 
                     playerNum={playerNum} 
                     opponentNum={opponentNum} 
@@ -464,6 +574,8 @@ export default function GamePage({}) {
                         </Typography>
                     </Button>
                 </div>
+
+                <LanesDisplay />                
 
                 <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                     <DialogTitle>Confirm Action</DialogTitle>
