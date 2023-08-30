@@ -26,7 +26,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
         variant="outlined" 
         style={{ 
             width: 250, 
-            height: 300, 
+            height: 250, 
             position: 'relative', 
             backgroundColor: cardBackgroundColor,  // Use the defined card background color
             overflow: 'hidden',

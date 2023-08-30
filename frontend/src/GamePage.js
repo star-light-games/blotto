@@ -83,6 +83,9 @@ function CharacterDisplayOld({ character, setHoveredCard, type }) {
 }
 
 
+const CHARACTER_BOX_SIZE = 175;
+
+
 function CharacterDisplay({ character, setHoveredCard, type }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
@@ -93,8 +96,8 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
 
     return (
         <Grid container style={{ 
-            width: '200px', 
-            height: '200px', 
+            width: `${CHARACTER_BOX_SIZE}px`, 
+            height: `${CHARACTER_BOX_SIZE}px`, 
             border: '1px solid black',
             borderRadius: '5px',
             padding: '5px',
@@ -142,8 +145,9 @@ onMouseEnter={e => e.currentTarget.style.border = '2px solid blue'}
 onMouseLeave={e => e.currentTarget.style.border = isSelected ? '2px solid black' : 'none'}
 > */
 
-function LaneCard({ children, selectedCard, onClick }) {
-    const outlineStyle = selectedCard ? { outline: '2px solid blue' } : {};
+function LaneCard({ children, selectedCard, onClick, doNotOutlineOnHover }) {
+    // const outlineStyle = selectedCard ? { outline: '2px solid blue' } : {};
+    const outlineStyle = {};
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
@@ -159,7 +163,7 @@ function LaneCard({ children, selectedCard, onClick }) {
           ...outlineStyle,
         }}
         onMouseEnter={e => {
-          if (selectedCard) {
+          if (selectedCard && !doNotOutlineOnHover) {
             e.currentTarget.style.outline = '2px solid blue';
           }
         }}
@@ -312,32 +316,6 @@ function ResetButton({ onReset, disabled }) {
     );
 }
 
-// function OldLanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelectedCard, setLaneData, handData, setHandData, setHoveredCard, cardsToLanes, setCardsToLanes, yourManaAmount, setYourManaAmount }) {
-//     return (
-//         <div style={{ display: 'flex'}}>
-//         {lanes.map((lane, index) => (
-//             <OldLane 
-//                 key={index} 
-//                 laneData={lane} 
-//                 playerNum={playerNum} 
-//                 opponentNum={opponentNum} 
-//                 selectedCard={selectedCard} 
-//                 setSelectedCard={setSelectedCard}
-//                 setLaneData={setLaneData} 
-//                 allLanesData={lanes}
-//                 handData={handData}
-//                 setHandData={setHandData}
-//                 setHoveredCard={setHoveredCard}
-//                 cardsToLanes={cardsToLanes}
-//                 setCardsToLanes={setCardsToLanes}
-//                 yourManaAmount={yourManaAmount}
-//                 setYourManaAmount={setYourManaAmount}
-//             />
-//         ))}
-//         </div>
-//     );
-// }
-
 function LanesDisplay({ 
     lanes, 
     playerNum, 
@@ -378,62 +356,182 @@ function LanesDisplay({
     );
   }
 
-function LaneForOneSide() {
-    const boxSize = 200; // Change this to set the size of each box
+function LaneForOneSide({ 
+    playersSide,
+    laneData, 
+    playerNum, 
+    opponentNum, 
+    selectedCard, 
+    setSelectedCard, 
+    setLaneData,
+    allLanesData, 
+    handData, 
+    setHandData, 
+    setHoveredCard, 
+    cardsToLanes, 
+    setCardsToLanes, 
+    yourManaAmount, 
+    setYourManaAmount,
+}) {
+    const laneNumber = laneData.lane_number;
+
+    const charactersToRender = laneData.characters_by_player[playersSide ? playerNum : opponentNum]
+
+    // console.log(laneData)
+    // console.log(laneData.characters_by_player[playersSide])
+
+
+    const firstCharacterToRender = charactersToRender?.length > 0 ? charactersToRender?.[0] : null
+    const secondCharacterToRender = charactersToRender?.length > 1 ? charactersToRender?.[1] : null
+    const thirdCharacterToRender = charactersToRender?.length > 2 ? charactersToRender?.[2] : null
+    const fourthCharacterToRender = charactersToRender?.length > 3 ? charactersToRender?.[3] : null
+
+    const boxSize = CHARACTER_BOX_SIZE; // Change this to set the size of each box
 
     return (
-        <Grid container direction="column" spacing={1}>
-            <Grid item container direction="row" spacing={1}>
-                <Grid item>
-                    <Paper style={{ 
-                        height: `${boxSize}px`, 
-                        width: `${boxSize}px`, 
-                        textAlign: 'center', 
-                        lineHeight: `${boxSize}px`
-                    }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '10px' }}>
+                <Grid container direction="column" spacing={1}>
+                    <Grid item container direction="row" spacing={1}>
+                        <Grid item>
+                            {firstCharacterToRender ? <CharacterDisplay
+                                character={firstCharacterToRender}
+                                setHoveredCard={setHoveredCard}
+                                type={playersSide ? 'player' : 'opponent'}
+                            /> : <Paper style={{ 
+                                height: `${boxSize}px`, 
+                                width: `${boxSize}px`, 
+                                textAlign: 'center', 
+                                lineHeight: `${boxSize}px`
+                            }} />}
+                        </Grid>
+                        <Grid item>
+                            {secondCharacterToRender ? <CharacterDisplay
+                                character={secondCharacterToRender}
+                                setHoveredCard={setHoveredCard}
+                                type={playersSide ? 'player' : 'opponent'}
+                            /> : <Paper style={{ 
+                                height: `${boxSize}px`, 
+                                width: `${boxSize}px`, 
+                                textAlign: 'center', 
+                                lineHeight: `${boxSize}px`
+                            }} />}
+                        </Grid>                
+                    </Grid>
+                    <Grid item container direction="row" spacing={1}>
+                        <Grid item>
+                            {thirdCharacterToRender ? <CharacterDisplay
+                                character={thirdCharacterToRender}
+                                setHoveredCard={setHoveredCard}
+                                type={playersSide ? 'player' : 'opponent'}
+                            /> : <Paper style={{ 
+                                height: `${boxSize}px`, 
+                                width: `${boxSize}px`, 
+                                textAlign: 'center', 
+                                lineHeight: `${boxSize}px`
+                            }} />}
+                        </Grid>
+                        <Grid item>
+                            {fourthCharacterToRender ? <CharacterDisplay
+                                character={fourthCharacterToRender}
+                                setHoveredCard={setHoveredCard}
+                                type={playersSide ? 'player' : 'opponent'}
+                            /> : <Paper style={{ 
+                                height: `${boxSize}px`, 
+                                width: `${boxSize}px`, 
+                                textAlign: 'center', 
+                                lineHeight: `${boxSize}px`
+                            }} />}
+                        </Grid>                
+                    </Grid>            
                 </Grid>
-                <Grid item>
-                    <Paper style={{ 
-                        height: `${boxSize}px`, 
-                        width: `${boxSize}px`, 
-                        textAlign: 'center', 
-                        lineHeight: `${boxSize}px`
-                    }} />
-                </Grid>                
-            </Grid>
-            <Grid item container direction="row" spacing={1}>
-                <Grid item>
-                    <Paper style={{ 
-                        height: `${boxSize}px`, 
-                        width: `${boxSize}px`, 
-                        textAlign: 'center', 
-                        lineHeight: `${boxSize}px`
-                    }} />
-                </Grid>
-                <Grid item>
-                    <Paper style={{ 
-                        height: `${boxSize}px`, 
-                        width: `${boxSize}px`, 
-                        textAlign: 'center', 
-                        lineHeight: `${boxSize}px`
-                    }} />
-                </Grid>                
-            </Grid>            
-        </Grid>
+        </div>
     )
 }
 
-function Lane() {
+function Lane({ 
+    laneData, 
+    playerNum, 
+    opponentNum, 
+    selectedCard, 
+    setSelectedCard, 
+    setLaneData, 
+    allLanesData, 
+    handData, 
+    setHandData, 
+    setHoveredCard, 
+    cardsToLanes, 
+    setCardsToLanes, 
+    yourManaAmount, 
+    setYourManaAmount, 
+}) {
+
+    const laneNumber = laneData.lane_number;
+
+    const handleLaneCardClick = () => {
+      if (selectedCard && allLanesData[laneNumber].characters_by_player[playerNum].length < 4) {
+        const newLaneData = JSON.parse(JSON.stringify(allLanesData));
+        newLaneData[laneNumber].characters_by_player[playerNum].push(selectedCard);
+        setLaneData(newLaneData);
+  
+        const newHandData = handData.filter(card => card.id !== selectedCard.id);
+        setHandData(newHandData);
+  
+        setYourManaAmount(yourManaAmount - selectedCard.template.cost);
+  
+        const newCardsToLanes = { ...cardsToLanes, [selectedCard.id]: laneNumber };
+        setCardsToLanes(newCardsToLanes);
+  
+        setSelectedCard(null);
+      }
+    };
 
     return (
-        <Grid container direction="column" spacing={3}>
-            <Grid item>
-                <LaneForOneSide />
+        <LaneCard 
+            selectedCard={selectedCard} 
+            onClick={handleLaneCardClick} 
+            doNotOutlineOnHover={allLanesData[laneNumber].characters_by_player[playerNum].length >= 4}
+        >
+            <Grid container direction="column" spacing={1}>
+                <Grid item>
+                    <LaneForOneSide 
+                        playersSide={false}
+                        laneData={laneData}
+                        playerNum={playerNum} 
+                        opponentNum={opponentNum} 
+                        selectedCard={selectedCard} 
+                        setSelectedCard={setSelectedCard}
+                        setLaneData={setLaneData} 
+                        allLanesData={allLanesData}
+                        handData={handData}
+                        setHandData={setHandData}
+                        setHoveredCard={setHoveredCard}
+                        cardsToLanes={cardsToLanes}
+                        setCardsToLanes={setCardsToLanes}
+                        yourManaAmount={yourManaAmount}
+                        setYourManaAmount={setYourManaAmount}
+                    />
+                </Grid>
+                <Grid item>
+                    <LaneForOneSide 
+                        playersSide={true}
+                        laneData={laneData}
+                        playerNum={playerNum} 
+                        opponentNum={opponentNum} 
+                        selectedCard={selectedCard} 
+                        setSelectedCard={setSelectedCard}
+                        setLaneData={setLaneData} 
+                        allLanesData={allLanesData}
+                        handData={handData}
+                        setHandData={setHandData}
+                        setHoveredCard={setHoveredCard}
+                        cardsToLanes={cardsToLanes}
+                        setCardsToLanes={setCardsToLanes}
+                        yourManaAmount={yourManaAmount}
+                        setYourManaAmount={setYourManaAmount}
+                    />
+                </Grid>
             </Grid>
-            <Grid item>
-                <LaneForOneSide />
-            </Grid>
-        </Grid>
+        </LaneCard>
     )
 }
 
@@ -634,7 +732,7 @@ export default function GamePage({}) {
                     </Card>
                 </div>}
                 <GameLog log={game.game_state.log} />
-                <OldLanesDisplay 
+                {/* <OldLanesDisplay 
                     lanes={laneData ? laneData : game.game_state.lanes} 
                     playerNum={playerNum} 
                     opponentNum={opponentNum} 
@@ -648,23 +746,7 @@ export default function GamePage({}) {
                     setCardsToLanes={setCardsToLanes}
                     yourManaAmount={yourManaAmount}
                     setYourManaAmount={setYourManaAmount}
-                />
-                <HandDisplay 
-                    cards={handData ? handData : game.game_state.hands_by_player[playerNum]} 
-                    selectedCard={selectedCard} 
-                    setSelectedCard={setSelectedCard} 
-                    setHoveredCard={setHoveredCard}
-                    yourManaAmount={yourManaAmount}
-                />
-                <div style={{ display: 'flex', justifyContent: 'center', margin: '20px' }}>
-                    <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />
-                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog} disabled={submittedMove || gameOver}>
-                        <Typography variant="h6">
-                            Submit
-                        </Typography>
-                    </Button>
-                </div>
-
+                /> */}
                 <LanesDisplay 
                     lanes={laneData ? laneData : game.game_state.lanes} 
                     playerNum={playerNum} 
@@ -679,8 +761,31 @@ export default function GamePage({}) {
                     setCardsToLanes={setCardsToLanes}
                     yourManaAmount={yourManaAmount}
                     setYourManaAmount={setYourManaAmount}                
-                />                
-
+                />
+                <HandDisplay 
+                    cards={handData ? handData : game.game_state.hands_by_player[playerNum]} 
+                    selectedCard={selectedCard} 
+                    setSelectedCard={setSelectedCard} 
+                    setHoveredCard={setHoveredCard}
+                    yourManaAmount={yourManaAmount}
+                />
+                <div
+                style={{
+                    position: 'fixed', 
+                    bottom: '20px', 
+                    right: '20px', 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center'                 
+                }}
+                >
+                    <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />
+                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog} disabled={submittedMove || gameOver}>
+                        <Typography variant="h6">
+                            Submit
+                        </Typography>
+                    </Button>
+                </div>
                 <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                     <DialogTitle>Confirm Action</DialogTitle>
                     <DialogContent>
