@@ -1,6 +1,7 @@
 import { Card, CardContent, Typography, Box, useTheme } from '@mui/material';
+import { snakeCase } from './utils';
 
-function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight }) {
+function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, displayArt }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
@@ -26,7 +27,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
         variant="outlined" 
         style={{ 
             width: 250, 
-            height: 250, 
+            height: displayArt ? 400 : 250, 
             position: 'relative', 
             backgroundColor: cardBackgroundColor,  // Use the defined card background color
             overflow: 'hidden',
@@ -39,6 +40,18 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
             <Typography variant="h6">{card.cost}</Typography>
             </Box>
 
+            {displayArt ? <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center" 
+                height="100%" 
+                width="100%">
+                <img 
+                    src={`/images/${snakeCase(card.name)}.png`} 
+                    alt={`${snakeCase(card.name)}-character-art`} 
+                    style={{maxWidth: '100%', maxHeight: '100%'}} 
+                />
+            </Box> : null}
             <Box mt={2}>
             <Typography variant="body2" color="textSecondary">
                 {card.creatureTypes.join(', ')}

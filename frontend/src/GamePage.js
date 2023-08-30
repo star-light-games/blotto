@@ -13,7 +13,7 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
-
+import { snakeCase } from './utils';
 
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 
@@ -126,7 +126,11 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
                     alignItems="center" 
                     height="100%" 
                     width="100%">
-                    <img src="/images/meelo.png" alt="character-art" style={{maxWidth: '100%', maxHeight: '100%'}} />
+                    <img 
+                        src={`/images/${snakeCase(character.template.name)}.png`} 
+                        alt={`${snakeCase(character.template.name)}-character-art`} 
+                        style={{maxWidth: '100%', maxHeight: '100%'}} 
+                    />
                 </Box>
             </Grid>
         </Grid>
@@ -261,6 +265,7 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
                         onMouseEnter={() => setHoveredCard(card.template)} 
                         onCardClick={yourManaAmount >= card.template.cost ? () => setSelectedCard(card) : () => {}} 
                         doNotBorderOnHighlight={yourManaAmount < card.template.cost}
+                        displayArt={false}
                     />
                 </div>
             ))}
@@ -295,8 +300,8 @@ function ResetButton({ onReset, disabled }) {
 
     const containerStyle = {
         position: 'fixed',
-        top: '400px',
-        left: '10px',
+        bottom: '20px', 
+        left: '20px', 
         width: '300px',
         maxHeight: '300px',
         overflowY: 'auto',
@@ -716,7 +721,7 @@ export default function GamePage({}) {
     return (
         <div style={{ display: 'flex' }}>
             <div style={{ flex: 1 }}>
-                {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} />}
+                {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} displayArt />}
             </div>
             <div style={{ flex: 3 }}>
                 <div  style={{margin:'10px'}} >
