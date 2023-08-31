@@ -38,8 +38,9 @@ class GameState:
 
     def roll_turn(self):
         self.turn += 1
+        animations = []
         for lane in self.lanes:
-            lane.roll_turn(self.log)
+            lane.roll_turn(self.log, animations, self)
         for player_num in [0, 1]:
             self.draw_card(player_num)
         self.log.append([f"Turn {self.turn}",

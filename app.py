@@ -15,7 +15,6 @@ from utils import generate_unique_id
 app = Flask(__name__)
 CORS(app)
 
-
 def recurse_to_json(obj):
     if isinstance(obj, dict):
         return {k: recurse_to_json(v) for k, v in obj.items()}

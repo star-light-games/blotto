@@ -4,6 +4,7 @@ from utils import generate_unique_id
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from lane import Lane
+    from game_state import GameState
 
 
 class Character:
@@ -132,21 +133,46 @@ class Character:
         self.new = False
         if self.has_ability('StartOfTurnFullHeal'):
             self.current_health = self.template.health
-            log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
+            log.append([f"{self.owner_username}'s {self.template.name} healed to full health.",
+                        {
+                            "event_type": "character_heal",
+                            "character_id": self.id,
+                            "character_health_post_heal": self.current_health,
+                            "player": self.owner_number,
+                            "lane_number": self.lane.lane_number,
+                        }])
         
         if self.shackled_turns > 0:
-            log.append(f"{self.owner_username}'s {self.template.name} is shackled for {self.shackled_turns} more turns.")
+            log.append([f"{self.owner_username}'s {self.template.name} is shackled for {self.shackled_turns} more turns.",
+                        {
+                            "event_type": "character_shackled",
+                            "character_id": self.id,
+                            "character_shackled_turns": self.shackled_turns,
+                            "player": self.owner_number,
+                            "lane_number": self.lane.lane_number,
+                        }])
             self.shackled_turns -= 1
 
 
 
-    def do_on_reveal(self, log: list):
+    def do_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
         if self.new:
             if self.has_ability('OnRevealShackle'):
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
                 if random_enemy_character is not None:
                     random_enemy_character.shackled_turns += 1
                     log.append(f"{self.owner_username}'s {self.template.name} shackled {random_enemy_character.owner_username}'s {random_enemy_character.template.name}.")
+                    animations.append([
+                        {
+                            "event_type": "character_shackle",
+                            "character_id": self.id,
+                            "shackled_character_id": random_enemy_character.id,
+                            "character_shackled_turns": random_enemy_character.shackled_turns,
+                            "player": self.owner_number,
+                            "lane_number": self.lane.lane_number,
+                        },
+                        game_state.to_json(),
+                    ])
 
 
     def to_json(self):

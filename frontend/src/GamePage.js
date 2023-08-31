@@ -333,7 +333,11 @@ function ResetButton({ onReset, disabled }) {
     return (
         <div style={containerStyle}>
             {log.map((entry, index) => (
+<<<<<<< Updated upstream
                 <p key={index}>{entryFormater(entry)}</p>
+=======
+                <p key={index}>{entry[0]}</p>
+>>>>>>> Stashed changes
             ))}
         </div>
     );
@@ -399,9 +403,6 @@ function LaneForOneSide({
     const laneNumber = laneData.lane_number;
 
     const charactersToRender = laneData.characters_by_player[playersSide ? playerNum : opponentNum]
-
-    // console.log(laneData)
-    // console.log(laneData.characters_by_player[playersSide])
 
 
     const firstCharacterToRender = charactersToRender?.length > 0 ? charactersToRender?.[0] : null
@@ -654,8 +655,6 @@ export default function GamePage({}) {
 
     const winner = lane1winner + lane2winner + lane3winner > 1;
 
-
-    console.log(cardsToLanes);
 
     const handleReset = () => {
         setLaneData(null);
