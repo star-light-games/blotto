@@ -19,8 +19,6 @@ import { URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
-import TopBar from './TopBar.js';
-
 
 function DeckBuilder({ cards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
@@ -162,17 +160,20 @@ function DeckBuilder({ cards }) {
 
   return (
     <Container>
-      <Typography variant="h5">Deck Builder</Typography>
-      
-      
-  <TextField 
-    label="User Name" 
-    variant="outlined" 
-    margin="normal"
-    value={userName}
-    onChange={(e) => setUserName(e.target.value)}
-  />
+      <Card>
+          <CardContent>
+            <Typography variant="h5">Deck Builder</Typography>
+            <TextField 
+                label="User Name" 
+                variant="outlined" 
+                margin="normal"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+              />
+            </CardContent>
+        </Card>
 
+  <br></br>
   <Card>
     <CardContent>
     <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Created Decks:</Typography>

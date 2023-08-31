@@ -10,7 +10,7 @@ function DarkModeToggle() {
   
     return (
       <div>
-        <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+        <span>{isDarkMode ? "Dark Mode" : "Light Mode" }</span>
         <Switch checked={isDarkMode} onChange={toggleDarkMode} />
       </div>
     );

@@ -14,8 +14,8 @@ import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import { snakeCase } from './utils';
-
 import { Card, CardContent, Grid, Typography } from '@mui/material';
+import battleOld from './battleOld.webp';
 
 const playerColor = (isDarkMode) => isDarkMode ? '#226422' : '#d7ffd9'
 const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
@@ -308,21 +308,32 @@ function ResetButton({ onReset, disabled }) {
     const containerStyle = {
         position: 'fixed',
         bottom: '20px', 
-        left: '20px', 
-        width: '300px',
+        left: '0px', 
+        width: '250px',
         maxHeight: '300px',
         overflowY: 'auto',
         border: '1px solid black',
         borderRadius: '5px',
-        padding: '10px',
+        padding: '7px',
         backgroundColor: logBackgroundColor,
         color: logTextColor
     };
+    log.map((entry, index) => (console.log(entry)));
+
+    const entryFormater = (entry) => {
+        const entryText = entry[0];
+        const entryDetails = entry[1];
+        const entryType = entryDetails?.event_type;
+        if (entryType === 'turn'){
+            return <Typography variant='h6'> {entryText} </Typography>;
+        }
+        return entryText;
+    }
 
     return (
         <div style={containerStyle}>
             {log.map((entry, index) => (
-                <p key={index}>{entry}</p>
+                <p key={index}>{entryFormater(entry)}</p>
             ))}
         </div>
     );
@@ -766,12 +777,20 @@ export default function GamePage({}) {
     };
 
     return (
-        <div style={{ display: 'flex' }}>
+        <div style={{ 
+            display: 'flex',
+            backgroundImage: `url(${battleOld})`,
+            backgroundSize: 'cover',  // Cover the entire container
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center center',
+            height: '100vh',  // 100% of the viewport height
+            width: '100%',  // 100% of the viewport width
+            }}>
             <div style={{ flex: 1 }}>
                 {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} displayArt />}
             </div>
-            <div style={{ flex: 3 }}>
-                <div  style={{margin:'10px'}} >
+            <div style={{ flex: 10 }}>
+                <div  style={{margin:'1px'}} >
                     <GameInfo game={game} playerNum={playerNum} yourManaAmount={yourManaAmount} opponentManaAmount={opponentManaAmount}/>
                 </div>
                 {gameOver && <div style={{margin: '10px'}}>

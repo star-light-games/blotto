@@ -11,6 +11,7 @@ import GamePage from './GamePage';
 import ThemeProvider from './ThemeProvider';
 import { CssBaseline } from '@mui/material';
 import { DarkModeContext, DarkModeProvider } from './DarkModeContext';
+import oldPainting from './oldPainting.jpg';
 
 import TopBar from './TopBar.js';
 
@@ -60,6 +61,14 @@ function CardPoolPage() {
   }
 
   return (
+
+    <div 
+    style={{ 
+      backgroundImage: `url(${oldPainting})`, 
+      backgroundSize: 'cover', 
+      backgroundPosition: 'left top', 
+      backgroundRepeat: 'no-repeat', }}
+      >
     <Container>
       <Snackbar 
         open={toastOpen} 
@@ -80,6 +89,7 @@ function CardPoolPage() {
       </Grid> */}
       <DeckBuilder cards={cards}/>
     </Container>
+    </div>
   );
 }
 
