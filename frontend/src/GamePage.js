@@ -272,7 +272,7 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
                         onMouseEnter={() => setHoveredCard(card.template)} 
                         onCardClick={yourManaAmount >= card.template.cost ? () => setSelectedCard(card) : () => {}} 
                         doNotBorderOnHighlight={yourManaAmount < card.template.cost}
-                        displayArt={false}
+                        displayArt={true}
                     />
                 </div>
             ))}
