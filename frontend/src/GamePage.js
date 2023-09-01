@@ -104,6 +104,8 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
         ? playerColor(isDarkMode)  // darker green for player in dark mode
         : opponentColor(isDarkMode); // darker red for opponent in dark mode
 
+    const isDead = character.current_health <= 0;
+
     return (
         <Grid container style={{ 
             width: `${CHARACTER_BOX_SIZE}px`, 
@@ -113,11 +115,29 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
             padding: '5px',
             marginBottom: '5px',
             backgroundColor: backgroundColor,
+            position: 'relative' // Relative positioning to overlay skull
         }}
         onMouseEnter={e => {
             setHoveredCard(character.template);
         }}
         >
+            {isDead && (
+                <img 
+                    src={'/images/skull.png'} 
+                    alt="skull-icon" 
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 2,
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        filter: 'invert(1)',
+                    }}
+                />
+            )}
             <Grid item xs={12}>
                 <Box 
                     display="flex" 
@@ -129,7 +149,6 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
                 </Box>
             </Grid>
             <Grid item xs={12}>
-                {/* Add your art here. For demonstration, I'm using a placeholder */}
                 <Box 
                     display="flex" 
                     justifyContent="center" 
@@ -145,9 +164,7 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
             </Grid>
         </Grid>
     );
-};
-
-
+}
 
 /*       <div 
 style={{
