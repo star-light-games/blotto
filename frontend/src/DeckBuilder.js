@@ -58,6 +58,7 @@ function DeckBuilder({ cards }) {
     })
     .then(data => {
       setHostGameId(data.gameId); // Display the received gameId
+      navigate(`/game/${data.gameId}?playerNum=0`);
     })
     .catch(error => {
       setErrorMessage(error.message);
