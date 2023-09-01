@@ -61,6 +61,18 @@ class Lane:
             defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
             character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log, animations, game_state)
 
+        dying_characters = [character for character in self.characters_by_player[0] + self.characters_by_player[1] if character.current_health <= 0]
+
+        for dying_character in dying_characters:
+            animations.append([{
+                "event": "character_dies", 
+                "dying_character_id": dying_character.id,
+                "dying_character_lane_number": self.lane_number,
+                "dying_character_player": dying_character.owner_number,
+                "dying_character_index": [c.id for c in self.characters_by_player[dying_character.owner_number]].index(dying_character.id),
+            }, game_state.to_json()])
+
+
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]
 

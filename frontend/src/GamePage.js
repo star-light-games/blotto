@@ -17,6 +17,8 @@ import { snakeCase } from './utils';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import battleOld from './battleOld.webp';
 import './arrow.css';
+import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { dark } from '@mui/material/styles/createPalette';
 
 const playerColor = (isDarkMode) => isDarkMode ? '#226422' : '#d7ffd9'
 const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
@@ -652,8 +654,22 @@ export default function GamePage({}) {
 
     const [yourManaAmount, setYourManaAmount] = useState(1);
 
-    const animationDelay = 3000;
+    const BASE_ANIMATION_DELAY = 2500;
+    const [animationDelay, setAnimationDelay] = useState(2500);
 
+    const SPEEDS = [
+        { label: '0.5x', value: BASE_ANIMATION_DELAY * 2 },
+        { label: '1x', value: BASE_ANIMATION_DELAY },
+        { label: '1.5x', value: BASE_ANIMATION_DELAY / 1.5 },
+        { label: '2x', value: BASE_ANIMATION_DELAY / 2 },
+        { label: '4x', value: BASE_ANIMATION_DELAY / 4 },
+        { label: '8x', value: BASE_ANIMATION_DELAY / 8 },
+        { label: '16x', value: BASE_ANIMATION_DELAY / 16 },
+      ];
+      
+      const handleChange = (event) => {
+        setAnimationDelay(event.target.value);
+      };
     // Keys are [laneNumber][playerNum][characterNum]
     const characterRefs = useRef({
         0: {
@@ -762,7 +778,7 @@ export default function GamePage({}) {
       
         setTimeout(() => {
           document.body.removeChild(arrow);
-        }, animationDelay);
+        }, animationDelay * 0.67);
 
         console.log('Animation successfully triggered!')
     };
@@ -809,7 +825,7 @@ export default function GamePage({}) {
       
         setTimeout(() => {
           document.body.removeChild(arrow);
-        }, animationDelay);
+        }, animationDelay * 0.67);
 
         console.log('Animation successfully triggered!')
     }
@@ -822,6 +838,7 @@ export default function GamePage({}) {
     const lane2winner = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
     const lane3winner = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
 
+    const theme = useTheme();
     const winner = lane1winner + lane2winner + lane3winner > 1;
 
     const triggerAnimations = async (finalGameState, animationQueue) => {
@@ -854,6 +871,7 @@ export default function GamePage({}) {
       
           // Update the game state
         }
+        await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
         setGameState(finalGameState);
       };
 
@@ -1019,6 +1037,31 @@ export default function GamePage({}) {
                     </Card>
                 </div>}
                 <GameLog log={gameState.log} />
+                <FormControl style={{
+                    margin: '1px',
+                    minWidth: 120,
+                    position: 'fixed',
+                    bottom: '20px',
+                    left: '270px',
+                    backgroundColor: darkMode ? '#555' : '#f5f5f5',
+                }}>
+                    <InputLabel id="animation-speed-label">Animation Speed</InputLabel>
+                    <Select
+                        labelId="animation-speed-label"
+                        id="animation-speed-select"
+                        value={animationDelay}
+                        onChange={handleChange}
+                    >
+                        {SPEEDS.map((speed, index) => (
+                        <MenuItem key={index} value={speed.value}>
+                            {speed.label}
+                        </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <Select>
+                    <MenuItem value={BASE_ANIMATION_DELAY} onClick={() => setAnimationDelay(BASE_ANIMATION_DELAY)}>Normal</MenuItem>
+                </Select>
                 {/* <OldLanesDisplay 
                     lanes={laneData ? laneData : gameState.lanes} 
                     playerNum={playerNum} 
