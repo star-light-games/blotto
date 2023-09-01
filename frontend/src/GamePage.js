@@ -654,9 +654,14 @@ export default function GamePage({}) {
 
     const [yourManaAmount, setYourManaAmount] = useState(1);
 
+    const ANIMATION_DELAY_STORAGE_KEY = 'animationDelay'
     const BASE_ANIMATION_DELAY = 2500;
-    const [animationDelay, setAnimationDelay] = useState(2500);
-
+    const [animationDelay, setAnimationDelay] = useState(() => {
+        // Try to get the value from localStorage or fallback to the default value
+        const storedValue = localStorage.getItem(ANIMATION_DELAY_STORAGE_KEY);
+        return storedValue ? parseInt(storedValue, 10) : BASE_ANIMATION_DELAY;
+      });
+   
     const SPEEDS = [
         { label: '0.5x', value: BASE_ANIMATION_DELAY * 2 },
         { label: '1x', value: BASE_ANIMATION_DELAY },
@@ -667,9 +672,18 @@ export default function GamePage({}) {
         { label: '16x', value: BASE_ANIMATION_DELAY / 16 },
       ];
       
-      const handleChange = (event) => {
-        setAnimationDelay(event.target.value);
+      const handleAnimationDelayChange = (event) => {
+        const newDelay = event.target.value;
+        setAnimationDelay(newDelay);
+        localStorage.setItem(ANIMATION_DELAY_STORAGE_KEY, newDelay);
       };
+
+      useEffect(() => {
+        const storedValue = localStorage.getItem(ANIMATION_DELAY_STORAGE_KEY);
+        if (storedValue) {
+          setAnimationDelay(parseFloat(storedValue, 10));
+        }
+      }, []);      
     // Keys are [laneNumber][playerNum][characterNum]
     const characterRefs = useRef({
         0: {
@@ -1043,14 +1057,17 @@ export default function GamePage({}) {
                     position: 'fixed',
                     bottom: '20px',
                     left: '270px',
-                    backgroundColor: darkMode ? '#555' : '#f5f5f5',
                 }}>
                     <InputLabel id="animation-speed-label">Animation Speed</InputLabel>
                     <Select
                         labelId="animation-speed-label"
                         id="animation-speed-select"
                         value={animationDelay}
-                        onChange={handleChange}
+                        onChange={handleAnimationDelayChange}
+                        style={{
+                            marginTop: theme.spacing(1),
+                            backgroundColor: darkMode ? '#555' : '#f5f5f5',
+                        }}
                     >
                         {SPEEDS.map((speed, index) => (
                         <MenuItem key={index} value={speed.value}>
