@@ -678,7 +678,7 @@ export default function GamePage({}) {
     const [yourManaAmount, setYourManaAmount] = useState(1);
 
     const ANIMATION_DELAY_STORAGE_KEY = 'animationDelay'
-    const BASE_ANIMATION_DELAY = 2500;
+    const BASE_ANIMATION_DELAY = 1600;
     const [animationDelay, setAnimationDelay] = useState(() => {
         // Try to get the value from localStorage or fallback to the default value
         const storedValue = localStorage.getItem(ANIMATION_DELAY_STORAGE_KEY);
