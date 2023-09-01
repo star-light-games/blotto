@@ -861,7 +861,7 @@ export default function GamePage({}) {
         }
 
         const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - CHARACTER_BOX_SIZE/2 - 18;
-        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - CHARACTER_BOX_SIZE/2 + (event.attacking_player ? -20 : 8);
+        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - CHARACTER_BOX_SIZE/2 + (event.attacking_player !== playerNum ? -20 : 8);
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Create an arrow element and set its position and rotation
@@ -1018,7 +1018,7 @@ export default function GamePage({}) {
                 clearInterval(pollingInterval);
             }
         };
-    }, [submittedMove, !!gameState]); // Depend on submittedMove, so the effect re-runs if its value changes
+    }, [submittedMove || !gameState]); // Depend on submittedMove, so the effect re-runs if its value changes
 
     useEffect(() => {
         // Fetch the game data from your backend.
