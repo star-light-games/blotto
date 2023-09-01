@@ -575,7 +575,7 @@ function Lane({
                                     fontWeight: 'bold', 
                                     fontFamily: 'Arial', 
                                     marginTop: '7px',
-                                    color: opponentFontColor,
+                                    color: playerFontColor,
                                 }}>
                                     <div>
                                         {laneData.damage_by_player[playerNum]}
@@ -613,7 +613,7 @@ function Lane({
                                     fontWeight: 'bold', 
                                     fontFamily: 'Arial', 
                                     marginTop: '7px',
-                                    color: playerFontColor,
+                                    color: opponentFontColor,
                                 }}>
                                     <div>
                                         {laneData.damage_by_player[opponentNum]}
@@ -676,6 +676,7 @@ export default function GamePage({}) {
     const [submittedMove, setSubmittedMove] = useState(false);
 
     const [yourManaAmount, setYourManaAmount] = useState(1);
+    const [animating, setAnimating] = useState(false);
 
     const ANIMATION_DELAY_STORAGE_KEY = 'animationDelay'
     const BASE_ANIMATION_DELAY = 1600;
@@ -893,8 +894,31 @@ export default function GamePage({}) {
     const lane2winner = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
     const lane3winner = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
 
+    const lane1tied = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] === game?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
+    const lane2tied = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] === game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
+    const lane3tied = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] === game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
+
+    const totalFriendlyDamage = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] + gameState?.lanes?.[1]?.damage_by_player?.[playerNum] + gameState?.lanes?.[2]?.damage_by_player?.[playerNum];
+    const totalEnemyDamage = gameState?.lanes?.[0]?.damage_by_player?.[opponentNum] + gameState?.lanes?.[1]?.damage_by_player?.[opponentNum] + gameState?.lanes?.[2]?.damage_by_player?.[opponentNum];
+
     const theme = useTheme();
-    const winner = lane1winner + lane2winner + lane3winner > 1;
+    const numLanesWon = lane1winner + lane2winner + lane3winner;
+    const numLanesTied = lane1tied + lane2tied + lane3tied;
+    const numLanesLost = 3 - numLanesWon - numLanesTied;
+
+    let winner = false;
+    let tieGame = false;
+    if (numLanesWon > numLanesLost) {
+        winner = true;
+    }
+    if (numLanesWon === numLanesLost) {
+        if (totalFriendlyDamage > totalEnemyDamage) {
+            winner = true;
+        }
+        if (totalFriendlyDamage === totalEnemyDamage) {
+            tieGame = true;
+        }
+    }
 
     const triggerAnimations = async (finalGameState, animationQueue) => {
         console.log('Triggering animations!');
@@ -934,6 +958,7 @@ export default function GamePage({}) {
         }
         await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
         setGameState(finalGameState);
+        setAnimating(false);
       };
 
 
@@ -965,7 +990,10 @@ export default function GamePage({}) {
                 else {
                     setGameState(data?.game_state);
                 }
-                triggerAnimations(data?.game_state, data?.game_state?.animations || []);
+                if (!animating && data?.game_state?.animations?.length > 0) {
+                    setAnimating(true);
+                    triggerAnimations(data?.game_state, data?.game_state?.animations || []);
+                }
                 
                 handleReset();
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
@@ -1088,11 +1116,11 @@ export default function GamePage({}) {
                         opponentManaAmount={opponentManaAmount}
                     />
                 </div>
-                {gameOver && <div style={{margin: '10px'}}>
+                {gameOver && !animating && <div style={{margin: '10px'}}>
                     <Card variant="outlined">
                         <CardContent>
                             <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center'}}>
-                                {winner ? 'You won!' : 'You lost!'}
+                                {tieGame ? 'You tied!' : winner ? 'You won!' : 'You lost!'}
                             </Typography>
                         </CardContent>
                     </Card>
