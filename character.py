@@ -166,11 +166,13 @@ class Character:
                     animations.append([
                         {
                             "event_type": "character_shackle",
-                            "character_id": self.id,
+                            "shackling_character_id": self.id,
                             "shackled_character_id": random_enemy_character.id,
                             "character_shackled_turns": random_enemy_character.shackled_turns,
                             "player": self.owner_number,
                             "lane_number": self.lane.lane_number,
+                            "shackling_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                            "shackled_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(random_enemy_character.id),
                         },
                         game_state.to_json(),
                     ])

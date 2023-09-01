@@ -105,6 +105,11 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
         : opponentColor(isDarkMode); // darker red for opponent in dark mode
 
     const isDead = character.current_health <= 0;
+    let filterStyle = '';
+    if (character.shackled_turns > 0) {
+        filterStyle += 'brightness(0.5)'; // darken image if shackled_turns is greater than zero
+    }
+
 
     return (
         <Grid container style={{ 
@@ -115,7 +120,8 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
             padding: '5px',
             marginBottom: '5px',
             backgroundColor: backgroundColor,
-            position: 'relative' // Relative positioning to overlay skull
+            position: 'relative', // Relative positioning to overlay skull
+            filter: filterStyle,
         }}
         onMouseEnter={e => {
             setHoveredCard(character.template);
@@ -764,7 +770,7 @@ export default function GamePage({}) {
 
     const darkMode = useTheme().palette.mode === 'dark';
 
-    const showArrowFromCharacterToCharacter = (event) => {
+    const showArrowFromCharacterToCharacter = (event, shackle=false) => {
         console.log(characterRefs)
         console.log(characterRefs.current)
         console.log({...characterRefs.current})
@@ -772,8 +778,21 @@ export default function GamePage({}) {
         console.log(event.attacking_character_id)    
         console.log(event);
 
-        const attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
-        const defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.[event.defending_character_array_index]?.current?.getBoundingClientRect();
+        let attackingCharacterPos;
+        let defendingCharacterPos;
+
+        if (shackle) {
+            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.shackling_character_array_index]?.current?.getBoundingClientRect();
+        }
+        else {
+            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
+        }
+        if (shackle) {
+            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.player]?.[event.shackled_character_array_index]?.current?.getBoundingClientRect();
+        }
+        else {
+            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.[event.defending_character_array_index]?.current?.getBoundingClientRect();
+        }
       
         console.log(characterRefs.current)
         console.log(characterRefs?.current?.[event.attacking_character_id]?.current);
@@ -797,14 +816,19 @@ export default function GamePage({}) {
         const arrow = document.createElement('div');
         arrow.className = 'arrow';
         arrow.style.position = 'absolute'; // Make sure it's set to absolute
-        arrow.style.left = `${attackingCharacterPos.left + window.scrollX + CHARACTER_BOX_SIZE/2}px`;
+        arrow.style.left = `${attackingCharacterPos.left + window.scrollX + CHARACTER_BOX_SIZE/2 + 9}px`;
         arrow.style.top = `${attackingCharacterPos.top + window.scrollY + CHARACTER_BOX_SIZE/2}px`;
         arrow.style.width = `${distance}px`; // Set the length of the arrow
         
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
         arrow.style.transform = `rotate(${angle}deg)`;
         arrow.style.transformOrigin = "0 50%";
-      
+        if (shackle) {
+            arrow.classList.add("shackled");
+        } else {
+            arrow.classList.remove("shackled");
+        }
+
         document.body.appendChild(arrow);
       
         setTimeout(() => {
@@ -835,15 +859,15 @@ export default function GamePage({}) {
             return;
         }
 
-        const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - CHARACTER_BOX_SIZE/2;
-        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - CHARACTER_BOX_SIZE/2;
+        const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - CHARACTER_BOX_SIZE/2 - 18;
+        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - CHARACTER_BOX_SIZE/2 + (event.attacking_player ? -20 : 8);
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Create an arrow element and set its position and rotation
         const arrow = document.createElement('div');
         arrow.className = 'arrow';
         arrow.style.position = 'absolute'; // Make sure it's set to absolute
-        arrow.style.left = `${attackingCharacterPos.left + window.scrollX + CHARACTER_BOX_SIZE/2}px`;
+        arrow.style.left = `${attackingCharacterPos.left + window.scrollX + CHARACTER_BOX_SIZE/2 + 9}px`;
         arrow.style.top = `${attackingCharacterPos.top + window.scrollY + CHARACTER_BOX_SIZE/2}px`;
         arrow.style.width = `${distance}px`; // Set the length of the arrow
         
@@ -885,17 +909,23 @@ export default function GamePage({}) {
                 break;
             case "character_attack":
               // Run your animation function, e.g., showArrowToTower(event);
-              console.log('attacking character')
+              console.log('attacking character');
               await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-              showArrowFromCharacterToCharacter(event);
+              showArrowFromCharacterToCharacter(event, false);
               setGameState(newState);
               break;
             case "tower_damage":
-                console.log('attacking tower')
+                console.log('attacking tower');
                 await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                 showArrowFromCharacterToTower(event);
                 setGameState(newState);
                 break;
+            case "character_shackle":
+                console.log('shackling character');
+                await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                showArrowFromCharacterToCharacter(event, true);
+                setGameState(newState);
+                break;                
           }
       
           // Pause execution to let animation complete

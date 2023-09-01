@@ -1,5 +1,5 @@
 .arrow {
-    height: 5px;
+    height: 16px;
     background-color: red;
   }
 
@@ -8,11 +8,19 @@
     position: absolute;
     top: 50%;
     left: 100%;
-    margin-top: -10px;  /* Adjust this according to your needs */
-    margin-left: -10px;  /* Adjust this according to your needs */
+    margin-top: -40px;  /* Adjust this according to your needs */
+    margin-left: -32px;  /* Adjust this according to your needs */
     width: 0;
     height: 0;
-    border: 10px solid transparent;  /* Make this larger for a larger arrowhead */  
+    border: 40px solid transparent;  /* Make this larger for a larger arrowhead */  
     border-left-color: red;
     transform: rotate(0deg);
+  }  
+
+  .arrow.shackled {
+    background-color: green;
+  }
+  
+  .arrow.shackled:after {
+    border-left-color: green;
   }  
