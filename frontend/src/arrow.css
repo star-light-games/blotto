@@ -1,0 +1,18 @@
+.arrow {
+    height: 5px;
+    background-color: red;
+  }
+
+  .arrow:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-top: -10px;  /* Adjust this according to your needs */
+    margin-left: -10px;  /* Adjust this according to your needs */
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;  /* Make this larger for a larger arrowhead */  
+    border-left-color: red;
+    transform: rotate(0deg);
+  }  

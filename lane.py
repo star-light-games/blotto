@@ -13,7 +13,7 @@ class Lane:
         self.lane_number = lane_number
 
 
-    def roll_turn(self, log: list[str], animations: list, game_state: GameState) -> None:
+    def roll_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
         done_attacking_by_player = {0: False, 1: False}
 
         for player_num in done_attacking_by_player:
@@ -24,7 +24,7 @@ class Lane:
 
         for player_num in done_attacking_by_player:
             for character in self.characters_by_player[player_num]:
-                character.roll_turn(log)
+                character.roll_turn(log, animations, game_state)
 
 
     def resolve_combat(self, 
@@ -59,7 +59,7 @@ class Lane:
             characters_that_can_attack = [character for character in characters_that_can_attack if character.can_attack()]
             character = random.choice(characters_that_can_attack)
             defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
-            character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log)
+            character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log, animations, game_state)
 
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]
@@ -72,7 +72,7 @@ class Lane:
 
     def to_json(self):
         return {
-            "damage_by_player": self.damage_by_player,
+            "damage_by_player": self.damage_by_player.copy(),
             "characters_by_player": {player: [character.to_json() for character in self.characters_by_player[player]] for player in self.characters_by_player},
             "lane_number": self.lane_number,
         }

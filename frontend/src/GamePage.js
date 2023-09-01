@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import TcgCard from './TcgCard';
 import { URL } from './settings';
@@ -16,6 +16,7 @@ import Box from '@mui/material/Box';
 import { snakeCase } from './utils';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import battleOld from './battleOld.webp';
+import './arrow.css';
 
 const playerColor = (isDarkMode) => isDarkMode ? '#226422' : '#d7ffd9'
 const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
@@ -23,11 +24,11 @@ const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
 const playerColorToneReversed = (isDarkMode) => isDarkMode ? '#d7ffd9' : '#226422'
 const opponentColorToneReversed = (isDarkMode) => isDarkMode ? '#ffd7d7' : '#995555'
 
-function GameInfo({ game, playerNum, yourManaAmount, opponentManaAmount }) {
+function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmount }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
     const opponentUsername = game.usernames_by_player[opponentNum];
-    const opponentHandSize = (game.game_state && game.game_state.hands_by_player) 
-                             ? game.game_state.hands_by_player[opponentNum].length 
+    const opponentHandSize = (gameState && gameState.hands_by_player) 
+                             ? gameState.hands_by_player[opponentNum].length 
                              : 0;
     const turnNumber = game?.game_state?.turn || 0;
 
@@ -90,7 +91,7 @@ function CharacterDisplayOld({ character, setHoveredCard, type }) {
 
 
 const CHARACTER_BOX_SIZE = 175;
-
+const TOWER_BOX_SIZE = 75;
 
 
 function CharacterDisplay({ character, setHoveredCard, type }) {
@@ -142,7 +143,7 @@ function CharacterDisplay({ character, setHoveredCard, type }) {
             </Grid>
         </Grid>
     );
-}
+};
 
 
 
@@ -318,26 +319,17 @@ function ResetButton({ onReset, disabled }) {
         backgroundColor: logBackgroundColor,
         color: logTextColor
     };
-    log.map((entry, index) => (console.log(entry)));
 
-    const entryFormater = (entry) => {
-        const entryText = entry[0];
-        const entryDetails = entry[1];
-        const entryType = entryDetails?.event_type;
-        if (entryType === 'turn'){
-            return <Typography variant='h6'> {entryText} </Typography>;
-        }
-        return entryText;
+    const entryFormatter = (entry) => {
+        if (entry.startsWith('Turn ')) 
+            return <Typography variant='h6'> {entry} </Typography>;
+        return entry;
     }
 
     return (
         <div style={containerStyle}>
             {log.map((entry, index) => (
-<<<<<<< Updated upstream
-                <p key={index}>{entryFormater(entry)}</p>
-=======
-                <p key={index}>{entry[0]}</p>
->>>>>>> Stashed changes
+                <p key={index}>{entryFormatter(entry)}</p>
             ))}
         </div>
     );
@@ -356,13 +348,16 @@ function LanesDisplay({
     cardsToLanes, 
     setCardsToLanes, 
     yourManaAmount, 
-    setYourManaAmount 
+    setYourManaAmount,
+    characterRefs,
+    towerRefs,
 }) {
     if (!lanes) return null;
     return (
       <Grid container direction="row" justifyContent="center" spacing={5}>
         {[0,1,2].map((i) => (<Grid item>
           <Lane 
+            key={i}
             laneData={lanes[i]} 
             playerNum={playerNum} 
             opponentNum={opponentNum} 
@@ -377,6 +372,8 @@ function LanesDisplay({
             setCardsToLanes={setCardsToLanes}
             yourManaAmount={yourManaAmount}
             setYourManaAmount={setYourManaAmount}
+            characterRefs={characterRefs}
+            towerRefs={towerRefs}
           />
         </Grid>))}
       </Grid>
@@ -399,10 +396,13 @@ function LaneForOneSide({
     setCardsToLanes, 
     yourManaAmount, 
     setYourManaAmount,
+    characterRefs,
 }) {
     const laneNumber = laneData.lane_number;
 
-    const charactersToRender = laneData.characters_by_player[playersSide ? playerNum : opponentNum]
+    const lanePlayerNum = playersSide ? playerNum : opponentNum;
+
+    const charactersToRender = laneData.characters_by_player[lanePlayerNum]
 
 
     const firstCharacterToRender = charactersToRender?.length > 0 ? charactersToRender?.[0] : null
@@ -416,7 +416,7 @@ function LaneForOneSide({
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '10px' }}>
                 <Grid container direction="column" spacing={1}>
                     <Grid item container direction="row" spacing={1}>
-                        <Grid item>
+                        <Grid item ref={characterRefs?.current?.[laneNumber]?.[lanePlayerNum]?.[0]}>
                             {firstCharacterToRender ? <CharacterDisplay
                                 character={firstCharacterToRender}
                                 setHoveredCard={setHoveredCard}
@@ -428,7 +428,7 @@ function LaneForOneSide({
                                 lineHeight: `${boxSize}px`
                             }} />}
                         </Grid>
-                        <Grid item>
+                        <Grid item ref={characterRefs?.current?.[laneNumber]?.[lanePlayerNum]?.[1]}>
                             {secondCharacterToRender ? <CharacterDisplay
                                 character={secondCharacterToRender}
                                 setHoveredCard={setHoveredCard}
@@ -442,7 +442,7 @@ function LaneForOneSide({
                         </Grid>                
                     </Grid>
                     <Grid item container direction="row" spacing={1}>
-                        <Grid item>
+                        <Grid item ref={characterRefs?.current?.[laneNumber]?.[lanePlayerNum]?.[2]}>
                             {thirdCharacterToRender ? <CharacterDisplay
                                 character={thirdCharacterToRender}
                                 setHoveredCard={setHoveredCard}
@@ -454,7 +454,7 @@ function LaneForOneSide({
                                 lineHeight: `${boxSize}px`
                             }} />}
                         </Grid>
-                        <Grid item>
+                        <Grid item ref={characterRefs?.current?.[laneNumber]?.[lanePlayerNum]?.[3]}>
                             {fourthCharacterToRender ? <CharacterDisplay
                                 character={fourthCharacterToRender}
                                 setHoveredCard={setHoveredCard}
@@ -487,6 +487,8 @@ function Lane({
     setCardsToLanes, 
     yourManaAmount, 
     setYourManaAmount, 
+    characterRefs,
+    towerRefs,
 }) {
 
     const laneNumber = laneData.lane_number;
@@ -538,10 +540,11 @@ function Lane({
                             setCardsToLanes={setCardsToLanes}
                             yourManaAmount={yourManaAmount}
                             setYourManaAmount={setYourManaAmount}
+                            characterRefs={characterRefs}
                         />
                     </Grid>
                     <Grid item>
-                        <Card style={{ height: '75px', width: '70px' }}>
+                        <Card style={{ height: '75px', width: '70px' }} ref={towerRefs?.current?.[laneNumber]?.[opponentNum]}>
                             <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="h4" style={{ 
                                     fontWeight: 'bold', 
@@ -575,10 +578,11 @@ function Lane({
                             setCardsToLanes={setCardsToLanes}
                             yourManaAmount={yourManaAmount}
                             setYourManaAmount={setYourManaAmount}
+                            characterRefs={characterRefs}
                         />
                     </Grid>
                     <Grid item>
-                        <Card style={{ height: '75px', width: '70px' }}>
+                        <Card style={{ height: '75px', width: '70px' }} ref={towerRefs?.current?.[laneNumber]?.[playerNum]}>
                             <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="h4" style={{ 
                                     fontWeight: 'bold', 
@@ -630,7 +634,9 @@ export default function GamePage({}) {
     const opponentNum = playerNum === 0 ? 1 : 0;
 
     const [game, setGame] = useState({});
+    const [gameState, setGameState] = useState(null);
     console.log(game);
+    console.log(gameState);
     const [loading, setLoading] = useState(true);
 
     const username = localStorage.getItem('username'); // Retrieving username from localStorage
@@ -646,14 +652,210 @@ export default function GamePage({}) {
 
     const [yourManaAmount, setYourManaAmount] = useState(1);
 
-    const opponentManaAmount = game?.game_state?.mana_by_player?.[opponentNum] || 1;
+    const animationDelay = 3000;
 
-    const gameOver = game?.game_state?.turn > 8;
-    const lane1winner = game?.game_state?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
-    const lane2winner = game?.game_state?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
-    const lane3winner = game?.game_state?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
+    // Keys are [laneNumber][playerNum][characterNum]
+    const characterRefs = useRef({
+        0: {
+            0: {
+                0: React.createRef(),
+                1: React.createRef(),
+                2: React.createRef(),
+                3: React.createRef(),
+            },
+            1: {
+                0: React.createRef(),
+                1: React.createRef(),
+                2: React.createRef(),
+                3: React.createRef(),
+            },
+        },
+        1: {
+            0: {
+                0: React.createRef(),
+                1: React.createRef(),
+                2: React.createRef(),
+                3: React.createRef(),
+            },
+            1: {
+                0: React.createRef(),
+                1: React.createRef(),
+                2: React.createRef(),
+                3: React.createRef(),
+            },
+        },
+        2: {
+            0: {
+                0: React.createRef(),
+                1: React.createRef(),
+                2: React.createRef(),
+                3: React.createRef(),
+            },
+            1: {
+                0: React.createRef(),
+                1: React.createRef(),
+                2: React.createRef(),
+                3: React.createRef(),
+            },
+        },
+    });
+
+    const towerRefs = useRef({
+        0: {
+            0: React.createRef(),
+            1: React.createRef(),
+        },
+        1: {
+            0: React.createRef(),
+            1: React.createRef(),
+        },
+        2: {
+            0: React.createRef(),
+            1: React.createRef(),
+        },
+    });
+
+    const darkMode = useTheme().palette.mode === 'dark';
+
+    const showArrowFromCharacterToCharacter = (event) => {
+        console.log(characterRefs)
+        console.log(characterRefs.current)
+        console.log({...characterRefs.current})
+        console.log(characterRefs.current[event.attacking_character_id])
+        console.log(event.attacking_character_id)    
+        console.log(event);
+
+        const attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
+        const defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.[event.defending_character_array_index]?.current?.getBoundingClientRect();
+      
+        console.log(characterRefs.current)
+        console.log(characterRefs?.current?.[event.attacking_character_id]?.current);
+        console.log(characterRefs?.current?.[event.attacking_character_id]?.current?.getBoundingClientRect());
+
+        if (!attackingCharacterPos) {
+            console.log('Attacking character position not found!')
+            return;
+        }
+
+        if (!defendingCharacterPos) {
+            console.log('Defending character position not found!')
+            return;
+        }
+
+        const dx = defendingCharacterPos.left - attackingCharacterPos.left;
+        const dy = defendingCharacterPos.top - attackingCharacterPos.top;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Create an arrow element and set its position and rotation
+        const arrow = document.createElement('div');
+        arrow.className = 'arrow';
+        arrow.style.position = 'absolute'; // Make sure it's set to absolute
+        arrow.style.left = `${attackingCharacterPos.left + window.scrollX + CHARACTER_BOX_SIZE/2}px`;
+        arrow.style.top = `${attackingCharacterPos.top + window.scrollY + CHARACTER_BOX_SIZE/2}px`;
+        arrow.style.width = `${distance}px`; // Set the length of the arrow
+        
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        arrow.style.transform = `rotate(${angle}deg)`;
+        arrow.style.transformOrigin = "0 50%";
+      
+        document.body.appendChild(arrow);
+      
+        setTimeout(() => {
+          document.body.removeChild(arrow);
+        }, animationDelay);
+
+        console.log('Animation successfully triggered!')
+    };
+
+    const showArrowFromCharacterToTower = (event) => {
+        console.log(characterRefs)
+        console.log(characterRefs.current[event.attacking_character_id])
+        console.log(event.attacking_character_id)
+
+        console.log(towerRefs);
+        console.log(event);
+
+        const attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
+        const defendingTowerPos = towerRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.current?.getBoundingClientRect();
+      
+        if (!attackingCharacterPos) {
+            console.log('Attacking character position not found!')
+            return;
+        }
+
+        if (!defendingTowerPos) {
+            console.log('Defending tower position not found!')
+            return;
+        }
+
+        const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - CHARACTER_BOX_SIZE/2;
+        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - CHARACTER_BOX_SIZE/2;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Create an arrow element and set its position and rotation
+        const arrow = document.createElement('div');
+        arrow.className = 'arrow';
+        arrow.style.position = 'absolute'; // Make sure it's set to absolute
+        arrow.style.left = `${attackingCharacterPos.left + window.scrollX + CHARACTER_BOX_SIZE/2}px`;
+        arrow.style.top = `${attackingCharacterPos.top + window.scrollY + CHARACTER_BOX_SIZE/2}px`;
+        arrow.style.width = `${distance}px`; // Set the length of the arrow
+        
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        arrow.style.transform = `rotate(${angle}deg)`;
+        arrow.style.transformOrigin = "0 50%";
+      
+        document.body.appendChild(arrow);
+      
+      
+        setTimeout(() => {
+          document.body.removeChild(arrow);
+        }, animationDelay);
+
+        console.log('Animation successfully triggered!')
+    }
+
+
+    const opponentManaAmount = gameState?.mana_by_player?.[opponentNum] || 1;
+
+    const gameOver = gameState?.turn > 8;
+    const lane1winner = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
+    const lane2winner = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
+    const lane3winner = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
 
     const winner = lane1winner + lane2winner + lane3winner > 1;
+
+    const triggerAnimations = async (finalGameState, animationQueue) => {
+        console.log('Triggering animations!');
+        console.log(animationQueue);
+
+        for (let [event, newState] of animationQueue) {
+          // Trigger the animation based on the event
+          console.log(event.event_type)
+          switch (event.event_type) {
+            case "start_of_roll":
+                setGameState(newState);
+                break;
+            case "character_attack":
+              // Run your animation function, e.g., showArrowToTower(event);
+              console.log('attacking character')
+              await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+              showArrowFromCharacterToCharacter(event);
+              setGameState(newState);
+              break;
+            case "tower_damage":
+                console.log('attacking tower')
+                await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                showArrowFromCharacterToTower(event);
+                setGameState(newState);
+                break;
+          }
+      
+          // Pause execution to let animation complete
+      
+          // Update the game state
+        }
+        setGameState(finalGameState);
+      };
 
 
     const handleReset = () => {
@@ -661,7 +863,7 @@ export default function GamePage({}) {
         setSelectedCard(null);
         setHandData(null);
         setCardsToLanes({});
-        setYourManaAmount(game?.game_state.mana_by_player?.[playerNum] || 1);
+        setYourManaAmount(gameState?.mana_by_player?.[playerNum] || 1);
     // If you also want to reset hand data or any other state, do it here.
     };
 
@@ -678,6 +880,14 @@ export default function GamePage({}) {
                 // And stop the polling if needed
                 setSubmittedMove(false);
                 setGame(data);
+                if (data?.game_state?.animations?.length > 0) {
+                    setGameState(data?.game_state?.animations[0][1]);
+                }
+                else {
+                    setGameState(data?.game_state);
+                }
+                triggerAnimations(data?.game_state, data?.game_state?.animations || []);
+                
                 handleReset();
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
             }
@@ -690,7 +900,7 @@ export default function GamePage({}) {
     useEffect(() => {
         let pollingInterval;
     
-        if (submittedMove || !game.game_state) {
+        if (submittedMove || !gameState) {
             pollingInterval = setInterval(pollApiForGameUpdates, 500); // Poll every 0.5 seconds
         }
     
@@ -701,7 +911,7 @@ export default function GamePage({}) {
                 clearInterval(pollingInterval);
             }
         };
-    }, [submittedMove, !!game.game_state]); // Depend on submittedMove, so the effect re-runs if its value changes
+    }, [submittedMove, !!gameState]); // Depend on submittedMove, so the effect re-runs if its value changes
 
     useEffect(() => {
         // Fetch the game data from your backend.
@@ -709,6 +919,7 @@ export default function GamePage({}) {
             .then(res => res.json())
             .then(data => {
                 setGame(data);
+                setGameState(data?.gameState);
                 setLoading(false);
                 setLaneData(data.game_state.lanes);
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
@@ -725,7 +936,7 @@ export default function GamePage({}) {
         return <div>Loading...</div>;
     }
 
-    if (!game.game_state) {
+    if (!gameState) {
         return (
             <div >
                 <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center'}}>
@@ -790,7 +1001,13 @@ export default function GamePage({}) {
             </div>
             <div style={{ flex: 10 }}>
                 <div  style={{margin:'1px'}} >
-                    <GameInfo game={game} playerNum={playerNum} yourManaAmount={yourManaAmount} opponentManaAmount={opponentManaAmount}/>
+                    <GameInfo 
+                        game={game} 
+                        gameState={gameState} 
+                        playerNum={playerNum} 
+                        yourManaAmount={yourManaAmount} 
+                        opponentManaAmount={opponentManaAmount}
+                    />
                 </div>
                 {gameOver && <div style={{margin: '10px'}}>
                     <Card variant="outlined">
@@ -801,15 +1018,15 @@ export default function GamePage({}) {
                         </CardContent>
                     </Card>
                 </div>}
-                <GameLog log={game.game_state.log} />
+                <GameLog log={gameState.log} />
                 {/* <OldLanesDisplay 
-                    lanes={laneData ? laneData : game.game_state.lanes} 
+                    lanes={laneData ? laneData : gameState.lanes} 
                     playerNum={playerNum} 
                     opponentNum={opponentNum} 
                     selectedCard={selectedCard} 
                     setSelectedCard={setSelectedCard}
                     setLaneData={setLaneData}
-                    handData={handData ? handData : game.game_state.hands_by_player[playerNum]}
+                    handData={handData ? handData : gameState.hands_by_player[playerNum]}
                     setHandData={setHandData}
                     setHoveredCard={setHoveredCard}
                     cardsToLanes={cardsToLanes}
@@ -818,22 +1035,24 @@ export default function GamePage({}) {
                     setYourManaAmount={setYourManaAmount}
                 /> */}
                 <LanesDisplay 
-                    lanes={laneData ? laneData : game.game_state.lanes} 
+                    lanes={laneData ? laneData : gameState.lanes} 
                     playerNum={playerNum} 
                     opponentNum={opponentNum} 
                     selectedCard={selectedCard} 
                     setSelectedCard={setSelectedCard}
                     setLaneData={setLaneData}
-                    handData={handData ? handData : game.game_state.hands_by_player[playerNum]}
+                    handData={handData ? handData : gameState.hands_by_player[playerNum]}
                     setHandData={setHandData}
                     setHoveredCard={setHoveredCard}
                     cardsToLanes={cardsToLanes}
                     setCardsToLanes={setCardsToLanes}
                     yourManaAmount={yourManaAmount}
-                    setYourManaAmount={setYourManaAmount}                
+                    setYourManaAmount={setYourManaAmount}
+                    characterRefs={characterRefs}
+                    towerRefs={towerRefs}
                 />
                 <HandDisplay 
-                    cards={handData ? handData : game.game_state.hands_by_player[playerNum]} 
+                    cards={handData ? handData : gameState.hands_by_player[playerNum]} 
                     selectedCard={selectedCard} 
                     setSelectedCard={setSelectedCard} 
                     setHoveredCard={setHoveredCard}

@@ -188,7 +188,7 @@ def get_game(game_id):
     games = rget_json('games') or {}
     game = games.get(game_id)
     if not game:
-        return jsonify({"error": "Game not found"}), 404
+        return jsonify({"error": "Game not found"}), 404    
     return recurse_to_json(game)
 
 
@@ -225,8 +225,6 @@ def take_turn(game_id):
         for card_id, lane_number in cards_to_lanes.items():
             game.game_state.play_card(player_num, card_id, lane_number)
 
-        pre_combat_game_state_json = game.game_state.to_json()
-
         game.game_state.has_moved_by_player[player_num] = True
         if game.game_state.all_players_have_moved():
             game.game_state.roll_turn()
@@ -236,7 +234,6 @@ def take_turn(game_id):
         rset_json('games', games)
     
     return jsonify({"gameId": game.id,
-                    "preCombatGameState": pre_combat_game_state_json,
                     "game": game.to_json()})
 
 

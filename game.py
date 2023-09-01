@@ -31,7 +31,7 @@ class Game:
             "id": self.id,
             "usernames_by_player": self.usernames_by_player,
             "decks_by_player": {k: v.to_json() if v is not None else None for k, v in self.decks_by_player.items()},
-            "game_state": self.game_state.to_json() if self.game_state is not None else None,
+            "game_state": self.game_state.to_json(exclude_animations=False) if self.game_state is not None else None,
             "created_at": self.created_at
         }
     

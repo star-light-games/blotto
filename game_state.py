@@ -14,7 +14,8 @@ class GameState:
         self.hands_by_player = {0: self.player_0_hand, 1: self.player_1_hand}
         self.draw_piles_by_player = {0: self.player_0_draw_pile, 1: self.player_1_draw_pile}
         self.has_moved_by_player = {0: False, 1: False}
-        self.log: list = []
+        self.log: list[str] = []
+        self.animations: list = []
         self.mana_by_player = {0: 0, 1: 0}
         self.decks_by_player = decks_by_player
         self.roll_turn()
@@ -31,22 +32,16 @@ class GameState:
             self.hands_by_player[player_num].append(self.draw_piles_by_player[player_num][0])
             self.draw_piles_by_player[player_num] = self.draw_piles_by_player[player_num][1:]
         else:
-            self.log.append([f"{self.usernames_by_player[player_num]} has no cards left in their deck.",
-                             {
-                                 "event_type": "no_cards_left",
-                             }])
+            self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
 
     def roll_turn(self):
         self.turn += 1
-        animations = []
+        self.animations = [[{"event": "start_of_roll"}, self.to_json()]]
         for lane in self.lanes:
-            lane.roll_turn(self.log, animations, self)
+            lane.roll_turn(self.log, self.animations, self)
         for player_num in [0, 1]:
             self.draw_card(player_num)
-        self.log.append([f"Turn {self.turn}",
-                         {
-                             "event_type": "turn",
-                         }])
+        self.log.append(f"Turn {self.turn}")
         for player_num in [0, 1]:
             self.mana_by_player[player_num] = self.turn
         self.has_moved_by_player = {0: False, 1: False}
@@ -56,15 +51,12 @@ class GameState:
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
         character = card.to_character(self.lanes[lane_number], player_num, self.usernames_by_player[player_num])
         self.lanes[lane_number].characters_by_player[player_num].append(character)
-        self.log.append([f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.",
-                         {
-                             "event_type": "play_card",
-                         }])
+        self.log.append(f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.")
 
     def all_players_have_moved(self) -> bool:
         return all([self.has_moved_by_player[player_num] for player_num in [0, 1]])
 
-    def to_json(self):
+    def to_json(self, exclude_animations: bool = True):
         return {
             "lanes": [lane.to_json() for lane in self.lanes],
             "turn": self.turn,
@@ -75,6 +67,7 @@ class GameState:
             "has_moved_by_player": self.has_moved_by_player,
             "usernames_by_player": self.usernames_by_player,
             "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()},
+            **({"animations": self.animations} if not exclude_animations else {}),
         }
     
     @staticmethod
@@ -87,5 +80,6 @@ class GameState:
         game_state.log = json['log']
         game_state.mana_by_player = json['mana_by_player']
         game_state.has_moved_by_player = json['has_moved_by_player']
+        game_state.animations = json['animations']
 
         return game_state
