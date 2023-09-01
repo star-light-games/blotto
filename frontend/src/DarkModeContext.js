@@ -1,4 +1,4 @@
-import React, { useState, useCallback, createContext } from 'react';
+import React, { useState, useCallback, useEffect, createContext } from 'react';
 
 export const DarkModeContext = createContext({
   isDarkMode: false,
@@ -6,11 +6,21 @@ export const DarkModeContext = createContext({
 });
 
 export const DarkModeProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Initialize state with value from localStorage or default to false
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const storedValue = localStorage.getItem('isDarkMode');
+    return storedValue === 'true';
+  });
 
+  // Function to toggle dark mode
   const toggleDarkMode = useCallback(() => {
     setIsDarkMode(prevMode => !prevMode);
   }, []);
+
+  // Effect to update localStorage whenever isDarkMode changes
+  useEffect(() => {
+    localStorage.setItem('isDarkMode', isDarkMode);
+  }, [isDarkMode]);
 
   return (
     <DarkModeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
