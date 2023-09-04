@@ -258,4 +258,12 @@ CARD_TEMPLATES = {
         health=7,
         creature_types=['Water'],
     ),
+    'Master Pakku': CardTemplate(
+        name='Master Pakku',
+        abilities=['Defender'],
+        cost=5,
+        attack=3,
+        health=9,
+        creature_types=['Water'],
+    ),
 }

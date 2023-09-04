@@ -44,6 +44,11 @@ class Character:
             multiplier = 2 if self.has_ability('DoubleTowerDamage') else 1
             damage_dealt = self.current_attack * multiplier
             damage_by_player[attacking_player] += damage_dealt
+            if self.has_ability('OnTowerAttackDealMassDamage'):
+                for character in defending_characters:
+                    character.current_health -= 2
+                    log.append(f"{self.owner_username}'s {self.template.name} dealt 2 damage to {character.owner_username}'s {character.template.name} in Lane {lane_number + 1}. "
+                                f"{character.template.name}'s health is now {character.current_health}.")
             log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
             
             animations.append([
@@ -176,6 +181,46 @@ class Character:
                         },
                         game_state.to_json(),
                     ])
+
+            if self.has_ability('OnRevealPumpFriends'):
+                for character in self.lane.characters_by_player[self.owner_number]:
+                    character.current_attack += 1
+                    character.current_health += 1
+                    character.max_health += 1
+                    log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
+                animations.append([
+                    {
+                        "event_type": "on_reveal",
+                        "pumping_character_id": self.id,
+                        "player": self.owner_number,
+                        "lane_number": self.lane.lane_number,
+                        "pumping_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    },
+                    game_state.to_json(),
+                ])
+
+            if self.has_ability('OnRevealPumpAttackers'):
+                for character in self.lane.characters_by_player[self.owner_number]:
+                    if character.is_attacker():
+                        character.current_attack += 2
+                        character.current_health += 2
+                        character.max_health += 2
+                        log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
+                animations.append([
+                    {
+                        "event_type": "on_reveal",
+                        "pumping_character_id": self.id,
+                        "player": self.owner_number,
+                        "lane_number": self.lane.lane_number,
+                        "pumping_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    },
+                    game_state.to_json(),
+                ])
+
+            count_of_characters_with_pump_friendlies_ability = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpAttackOfCharactersPlayedHere')])
+            self.current_attack += count_of_characters_with_pump_friendlies_ability
+
+
 
 
     def to_json(self):
