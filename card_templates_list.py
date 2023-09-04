@@ -61,9 +61,9 @@ CARD_TEMPLATES = {
     'Zaheer': CardTemplate(
         name='Zaheer',
         abilities=['Attacker', 'Deathtouch'],
-        cost=5,
+        cost=4,
         attack=1,
-        health=6,
+        health=5,
         creature_types=['Air'],
     ),
     'Ikki': CardTemplate(
