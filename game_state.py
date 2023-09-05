@@ -37,6 +37,8 @@ class GameState:
     def roll_turn(self):
         self.turn += 1
         self.animations = [[{"event": "start_of_roll"}, self.to_json()]]
+        for player_num in [0, 1]:
+            self.mana_by_player[player_num] = self.turn        
         for lane in self.lanes:
             lane.do_start_of_turn(self.log, self.animations, self)
         for lane in sorted(self.lanes, key=lambda lane: lane.lane_number + lane.additional_combat_priority):
@@ -44,8 +46,6 @@ class GameState:
         for player_num in [0, 1]:
             self.draw_card(player_num)
         self.log.append(f"Turn {self.turn}")
-        for player_num in [0, 1]:
-            self.mana_by_player[player_num] = self.turn
         self.has_moved_by_player = {0: False, 1: False}
 
     def play_card(self, player_num: int, card_id: str, lane_number: int):

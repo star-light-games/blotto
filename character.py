@@ -96,7 +96,7 @@ class Character:
         
         if self.has_ability('SwitchLanesAfterAttacking'):
             self.switch_lanes(game_state)
-                
+
     def punch(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState',
               starting_current_attack: Optional[int] = None):
         if self.has_ability('Deathtouch'):
@@ -107,9 +107,6 @@ class Character:
             defending_character.current_health -= damage_to_deal
             log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_to_deal} damage to the enemy {defending_character.template.name} in Lane {lane_number + 1}. "
                         f"{defending_character.template.name}'s health is now {defending_character.current_health}.")
-
-        if defending_character.current_health <= 0 and self.has_ability('OnKillSwitchLanes'):
-            self.switch_lanes(game_state)
 
         if defending_character.has_ability('OnSurviveDamagePump') and defending_character.current_health > 0:
             defending_character.current_attack += 1
@@ -142,6 +139,9 @@ class Character:
                         "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
                         "defending_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),
                     }, game_state.to_json()])
+
+        if defending_character.current_health <= 0 and self.has_ability('OnKillSwitchLanes'):
+            self.switch_lanes(game_state)
 
     def can_fight(self):
         return self.current_health > 0
