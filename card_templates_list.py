@@ -207,7 +207,7 @@ CARD_TEMPLATES = {
         abilities=['SwitchLanesAfterAttacking'],
         cost=2,
         attack=3,
-        health=2,
+        health=1,
         creature_types=['Air'],
     ),
     'Kya': CardTemplate(

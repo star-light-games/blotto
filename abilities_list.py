@@ -101,5 +101,9 @@ ABILITIES: dict[str, Ability] = {
     'OnRevealLaneFightsFirst': Ability(
         name='OnRevealLaneFightsFirst',
         description='On reveal: this lane fights first this turn.',
-    )
+    ),
+    'OnKillSwitchLanes': Ability(
+        name='OnKillSwitchLanes',
+        description='When I kill a character, I switch lanes.',
+    ),
 }
