@@ -317,7 +317,7 @@ class Character:
                             "player": self.owner_number,
                             "lane_number": self.lane.lane_number,
                             "healed_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(random_friendly_damaged_character.id),
-                            "heaing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                            "healing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
                         },
                         game_state.to_json(),
                     ])
@@ -344,7 +344,8 @@ class Character:
                 self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state)
 
             if self.has_ability('OnRevealLaneFightsFirst'):
-                self.lane.additional_combat_priority += 3
+                self.lane.additional_combat_priority -= 3
+
 
 
     def get_random_other_friendly_damaged_character(self) -> Optional['Character']:

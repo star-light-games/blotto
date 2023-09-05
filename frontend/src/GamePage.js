@@ -802,9 +802,6 @@ export default function GamePage({}) {
             defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.[event.defending_character_array_index]?.current?.getBoundingClientRect();
         }
       
-        console.log(characterRefs.current)
-        console.log(characterRefs?.current?.[event.attacking_character_id]?.current);
-        console.log(characterRefs?.current?.[event.attacking_character_id]?.current?.getBoundingClientRect());
 
         if (!attackingCharacterPos) {
             console.log('Attacking character position not found!')
