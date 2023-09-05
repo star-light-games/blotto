@@ -52,18 +52,18 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     style={{maxWidth: '100%', maxHeight: '100%'}} 
                 />
             </Box> : null}
-            <Box mt={2}>
-            <Typography variant="body2" color="textSecondary">
-                {card.creatureTypes.join(', ')}
-            </Typography>
-            <Typography>
-                Abilities: 
-                <ul>
-                {card.abilities.map((ability, index) => (
-                    <li key={index}>{ability.description}</li>
-                ))}
-                </ul>
-            </Typography>
+            <Box mt={2} style={{ maxHeight: '150px', overflowY: 'auto' }}>  {/* Apply max-height and overflow-y */}
+                <Typography variant="body2" color="textSecondary">
+                    {card.creatureTypes.join(', ')}
+                </Typography>
+                <Typography>
+                    Abilities: 
+                    <ul>
+                        {card.abilities.map((ability, index) => (
+                            <li key={index}>{ability.description}</li>
+                        ))}
+                    </ul>
+                </Typography>
             </Box>
 
             <Box 

@@ -274,11 +274,11 @@ CARD_TEMPLATES = {
         health=8,
         creature_types=['Air'],
     ),
-    'Senna': CardTemplate(
-        name='Senna',
+    'Mother Kya': CardTemplate(
+        name='Mother Kya',
         abilities=['PumpOnFriendlyHeal'],
         cost=2,
-        attack=2,
+        attack=1,
         health=2,
         creature_types=['Water'],
     ),
