@@ -272,7 +272,7 @@ function DeckBuilder({ cards }) {
       <Grid container spacing={3}>
         {cards.map((card) => (
           <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
-            <TcgCard card={card} doNotBorderOnHighlight={true} />
+            <TcgCard card={card} doNotBorderOnHighlight={true} displayArt />
           </Grid>
         ))}
       </Grid>
