@@ -23,8 +23,8 @@ class GameState:
     def draw_initial_hand(self, deck: Deck):
         draw_pile = deck.to_draw_pile()
         random.shuffle(draw_pile)
-        hand = draw_pile[:2]
-        draw_pile = draw_pile[2:]
+        hand = draw_pile[:3]
+        draw_pile = draw_pile[3:]
         return hand, draw_pile
 
     def draw_card(self, player_num: int):
