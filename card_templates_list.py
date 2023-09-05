@@ -205,9 +205,9 @@ CARD_TEMPLATES = {
     'Momo': CardTemplate(
         name='Momo',
         abilities=['SwitchLanesAfterAttacking'],
-        cost=3,
+        cost=2,
         attack=3,
-        health=4,
+        health=2,
         creature_types=['Air'],
     ),
     'Kya': CardTemplate(
@@ -265,5 +265,13 @@ CARD_TEMPLATES = {
         attack=3,
         health=9,
         creature_types=['Water'],
+    ),
+    'Jinora': CardTemplate(
+        name='Jinora',
+        abilities=['Attacker', 'OnKillSwitchLanes'],
+        cost=3,
+        attack=2,
+        health=8,
+        creature_types=['Air'],
     ),
 }
