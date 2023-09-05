@@ -11,20 +11,26 @@ class Lane:
         self.damage_by_player: dict[int, int] = {0: 0, 1: 0}
         self.characters_by_player: dict[int, list[Character]] = {0: [], 1: []}
         self.lane_number = lane_number
+        self.additional_combat_priority = 0
+
+
+    def do_start_of_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
+        for player_num in [0, 1]:
+            for character in self.characters_by_player[player_num]:
+                character.escaped_death = False
+                character.do_on_reveal(log, animations, game_state)        
 
 
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
         done_attacking_by_player = {0: False, 1: False}
-
-        for player_num in done_attacking_by_player:
-            for character in self.characters_by_player[player_num]:
-                character.do_on_reveal(log, animations, game_state)        
 
         self.resolve_combat(done_attacking_by_player, log, animations, game_state)
 
         for player_num in done_attacking_by_player:
             for character in self.characters_by_player[player_num]:
                 character.roll_turn(log, animations, game_state)
+
+        self.additional_combat_priority = 0
 
 
     def resolve_combat(self, 
@@ -72,6 +78,9 @@ class Lane:
                 "dying_character_index": [c.id for c in self.characters_by_player[dying_character.owner_number]].index(dying_character.id),
             }, game_state.to_json()])
 
+            if dying_character.has_ability('SwitchLanesInsteadOfDying') and not dying_character.escaped_death:
+                dying_character.escaped_death = True
+                dying_character.switch_lanes(game_state)
 
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]

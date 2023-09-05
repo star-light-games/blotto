@@ -38,6 +38,8 @@ class GameState:
         self.turn += 1
         self.animations = [[{"event": "start_of_roll"}, self.to_json()]]
         for lane in self.lanes:
+            lane.do_start_of_turn(self.log, self.animations, self)
+        for lane in sorted(self.lanes, key=lambda lane: lane.lane_number + lane.additional_combat_priority):
             lane.roll_turn(self.log, self.animations, self)
         for player_num in [0, 1]:
             self.draw_card(player_num)

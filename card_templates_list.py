@@ -119,7 +119,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', 'StartOfTurnFullHeal'],
         cost=3,
         attack=3,
-        health=5,
+        health=4,
         creature_types=['Water'],
     ),
     'Zuko': CardTemplate(
@@ -253,9 +253,9 @@ CARD_TEMPLATES = {
     'Ming Hua': CardTemplate(
         name='Ming Hua',
         abilities=['OnRevealLaneFightsFirst'],
-        cost=4,
-        attack=4,
-        health=7,
+        cost=3,
+        attack=5,
+        health=3,
         creature_types=['Water'],
     ),
     'Master Pakku': CardTemplate(
@@ -273,5 +273,13 @@ CARD_TEMPLATES = {
         attack=2,
         health=8,
         creature_types=['Air'],
+    ),
+    'Senna': CardTemplate(
+        name='Senna',
+        abilities=['PumpOnFriendlyHeal'],
+        cost=2,
+        attack=2,
+        health=2,
+        creature_types=['Water'],
     ),
 }
