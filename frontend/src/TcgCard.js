@@ -57,7 +57,6 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     {card.creatureTypes.join(', ')}
                 </Typography>
                 <Typography>
-                    Abilities: 
                     <ul>
                         {card.abilities.map((ability, index) => (
                             <li key={index}>{ability.description}</li>
