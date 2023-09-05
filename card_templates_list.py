@@ -158,8 +158,8 @@ CARD_TEMPLATES = {
         name='Great Sage',
         abilities=['OnTowerAttackDrawCard'],
         cost=4,
-        attack=2,
-        health=2,
+        attack=3,
+        health=3,
         creature_types=['Fire'],
     ),
     'Lin': CardTemplate(
@@ -175,7 +175,7 @@ CARD_TEMPLATES = {
         abilities=['OnRevealGainMana'],
         cost=2,
         attack=1,
-        health=1,
+        health=3,
         creature_types=['Earth'],
     ),
     'Suyin': CardTemplate(
