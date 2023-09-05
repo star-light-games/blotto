@@ -18,9 +18,17 @@
   }  
 
   .arrow.shackled {
-    background-color: green;
+    background-color: yellow;
   }
   
   .arrow.shackled:after {
-    border-left-color: green;
+    border-left-color: yellow;
   }  
+
+  .arrow.healed {
+    background-color: green;
+  }
+  
+  .arrow.healed:after {
+    border-left-color: green;
+  }    

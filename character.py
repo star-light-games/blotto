@@ -162,18 +162,22 @@ class Character:
 
         if random.random() < probability_of_moving_to_first_other_lane:
             target_lane_number = other_lane_numbers[0]
-            target_lane = game_state.lanes[target_lane_number]
+        else:
+            target_lane_number = other_lane_numbers[1]
 
-            self.lane.characters_by_player[self.owner_number] = [character for character in self.lane.characters_by_player[self.owner_number] if character.id != self.id]
-            target_lane.characters_by_player[self.owner_number].append(self)
-            self.lane = target_lane
+        target_lane = game_state.lanes[target_lane_number]
 
-            # pump friendly characters with CharacterMovesHerePumps ability
-            for character in target_lane.characters_by_player[self.owner_number]:
-                if character.has_ability('CharacterMovesHerePumps'):
-                    character.current_attack += 2
-                    character.current_health += 2
-                    character.max_health += 2
+        self.lane.characters_by_player[self.owner_number] = [character for character in self.lane.characters_by_player[self.owner_number] if character.id != self.id]
+        target_lane.characters_by_player[self.owner_number].append(self)
+        self.lane = target_lane
+        self.has_attacked = False
+
+        # pump friendly characters with CharacterMovesHerePumps ability
+        for character in target_lane.characters_by_player[self.owner_number]:
+            if character.has_ability('CharacterMovesHerePumps'):
+                character.current_attack += 2
+                character.current_health += 2
+                character.max_health += 2
 
 
     def fully_heal(self):
@@ -314,15 +318,16 @@ class Character:
                             "lane_number": self.lane.lane_number,
                             "healed_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(random_friendly_damaged_character.id),
                             "heaing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                        }
+                        },
+                        game_state.to_json(),
                     ])
-                self.lane.damage_by_player[self.owner_number] = max(0, self.lane.damage_by_player[self.owner_number] - 3)
+                self.lane.damage_by_player[1 - self.owner_number] = max(0, self.lane.damage_by_player[1 - self.owner_number] - 3)
 
             if self.has_ability('OnRevealHealAllFriendliesAndTowers'):
                 for lane in game_state.lanes:
                     for character in lane.characters_by_player[self.owner_number]:
                         character.fully_heal()
-                    lane.damage_by_player[self.owner_number] = max(0, lane.damage_by_player[self.owner_number] - 5)
+                    lane.damage_by_player[1 - self.owner_number] = max(0, lane.damage_by_player[1 - self.owner_number] - 5)
                 animations.append([
                     {
                         "event_type": "on_reveal",

@@ -48,7 +48,7 @@ ABILITIES: dict[str, Ability] = {
     ),
     'PumpAttackOfCharactersPlayedHere': Ability(
         name='PumpAttackOfCharactersPlayedHere',
-        description='Whenever you play a character in this lane, it gets +1/+0.',
+        description='Whenever you play a character in this lane (including myself), it gets +1/+0.',
     ),
     'OnTowerAttackDrawCard': Ability(
         name='OnTowerAttackDrawCard',

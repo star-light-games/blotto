@@ -150,7 +150,7 @@ CARD_TEMPLATES = {
         name='Iroh II',
         abilities=['PumpAttackOfCharactersPlayedHere'],
         cost=2,
-        attack=2,
+        attack=1,
         health=2,
         creature_types=['Fire'],
     ),

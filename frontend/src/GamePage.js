@@ -17,6 +17,7 @@ import { snakeCase } from './utils';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import battleOld from './battleOld.webp';
 import './arrow.css';
+import './game_page.css';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { dark } from '@mui/material/styles/createPalette';
 
@@ -771,7 +772,7 @@ export default function GamePage({}) {
 
     const darkMode = useTheme().palette.mode === 'dark';
 
-    const showArrowFromCharacterToCharacter = (event, shackle=false) => {
+    const showArrowFromCharacterToCharacter = (event, arrowType=null) => {
         console.log(characterRefs)
         console.log(characterRefs.current)
         console.log({...characterRefs.current})
@@ -782,14 +783,20 @@ export default function GamePage({}) {
         let attackingCharacterPos;
         let defendingCharacterPos;
 
-        if (shackle) {
+        if (arrowType === 'shackle') {
             attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.shackling_character_array_index]?.current?.getBoundingClientRect();
+        }
+        else if (arrowType === 'heal') {
+            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healing_character_array_index]?.current?.getBoundingClientRect();
         }
         else {
             attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
         }
-        if (shackle) {
+        if (arrowType === 'shackle') {
             defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.player]?.[event.shackled_character_array_index]?.current?.getBoundingClientRect();
+        }
+        else if (arrowType === 'heal') {
+            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healed_character_array_index]?.current?.getBoundingClientRect();
         }
         else {
             defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.[event.defending_character_array_index]?.current?.getBoundingClientRect();
@@ -824,10 +831,13 @@ export default function GamePage({}) {
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
         arrow.style.transform = `rotate(${angle}deg)`;
         arrow.style.transformOrigin = "0 50%";
-        if (shackle) {
+        if (arrowType === 'shackle') {
             arrow.classList.add("shackled");
+        } else if (arrowType === 'heal') {
+            arrow.classList.add("healed");
         } else {
             arrow.classList.remove("shackled");
+            arrow.classList.remove("healed");
         }
 
         document.body.appendChild(arrow);
@@ -886,6 +896,19 @@ export default function GamePage({}) {
         console.log('Animation successfully triggered!')
     }
 
+    const highlightRevealingCharacter = (event) => {
+        const characterElement = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.revealing_character_array_index]?.current;
+
+        if (characterElement) {
+            // Add the highlighting class
+            characterElement.classList.add('highlight-reveal');
+        
+            // Remove the highlighting class after 1 second (1000 milliseconds)
+            setTimeout(() => {
+              characterElement.classList.remove('highlight-reveal');
+            }, 1000);
+        }
+    }
 
     const opponentManaAmount = gameState?.mana_by_player?.[opponentNum] || 1;
 
@@ -935,7 +958,7 @@ export default function GamePage({}) {
               // Run your animation function, e.g., showArrowToTower(event);
               console.log('attacking character');
               await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-              showArrowFromCharacterToCharacter(event, false);
+              showArrowFromCharacterToCharacter(event, null);
               setGameState(newState);
               break;
             case "tower_damage":
@@ -947,9 +970,21 @@ export default function GamePage({}) {
             case "character_shackle":
                 console.log('shackling character');
                 await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                showArrowFromCharacterToCharacter(event, true);
+                showArrowFromCharacterToCharacter(event, 'shackle');
                 setGameState(newState);
-                break;                
+                break;           
+            case "character_heal":
+                console.log('healing character');
+                await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                showArrowFromCharacterToCharacter(event, 'heal');
+                setGameState(newState);
+                break;           
+            case "on_reveal":
+                console.log('revealing card');
+                await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                highlightRevealingCharacter(event);
+                setGameState(newState);
+                break;
           }
       
           // Pause execution to let animation complete
