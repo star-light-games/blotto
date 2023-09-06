@@ -2,11 +2,12 @@ import random
 from deck import Deck
 from lane import Lane
 from card import Card
+from typing import Optional
 
 
 class GameState:
     def __init__(self, usernames_by_player: dict[int, str], decks_by_player: dict[int, Deck]):
-        self.lanes = [Lane(lane_number) for lane_number in range(3)]
+        self.lanes = [Lane(lane_number, lane_reward_str) for (lane_number, lane_reward_str) in zip(list(range(3)), ['Fire Nation', 'Southern Air Temple', 'Full Moon Bay'])]
         self.turn = 0        
         self.usernames_by_player = usernames_by_player
         self.player_0_hand, self.player_0_draw_pile = self.draw_initial_hand(decks_by_player[0])
@@ -57,6 +58,22 @@ class GameState:
 
     def all_players_have_moved(self) -> bool:
         return all([self.has_moved_by_player[player_num] for player_num in [0, 1]])
+
+    def find_random_empty_slot_in_other_lane(self, not_in_lane_num: int, player_num: int) -> Optional[Lane]:
+        other_lane_numbers = [lane_number for lane_number in [0, 1, 2] if lane_number != not_in_lane_num]
+        empty_slots_by_lane_number_in_other_lanes = {lane_number: max(4 - len(self.lanes[lane_number].characters_by_player[player_num]), 0) for lane_number in other_lane_numbers}
+        total_empty_slots = sum(empty_slots_by_lane_number_in_other_lanes.values())
+        if total_empty_slots == 0:
+            return None
+        probability_of_moving_to_first_other_lane = empty_slots_by_lane_number_in_other_lanes[other_lane_numbers[0]] / total_empty_slots
+
+        if random.random() < probability_of_moving_to_first_other_lane:
+            target_lane_number = other_lane_numbers[0]
+        else:
+            target_lane_number = other_lane_numbers[1]
+
+        target_lane = self.lanes[target_lane_number]
+        return target_lane
 
     def to_json(self, exclude_animations: bool = True):
         return {

@@ -38,6 +38,27 @@ class Character:
         damage_dealt = (base_attack + extra_for_losing) * multiplier
         return damage_dealt
 
+    def deal_tower_damage(self, attacking_player: int, defending_characters: list['Character'], damage_by_player: dict[int, int], lane_number: int, log: list[str], animations: list, game_state: 'GameState'):
+        damage_dealt = self.compute_damage_to_deal(damage_by_player, is_tower_attack=True)
+        damage_by_player[self.owner_number] += damage_dealt
+        if self.has_ability('OnTowerAttackDealMassDamage'):
+            for character in defending_characters:
+                character.current_health -= 2
+                log.append(f"{self.owner_username}'s {self.template.name} dealt 2 damage to {character.owner_username}'s {character.template.name} in Lane {lane_number + 1}. "
+                            f"{character.template.name}'s health is now {character.current_health}.")
+        log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
+        if self.has_ability('OnTowerAttackDrawCard'):
+            game_state.draw_card(attacking_player)
+            log.append(f"{self.owner_username}'s {self.template.name} drew a card.")
+        animations.append([{
+                        "event_type": "tower_damage",
+                        "attacking_character_id": self.id,
+                        "lane_number": lane_number,
+                        "lane_damage_post_attack": damage_by_player[self.owner_number],
+                        "attacking_player": self.owner_number,
+                        "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    }, game_state.to_json()])
+
     def attack(self, attacking_player: int, 
                damage_by_player: dict[int, int], 
                defending_characters: list['Character'], 
@@ -46,30 +67,9 @@ class Character:
                animations: list,
                game_state: 'GameState'):
         self.has_attacked = True
-        maybe_also = ''
         defenders = [character for character in defending_characters if character.is_defender() and character.can_fight()]
         if len(defenders) == 0 and not self.is_attacker():
-            damage_dealt = self.compute_damage_to_deal(damage_by_player, is_tower_attack=True)
-            damage_by_player[attacking_player] += damage_dealt
-            if self.has_ability('OnTowerAttackDealMassDamage'):
-                for character in defending_characters:
-                    character.current_health -= 2
-                    log.append(f"{self.owner_username}'s {self.template.name} dealt 2 damage to {character.owner_username}'s {character.template.name} in Lane {lane_number + 1}. "
-                                f"{character.template.name}'s health is now {character.current_health}.")
-            log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
-            if self.has_ability('OnTowerAttackDrawCard'):
-                game_state.draw_card(attacking_player)
-                log.append(f"{self.owner_username}'s {self.template.name} drew a card.")
-
-            animations.append([
-                {
-                    "event_type": "tower_damage",
-                    "attacking_character_id": self.id,
-                    "lane_number": lane_number,
-                    "lane_damage_post_attack": damage_by_player[attacking_player],
-                    "attacking_player": attacking_player,
-                    "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                }, game_state.to_json()])
+            self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
         else:
             if len(defenders) == 0:
                 if len(defending_characters) > 0:
@@ -79,20 +79,9 @@ class Character:
             else:
                 target_character = random.choice(defenders)
             if target_character is not None:
-                maybe_also = ' also'
                 self.fight(target_character, lane_number, log, animations, game_state)
             if self.is_attacker():
-                damage_dealt = self.compute_damage_to_deal(damage_by_player, is_tower_attack=True)
-                damage_by_player[attacking_player] += damage_dealt
-                log.append(f"{self.owner_username}'s {self.template.name}{maybe_also} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
-                animations.append([{
-                                "event_type": "tower_damage",
-                                "attacking_character_id": self.id,
-                                "lane_number": lane_number,
-                                "lane_damage_post_attack": damage_by_player[attacking_player],
-                                "attacking_player": attacking_player,
-                                "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                            }, game_state.to_json()])
+                self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
         
         if self.has_ability('SwitchLanesAfterAttacking'):
             self.switch_lanes(game_state)
@@ -152,20 +141,10 @@ class Character:
 
 
     def switch_lanes(self, game_state: 'GameState'):
-        my_lane_number = self.lane.lane_number
-        other_lane_numbers = [lane_number for lane_number in [0, 1, 2] if lane_number != my_lane_number]
-        empty_slots_by_lane_number_in_other_lanes = {lane_number: max(4 - len(game_state.lanes[lane_number].characters_by_player[self.owner_number]), 0) for lane_number in other_lane_numbers}
-        total_empty_slots = sum(empty_slots_by_lane_number_in_other_lanes.values())
-        if total_empty_slots == 0:
+        target_lane = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
+
+        if target_lane is None:
             return
-        probability_of_moving_to_first_other_lane = empty_slots_by_lane_number_in_other_lanes[other_lane_numbers[0]] / total_empty_slots
-
-        if random.random() < probability_of_moving_to_first_other_lane:
-            target_lane_number = other_lane_numbers[0]
-        else:
-            target_lane_number = other_lane_numbers[1]
-
-        target_lane = game_state.lanes[target_lane_number]
 
         self.lane.characters_by_player[self.owner_number] = [character for character in self.lane.characters_by_player[self.owner_number] if character.id != self.id]
         target_lane.characters_by_player[self.owner_number].append(self)

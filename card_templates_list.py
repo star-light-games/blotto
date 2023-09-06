@@ -154,13 +154,13 @@ CARD_TEMPLATES = {
         health=2,
         creature_types=['Fire'],
     ),
-    'Great Sage': CardTemplate(
-        name='Great Sage',
+    'Professor Zei': CardTemplate(
+        name='Professor Zei',
         abilities=['OnTowerAttackDrawCard'],
         cost=4,
         attack=3,
         health=3,
-        creature_types=['Fire'],
+        creature_types=['Earth'],
     ),
     'Lin': CardTemplate(
         name='Lin',
@@ -281,5 +281,14 @@ CARD_TEMPLATES = {
         attack=1,
         health=2,
         creature_types=['Water'],
+    ),
+    'Air Nomads': CardTemplate(
+        name='Air Nomads',
+        abilities=[],
+        cost=3,
+        attack=4,
+        health=4,
+        creature_types=['Air'],
+        not_in_card_pool=True,
     ),
 }
