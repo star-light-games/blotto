@@ -27,6 +27,8 @@ const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
 const playerColorToneReversed = (isDarkMode) => isDarkMode ? '#d7ffd9' : '#226422'
 const opponentColorToneReversed = (isDarkMode) => isDarkMode ? '#ffd7d7' : '#995555'
 
+const getBackgroundColor = (isDarkMode) => isDarkMode ? '#555' : '#f5f5f5';
+
 function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmount }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
     const opponentUsername = game.usernames_by_player[opponentNum];
@@ -329,7 +331,7 @@ function ResetButton({ onReset, disabled }) {
     const isDarkMode = theme.palette.mode === 'dark';
 
     // Define GameLog background color based on theme mode
-    const logBackgroundColor = isDarkMode ? '#555' : '#f5f5f5';
+    const logBackgroundColor = getBackgroundColor(isDarkMode);
     const logTextColor = theme.palette.text.primary;
 
     const containerStyle = {
@@ -570,13 +572,13 @@ function Lane({
                         />
                     </Grid>
                     <Grid item>
-                        <Card style={{ height: '75px', width: '70px' }} ref={towerRefs?.current?.[laneNumber]?.[opponentNum]}>
+                        <Card style={{ height: '75px', width: '70px', backgroundColor: laneData.earned_rewards_by_player[playerNum] ? playerFontColor : 'backgroundColor' }} ref={towerRefs?.current?.[laneNumber]?.[opponentNum]}>
                             <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="h4" style={{ 
                                     fontWeight: 'bold', 
                                     fontFamily: 'Arial', 
                                     marginTop: '7px',
-                                    color: playerFontColor,
+                                    color: laneData.earned_rewards_by_player[playerNum] ? getBackgroundColor(isDarkMode) : playerFontColor,
                                 }}>
                                     <div>
                                         {laneData.damage_by_player[playerNum]}
@@ -585,6 +587,32 @@ function Lane({
                             </CardContent>
                         </Card>
                     </Grid>
+                </Grid>
+                {/* <Grid item>
+                <Box 
+                    display="flex" 
+                    justifyContent="center" 
+                    alignItems="center" 
+                    height="200px%"  // You can adjust this
+                    width="100%"  
+                    padding="3px"  // Padding for symmetry
+                >
+                    <img 
+                    src={`/images/${snakeCase(laneData.lane_reward.name)}.png`} 
+                    alt={`${snakeCase(laneData.lane_reward.name)}-lane-art`} 
+                    style={{
+                        maxWidth: '100%', 
+                        maxHeight: '100%',
+                        // objectFit: 'contain'  // Keeps aspect ratio
+                    }}  
+                    />
+                </Box>
+                </Grid> */}
+                <Grid item>
+                    <Typography variant="h4" align="center">{laneData.lane_reward.name || 'Lane Title'}</Typography>
+                </Grid>
+                <Grid item>
+                    <Typography variant="h5" align="center">{laneData.lane_reward.reward_description || 'Lane Description'}</Typography>
                 </Grid>
                 <Grid item container direction="row" spacing={1} alignItems="center">
                     <Grid item>
@@ -608,13 +636,19 @@ function Lane({
                         />
                     </Grid>
                     <Grid item>
-                        <Card style={{ height: '75px', width: '70px' }} ref={towerRefs?.current?.[laneNumber]?.[playerNum]}>
+                        <Card style={{ 
+                                height: '75px', 
+                                width: '70px',
+                                backgroundColor: laneData.earned_rewards_by_player[opponentNum] ? opponentFontColor : 'backgroundColor'  // conditionally set background color
+                            }}  
+                            ref={towerRefs?.current?.[laneNumber]?.[playerNum]}
+                        >
                             <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="h4" style={{ 
                                     fontWeight: 'bold', 
                                     fontFamily: 'Arial', 
                                     marginTop: '7px',
-                                    color: opponentFontColor,
+                                    color: laneData.earned_rewards_by_player[opponentNum] ? getBackgroundColor(isDarkMode) : opponentFontColor
                                 }}>
                                     <div>
                                         {laneData.damage_by_player[opponentNum]}
@@ -1173,7 +1207,7 @@ export default function GamePage({}) {
                         onChange={handleAnimationDelayChange}
                         style={{
                             marginTop: theme.spacing(1),
-                            backgroundColor: darkMode ? '#555' : '#f5f5f5',
+                            backgroundColor: getBackgroundColor(darkMode),
                         }}
                     >
                         {SPEEDS.map((speed, index) => (

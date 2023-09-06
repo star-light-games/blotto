@@ -154,6 +154,15 @@ CARD_TEMPLATES = {
         health=2,
         creature_types=['Fire'],
     ),
+    'Great Sage': CardTemplate(
+        name='Great Sage',
+        abilities=['OnTowerAttackDrawCard'],
+        cost=4,
+        attack=3,
+        health=3,
+        creature_types=['Fire'],
+        not_in_card_pool=True,
+    ),
     'Professor Zei': CardTemplate(
         name='Professor Zei',
         abilities=['OnTowerAttackDrawCard'],

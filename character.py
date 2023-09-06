@@ -50,6 +50,7 @@ class Character:
         if self.has_ability('OnTowerAttackDrawCard'):
             game_state.draw_card(attacking_player)
             log.append(f"{self.owner_username}'s {self.template.name} drew a card.")
+        self.lane.maybe_give_lane_reward(attacking_player, game_state)
         animations.append([{
                         "event_type": "tower_damage",
                         "attacking_character_id": self.id,

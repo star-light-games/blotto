@@ -32,7 +32,7 @@ class Lane:
         elif self.lane_reward.name == 'Southern Air Temple':
             lane_to_spawn_in = game_state.find_random_empty_slot_in_other_lane(self.lane_number, player_num)
             if lane_to_spawn_in is not None:
-                lane_to_spawn_in.characters_by_player[player_num].append(Character(CARD_TEMPLATES['Air Nomad'], lane_to_spawn_in, player_num, game_state.usernames_by_player[player_num]))
+                lane_to_spawn_in.characters_by_player[player_num].append(Character(CARD_TEMPLATES['Air Nomads'], lane_to_spawn_in, player_num, game_state.usernames_by_player[player_num]))
         elif self.lane_reward.name == 'Full Moon Bay':
             game_state.draw_card(player_num)
 
