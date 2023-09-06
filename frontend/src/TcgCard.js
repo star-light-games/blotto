@@ -72,7 +72,8 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
             display="flex" 
             alignItems="center"
             >
-            <Typography variant="h6" style={{ marginRight: 5 }}>{card.attack}</Typography>
+            <Typography variant="h6">{card.attack}</Typography>
+            <Typography variant="h6">/</Typography>
             <Typography variant="h6">{card.health}</Typography>
             </Box>
         </CardContent>

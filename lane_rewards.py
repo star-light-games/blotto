@@ -2,18 +2,18 @@
 LANE_REWARDS = {
     'Fire Nation': {
         'name': 'Fire Nation',
-        'threshold': 25,
-        'reward_description': '25: ALL friendly characters get +3/+0.',
+        'threshold': 30,
+        'reward_description': 'ALL friendly characters get +3/+0.',
     },
     'Southern Air Temple': {
         'name': 'Southern Air Temple',
-        'threshold': 15,
-        'reward_description': '15: Create a 4/4 in another lane.',
+        'threshold': 20,
+        'reward_description': 'Create a 4/4 in another lane.',
     },
     'Full Moon Bay': {
         'name': 'Full Moon Bay',
-        'threshold': 5,
-        'reward_description': '5: Draw a card.',
+        'threshold': 10,
+        'reward_description': 'Draw a card.',
     },
 }
 

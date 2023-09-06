@@ -612,7 +612,7 @@ function Lane({
                     <Typography variant="h4" align="center">{laneData.lane_reward.name || 'Lane Title'}</Typography>
                 </Grid>
                 <Grid item>
-                    <Typography variant="h5" align="center">{laneData.lane_reward.reward_description || 'Lane Description'}</Typography>
+                    <Typography variant="h5" align="center">{`${laneData.lane_reward.threshold}: ${laneData.lane_reward.reward_description || 'Lane Description'}`}</Typography>
                 </Grid>
                 <Grid item container direction="row" spacing={1} alignItems="center">
                     <Grid item>
