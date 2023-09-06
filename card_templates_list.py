@@ -223,8 +223,8 @@ CARD_TEMPLATES = {
         name='Kya',
         abilities=['HealFriendlyCharacterAndTower'],
         cost=2,
-        attack=3,
-        health=3,
+        attack=2,
+        health=6,
         creature_types=['Water'],
     ),
     'Aang': CardTemplate(
