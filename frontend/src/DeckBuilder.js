@@ -271,7 +271,7 @@ function DeckBuilder({ cards }) {
      <Typography variant="h6" style={{ marginTop: '20px' }}>Available Cards:</Typography>
       <Grid container spacing={3}>
         {cards.map((card) => (
-          <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
+          card?.notInCardPool ? null : <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
             <TcgCard card={card} doNotBorderOnHighlight={true} displayArt />
           </Grid>
         ))}

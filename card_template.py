@@ -20,7 +20,7 @@ class CardTemplate:
             "attack": self.attack,
             "health": self.health,
             "creatureTypes": self.creature_types,
-            **({"notInCardPool": self.not_in_card_pool if self.not_in_card_pool else {}}),
+            **({"notInCardPool": self.not_in_card_pool} if self.not_in_card_pool else {}),
         }
     
     @staticmethod
