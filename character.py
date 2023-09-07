@@ -133,6 +133,10 @@ class Character:
         if defending_character.current_health <= 0 and self.has_ability('OnKillSwitchLanes'):
             self.switch_lanes(game_state)
 
+        if defending_character.current_health <= 0 and self.has_ability('OnKillBuffHealth'):
+            self.current_health += 2
+            self.max_health += 2
+
     def can_fight(self):
         return self.current_health > 0
 

@@ -300,4 +300,12 @@ CARD_TEMPLATES = {
         creature_types=['Air'],
         not_in_card_pool=True,
     ),
+    'Taqukaq': CardTemplate(
+        name='Taqukaq',
+        abilities=['Defender', 'OnKillBuffHealth'],
+        cost=4,
+        attack=2,
+        health=7,
+        creature_types=['Water'],
+    ),
 }

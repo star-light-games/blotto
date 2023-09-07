@@ -110,4 +110,8 @@ ABILITIES: dict[str, Ability] = {
         name='PumpOnFriendlyHeal',
         description='Whenever a friendly character in this lane is healed, it gets +2/+2.',
     ),
+    'OnKillBuffHealth': Ability(
+        name='OnKillBuffHealth',
+        description='When I kill a character, I get +0/+2.',
+    ),
 }
