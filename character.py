@@ -152,6 +152,9 @@ class Character:
             return
 
         self.lane.characters_by_player[self.owner_number] = [character for character in self.lane.characters_by_player[self.owner_number] if character.id != self.id]
+        if self.current_health <= 0:
+            return
+
         target_lane.characters_by_player[self.owner_number].append(self)
         self.lane = target_lane
         self.has_attacked = False

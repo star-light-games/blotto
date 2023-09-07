@@ -103,8 +103,8 @@ class Lane:
 
             if dying_character.has_ability('SwitchLanesInsteadOfDying') and not dying_character.escaped_death:
                 dying_character.escaped_death = True
+                dying_character.fully_heal()                
                 dying_character.switch_lanes(game_state)
-                dying_character.fully_heal()
 
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]
