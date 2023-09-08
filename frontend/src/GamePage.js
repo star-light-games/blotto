@@ -20,6 +20,7 @@ import './arrow.css';
 import './game_page.css';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { dark } from '@mui/material/styles/createPalette';
+import { useNavigate } from 'react-router-dom';
 
 const playerColor = (isDarkMode) => isDarkMode ? '#226422' : '#d7ffd9'
 const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
@@ -724,6 +725,68 @@ export default function GamePage({}) {
         return storedValue ? parseInt(storedValue, 10) : BASE_ANIMATION_DELAY;
       });
    
+      const navigate = useNavigate();
+
+
+      const onRematch = () => {
+        const rematchGameId = game?.rematch_game_id;
+        let data = {};
+
+        fetch(`${URL}/api/games/${rematchGameId}`).then(response => {
+            if (!response.ok) {
+                data = {
+                    deckId: game?.decks_by_player?.[playerNum].id,
+                    hostGameId: rematchGameId,
+                    username: game.usernames_by_player[playerNum],
+                }
+                fetch(`${URL}/api/host_game`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                  })
+                  .then(response => {
+                    if (!response.ok) {
+                      return response.json().then(data => {
+                        throw new Error(data.error);
+                      });
+                    }
+                    return response.json();
+                  })
+                  .then(data => {
+                    navigate(`/game/${rematchGameId}?playerNum=0`);
+                  })
+                }
+            else {
+                data = {
+                    deckId: game?.decks_by_player?.[playerNum].id,
+                    gameId: rematchGameId,
+                    username: game.usernames_by_player[playerNum],
+                }                
+                fetch(`${URL}/api/join_game`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                  })
+                  .then(response => {
+                    if (!response.ok) {
+                      return response.json().then(data => {
+                        throw new Error(data.error);
+                      });
+                    }
+                    // Handle successful join, if necessary
+                  })
+                  .then(() => {
+                    navigate(`/game/${rematchGameId}?playerNum=1`); // Redirect to the game page
+                  })
+            }
+        }
+        )
+      }
+
     const SPEEDS = [
         { label: '0.5x', value: BASE_ANIMATION_DELAY * 2 },
         { label: '1x', value: BASE_ANIMATION_DELAY },
@@ -1272,12 +1335,13 @@ export default function GamePage({}) {
                     alignItems: 'center'                 
                 }}
                 >
-                    <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />
-                    <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog} disabled={submittedMove || gameOver}>
+                    {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={onRematch}>Rematch</Button>}
+                    {!gameOver && <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />}
+                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{margin: '10px'}} onClick={handleOpenDialog} disabled={submittedMove || gameOver}>
                         <Typography variant="h6">
                             Submit
                         </Typography>
-                    </Button>
+                    </Button>}
                 </div>
                 <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                     <DialogTitle>Confirm Action</DialogTitle>
