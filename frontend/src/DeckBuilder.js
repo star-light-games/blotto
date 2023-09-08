@@ -20,8 +20,59 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 
+function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, saveDeck }) {
+  const [draftOptions, setDraftOptions] = useState([]);
+
+  console.log(currentDeck.length);
+
+  useEffect(() => {
+    // Function to generate four distinct random cards from cardPool
+    const getRandomCards = () => {
+      let randomCards = [];
+      while (randomCards.length < 4) {
+        const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+        if (!randomCards.includes(randomCard) && !currentDeck.includes(randomCard)) {
+          randomCards.push(randomCard);
+        }
+      }
+      return randomCards;
+    };
+
+    // If drafting is enabled and currentDeck size is less than 20, get new draft options
+    if (currentDeck.length < 15) {
+      setDraftOptions(getRandomCards());
+    }
+    else {
+      saveDeck('Draft deck');
+      setDrafting(false);
+    }
+
+  }, [currentDeck]);
+
+  const addToDeck = (cardName) => {
+    setCurrentDeck(prev => [...prev, cardName]);
+  };
+
+  if (currentDeck.length === 15) return null;
+
+  return (
+    <React.Fragment>
+      <Typography variant="h6" style={{ marginTop: '20px' }}>Draft Options:</Typography>
+      <Grid container spacing={3}>
+        {draftOptions.map((card) => (
+          <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
+            <TcgCard card={card} doNotBorderOnHighlight={true} displayArt />
+          </Grid>
+        ))}
+      </Grid>
+    </React.Fragment>
+  );
+}
+
+
 function DeckBuilder({ cards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
+  console.log(currentDeck);
   const [decks, setDecks] = useState([]);
   const [userName, setUserName] = useState(localStorage.getItem('userName') || ''); // Retrieve from localStorage
   const [deckName, setDeckName] = useState('');
@@ -31,6 +82,7 @@ function DeckBuilder({ cards }) {
 
   const [hostGameId, setHostGameId] = useState(''); // For displaying gameId
   const [joinGameId, setJoinGameId] = useState(''); // For entering gameId
+  const [drafting, setDrafting] = useState(false);
 
   const navigate = useNavigate();
 
@@ -121,7 +173,7 @@ function DeckBuilder({ cards }) {
     setCurrentDeck([...currentDeck, cardName]);
   };
 
-  const saveDeck = () => {
+  const saveDeck = (deckName) => {
     const deckData = {
       name: deckName,
       username: userName,
@@ -251,7 +303,7 @@ function DeckBuilder({ cards }) {
         <Button 
           variant="contained" 
           color="primary" 
-          onClick={saveDeck} 
+          onClick={() => saveDeck(deckName)} 
           disabled={!userName || !deckName || !currentDeck || currentDeck.length === 0}>
           {!userName ? 'Enter User Name' : !deckName ? 'Enter Deck Name' : !currentDeck || currentDeck.length === 0 ? 'Add Cards to Deck' : 'Save Deck'}
         </Button>
@@ -267,7 +319,17 @@ function DeckBuilder({ cards }) {
       </List>
   </CardContent>
 
-  <CardContent>
+  {!drafting && <CardContent>
+    <Button variant="outlined" onClick={() => setDrafting(true)}>
+      Draft Cards
+    </Button>
+  </CardContent>}
+
+  {drafting && <CardContent>
+    <DraftComponent cardPool={cards.filter((card) => !card?.notInCardPool)} setCurrentDeck={setCurrentDeck} currentDeck={currentDeck} setDrafting={setDrafting} saveDeck={saveDeck} />
+  </CardContent>}
+
+  {!drafting && <CardContent>
      <Typography variant="h6" style={{ marginTop: '20px' }}>Available Cards:</Typography>
       <Grid container spacing={3}>
         {cards.map((card) => (
@@ -276,7 +338,7 @@ function DeckBuilder({ cards }) {
           </Grid>
         ))}
       </Grid>
-  </CardContent>
+  </CardContent>}
 </Card>
       
 
