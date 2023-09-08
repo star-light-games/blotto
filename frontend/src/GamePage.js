@@ -95,8 +95,8 @@ function CharacterDisplayOld({ character, setHoveredCard, type }) {
 }
 
 
-const CHARACTER_BOX_SIZE = 125;
-const TOWER_BOX_SIZE = 60;
+const CHARACTER_BOX_SIZE = 175;
+const TOWER_BOX_SIZE = 75;
 
 
 function CharacterDisplay({ character, setHoveredCard, type }) {
@@ -572,7 +572,7 @@ function Lane({
                         />
                     </Grid>
                     <Grid item>
-                        <Card style={{ height: '65px', width: '60px', backgroundColor: laneData.earned_rewards_by_player[playerNum] ? playerFontColor : 'backgroundColor' }} ref={towerRefs?.current?.[laneNumber]?.[opponentNum]}>
+                        <Card style={{ height: '75px', width: '70px', backgroundColor: laneData.earned_rewards_by_player[playerNum] ? playerFontColor : 'backgroundColor' }} ref={towerRefs?.current?.[laneNumber]?.[opponentNum]}>
                             <CardContent style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="h4" style={{ 
                                     fontWeight: 'bold', 
@@ -612,7 +612,7 @@ function Lane({
                     <Typography variant="h4" align="center">{laneData.lane_reward.name || 'Lane Title'}</Typography>
                 </Grid>
                 <Grid item>
-                    <Typography variant="h6" align="center">{`${laneData.lane_reward.threshold}: ${laneData.lane_reward.reward_description || 'Lane Description'}`}</Typography>
+                    <Typography variant="h5" align="center">{`${laneData.lane_reward.threshold}: ${laneData.lane_reward.reward_description || 'Lane Description'}`}</Typography>
                 </Grid>
                 <Grid item container direction="row" spacing={1} alignItems="center">
                     <Grid item>
@@ -637,8 +637,8 @@ function Lane({
                     </Grid>
                     <Grid item>
                         <Card style={{ 
-                                height: '65px', 
-                                width: '60px',
+                                height: '75px', 
+                                width: '70px',
                                 backgroundColor: laneData.earned_rewards_by_player[opponentNum] ? opponentFontColor : 'backgroundColor'  // conditionally set background color
                             }}  
                             ref={towerRefs?.current?.[laneNumber]?.[playerNum]}
@@ -692,6 +692,9 @@ export default function GamePage({}) {
     const queryParams = new URLSearchParams(location.search);
     const playerNum = queryParams.get('playerNum') === "0" ? 0 : 1;
     const opponentNum = playerNum === 0 ? 1 : 0;
+    window.onload = function() {
+        document.body.style.zoom = "67%";
+    }
 
     const [game, setGame] = useState({});
     const [gameState, setGameState] = useState(null);
@@ -901,8 +904,8 @@ export default function GamePage({}) {
             return;
         }
 
-        const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - CHARACTER_BOX_SIZE/2 - 20;
-        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - CHARACTER_BOX_SIZE/2 + (event.attacking_player !== playerNum ? -33 : 7);
+        const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - CHARACTER_BOX_SIZE/2 - 18;
+        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - CHARACTER_BOX_SIZE/2 + (event.attacking_player !== playerNum ? -20 : 8);
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Create an arrow element and set its position and rotation
