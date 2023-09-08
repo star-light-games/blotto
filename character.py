@@ -51,13 +51,19 @@ class Character:
             game_state.draw_card(attacking_player)
             log.append(f"{self.owner_username}'s {self.template.name} drew a card.")
         self.lane.maybe_give_lane_reward(attacking_player, game_state)
+        try:
+            attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
+        except Exception:
+            print('Attacking character not found')
+            attacking_character_array_index = None
+
         animations.append([{
                         "event_type": "tower_damage",
                         "attacking_character_id": self.id,
                         "lane_number": lane_number,
                         "lane_damage_post_attack": damage_by_player[self.owner_number],
                         "attacking_player": self.owner_number,
-                        "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                        "attacking_character_array_index": attacking_character_array_index,
                     }, game_state.to_json()])
 
     def attack(self, attacking_player: int, 

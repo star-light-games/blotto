@@ -288,7 +288,7 @@ CARD_TEMPLATES = {
         abilities=['PumpOnFriendlyHeal'],
         cost=2,
         attack=2,
-        health=2,
+        health=5,
         creature_types=['Water'],
     ),
     'Air Nomads': CardTemplate(
