@@ -88,7 +88,7 @@ ABILITIES: dict[str, Ability] = {
     ),
     'CharacterMovesHerePumps': Ability(
         name='CharacterMovesHerePumps',
-        description='Whenever a friendly character moves into this lane, it gets +2/+2.',
+        description='Whenever a friendly character switches into this lane, it gets +2/+2.',
     ),
     'OnRevealHealAllFriendliesAndTowers': Ability(
         name='OnRevealHealAllFriendliesAndTowers',
@@ -113,5 +113,25 @@ ABILITIES: dict[str, Ability] = {
     'OnKillBuffHealth': Ability(
         name='OnKillBuffHealth',
         description='When I kill a character, I get +0/+2.',
+    ),
+    'OnRevealFriendliesSwitchLanes': Ability(
+        name='OnRevealFriendliesSwitchLanes',
+        description='On reveal: all friendly characters in this lane switch lanes.',
+    ),
+    'CharacterMovesHereThatCharacterPumps': Ability(
+        name='CharacterMovesHereThatCharacterPumps',
+        description='Whenever a friendly character switches into this lane, it gets +1/+1.',
+    ),
+    'OnReveal1DamageToAll': Ability(
+        name='OnReveal1DamageToAll',
+        description='On reveal: deal 1 damage to ALL characters in this lane.',
+    ),
+    'EndOfTurnFullHealForAllFriendlies': Ability(
+        name='EndOfTurnFullHealForAllFriendlies',
+        description='At the end of each turn, fully heal all friendly characters.',
+    ),
+    'OnFriendlyHealPumpMyself': Ability(
+        name='OnFriendlyHealPumpMyself',
+        description='Whenever a friendly character is healed, I get +1/+1.',
     ),
 }
