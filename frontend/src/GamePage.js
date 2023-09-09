@@ -95,7 +95,8 @@ function CharacterDisplayOld({ character, setHoveredCard, type }) {
     );
 }
 
-const CHARACTER_BOX_WIDTH = 'min(13vw, 18vh)';
+const CHARACTER_BOX_WIDTH = '175px';
+// const CHARACTER_BOX_WIDTH = 'min(8vw, 12vh)';
 const CHARACTER_BOX_HEIGHT = CHARACTER_BOX_WIDTH;
 
 const LANE_WIDTH = `calc(${CHARACTER_BOX_WIDTH} * 2 + 150px)`;
@@ -497,7 +498,7 @@ function LaneForOneSide({
 }
 
 function LaneTitle({laneData}) {
-    let style ={ minHeight: '100px', maxHeight: '200px', textWrap: 'wrap', textAlign: 'center' }
+    let style = { height: '50px', textWrap: 'wrap', textAlign: 'center' }
     return (
         <><Grid item style={style}>
             <Typography variant="h4" align="center">{laneData.lane_reward.name || 'Lane Title'}</Typography>
@@ -734,8 +735,9 @@ export default function GamePage({ }) {
 
     const navigate = useNavigate();
 
+    // No longer using this relevantly, originally was gonna not display art on small screens
     function handleResize() {
-        setDisplayArt(window.innerWidth > 1200 && window.innerHeight > 850);
+        setDisplayArt(true);
     }
 
     useEffect(() => {
@@ -1158,6 +1160,13 @@ export default function GamePage({ }) {
             // Depending on the error, you may choose to stop polling
         }
     };
+    
+    const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    socket.on('connect', function () {
+        console.log('connected');
+        socket.emit('join', { room: gameId });
+    });
 
     useEffect(() => {
         let pollingInterval;
@@ -1262,14 +1271,14 @@ export default function GamePage({ }) {
                 {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} displayArt />}
             </div>
             <div style={{ flex: 10 }}>
-                <div style={{ margin: '1px' }} >
+                <div style={{margin: '1px'}}>
                     <GameInfo
                         game={game}
                         gameState={gameState}
                         playerNum={playerNum}
                         yourManaAmount={yourManaAmount}
                         opponentManaAmount={opponentManaAmount}
-                    />
+                        />
                 </div>
                 {gameOver && !animating && <div style={{ margin: '10px' }}>
                     <Card variant="outlined">
@@ -1349,7 +1358,7 @@ export default function GamePage({ }) {
                     setHoveredCard={setHoveredCard}
                     yourManaAmount={yourManaAmount}
                 />
-                <div
+               <div
                     style={{
                         position: 'fixed',
                         bottom: '20px',

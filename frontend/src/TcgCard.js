@@ -1,33 +1,44 @@
 import { Card, CardContent, Typography, Box, useTheme } from '@mui/material';
 import { snakeCase } from './utils';
 
-function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, displayArt }) {
+function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, displayArt , height, width }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
     // Define card background color based on theme mode
     const cardBackgroundColor = isDarkMode ? '#555' : '#eee';
 
+    const outlineSize = 2;
+
     return (
       <div 
           style={{
-              border: isSelected ? '2px solid black' : 'none',
-              cursor: 'pointer'
+              border: isSelected ? `${outlineSize}px solid black` : 'none',
+              boxSizing: 'border-box',
+              cursor: 'pointer',
+              width: width || 250 + (outlineSize * 2),
+              height: height || (displayArt ? 400 : 250) + (outlineSize * 2),
           }}
           onClick={onCardClick ? () => onCardClick(card) : null}
           onMouseEnter={e => {
             if (!doNotBorderOnHighlight) {
-                e.currentTarget.style.border = '2px solid blue';    
+                e.currentTarget.style.border = `${outlineSize}px solid blue`;
             }
             onMouseEnter && onMouseEnter();
           }}
-          onMouseLeave={e => e.currentTarget.style.border = isSelected ? '2px solid black' : 'none'}
+          onMouseLeave={e => {
+            if (isSelected) {
+                e.currentTarget.style.border = `${outlineSize}px solid black`;
+            } else {
+                e.currentTarget.style.border = 'none';
+            }
+            }}
       >
         <Card 
         variant="outlined" 
         style={{ 
-            width: 250, 
-            height: displayArt ? 400 : 250, 
+            width: width || 250,
+            height: height || (displayArt ? 400 : 250),
             position: 'relative', 
             backgroundColor: cardBackgroundColor,  // Use the defined card background color
             overflow: 'hidden',
