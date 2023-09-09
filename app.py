@@ -105,6 +105,8 @@ def host_game():
     if not username:
         return jsonify({"error": "Username is required"}), 400
     
+    host_game_id = data.get('hostGameId')
+    
     with rlock('games'):
         decks = rget_json('decks') or {}
         deck_json = decks.get(deck_id)
@@ -112,7 +114,7 @@ def host_game():
             return jsonify({"error": "Deck not found"}), 404
         deck = Deck.from_json(deck_json)
 
-        game = Game({0: username, 1: None}, {0: deck, 1: None})
+        game = Game({0: username, 1: None}, {0: deck, 1: None}, id=host_game_id)
         games = rget_json('games') or {}
         games[game.id] = game.to_json()
 
