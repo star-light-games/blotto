@@ -1151,16 +1151,13 @@ export default function GamePage({ }) {
     };
 
     const pollApiForGameUpdates = async () => {
+        console.log('poll fetch')
         try {
             const response = await fetch(`${URL}/api/games/${gameId}`);
             const data = await response.json();
 
             // Check the data for the conditions you want. For example:
             if (!data.game_state.has_moved_by_player[playerNum]) {
-                // Do something based on the response
-                // e.g., set some state, or trigger some other effect
-
-                // And stop the polling if needed
                 setSubmittedMove(false);
                 setGame(data);
                 if (data?.game_state?.animations?.length > 0) {
@@ -1176,6 +1173,9 @@ export default function GamePage({ }) {
 
                 handleReset();
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
+            }
+            else {
+                setGameState(data?.game_state);
             }
         } catch (error) {
             console.error("Error while polling:", error);
@@ -1201,6 +1201,7 @@ export default function GamePage({ }) {
 
     useEffect(() => {
         // Fetch the game data from your backend.
+        console.log('useEffect fetch')
         fetch(`${URL}/api/games/${gameId}`)
             .then(res => res.json())
             .then(data => {

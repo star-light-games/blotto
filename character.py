@@ -230,7 +230,8 @@ class Character:
 
 
     def do_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
-        self.did_on_reveal = True
+        if self.did_on_reveal:
+            return
         if self.new:
             if self.has_ability('OnRevealShackle'):
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
