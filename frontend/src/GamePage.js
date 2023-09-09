@@ -20,7 +20,15 @@ import './arrow.css';
 import './game_page.css';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { dark } from '@mui/material/styles/createPalette';
+import { useSocket } from './SocketContext';
 import { useNavigate } from 'react-router-dom';
+
+function log(...args) {
+    // change this to disable logs
+    if (true) {
+        console.log(...args);
+    }
+}
 
 const playerColor = (isDarkMode) => isDarkMode ? '#226422' : '#d7ffd9'
 const opponentColor = (isDarkMode) => isDarkMode ? '#995555' : '#ffd7d7'
@@ -105,7 +113,7 @@ const LANE_HEIGHT = `calc(${CHARACTER_BOX_HEIGHT} * 4 + 325px)`;
 const CHARACTER_IMAGE_HEIGHT = `calc(${CHARACTER_BOX_HEIGHT} - 40px)` 
 const CHARACTER_IMAGE_WIDTH = `calc(${CHARACTER_BOX_WIDTH} - 10px)`
 
-let characterStyle, characterWidth, characterHeight;
+let characterWidth, characterHeight;
 
 const TOWER_BOX_SIZE = 75;
 
@@ -695,20 +703,26 @@ function Lane({
 
 export default function GamePage({ }) {
     const { gameId } = useParams();
+    const socket = useSocket();
+    window.onload = function () {
+        document.body.style.zoom = "67%";
+        socket.emit('join', { room: gameId });
+    }
+    window.addEventListener('unload', function () {
+        console.log('asdf');
+        socket.emit('leave', { room: gameId });
+    });
+
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const playerNum = queryParams.get('playerNum') === "0" ? 0 : 1;
     const opponentNum = playerNum === 0 ? 1 : 0;
-    window.onload = function () {
-        document.body.style.zoom = "67%";
-    }
-
     const [displayArt, setDisplayArt] = useState(true);
 
     const [game, setGame] = useState({});
     const [gameState, setGameState] = useState(null);
-    console.log(game);
-    console.log(gameState);
+    log(game);
+    log(gameState);
     const [loading, setLoading] = useState(true);
 
     const username = localStorage.getItem('username'); // Retrieving username from localStorage
@@ -890,12 +904,12 @@ export default function GamePage({ }) {
     const darkMode = useTheme().palette.mode === 'dark';
 
     const showArrowFromCharacterToCharacter = (event, arrowType = null) => {
-        console.log(characterRefs)
-        console.log(characterRefs.current)
-        console.log({ ...characterRefs.current })
-        console.log(characterRefs.current[event.attacking_character_id])
-        console.log(event.attacking_character_id)
-        console.log(event);
+        log(characterRefs)
+        log(characterRefs.current)
+        log({ ...characterRefs.current })
+        log(characterRefs.current[event.attacking_character_id])
+        log(event.attacking_character_id)
+        log(event);
 
         let attackingCharacterPos;
         let defendingCharacterPos;
@@ -921,18 +935,18 @@ export default function GamePage({ }) {
 
 
         if (!attackingCharacterPos) {
-            console.log('Attacking character position not found!')
+            log('Attacking character position not found!')
             return;
         }
 
         if (!defendingCharacterPos) {
-            console.log('Defending character position not found!')
+            log('Defending character position not found!')
             return;
         }
 
-        characterStyle = window.getComputedStyle(characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current);
-        characterWidth = characterStyle.getPropertyValue('width');
-        characterHeight = characterStyle.getPropertyValue('height');
+        // slice off the "px"
+        characterWidth = CHARACTER_BOX_WIDTH.slice(0, -2);
+        characterHeight = CHARACTER_BOX_HEIGHT.slice(0, -2);
 
         const dx = defendingCharacterPos.left - attackingCharacterPos.left;
         const dy = defendingCharacterPos.top - attackingCharacterPos.top;
@@ -958,39 +972,44 @@ export default function GamePage({ }) {
             arrow.classList.remove("healed");
         }
 
+        log("To character");
+        log(arrow);
+
         document.body.appendChild(arrow);
 
         setTimeout(() => {
             document.body.removeChild(arrow);
         }, animationDelay * 0.67);
 
-        console.log('Animation successfully triggered!')
+        log('Animation successfully triggered!')
     };
 
     const showArrowFromCharacterToTower = (event) => {
-        console.log(characterRefs)
-        console.log(characterRefs.current[event.attacking_character_id])
-        console.log(event.attacking_character_id)
+        log(characterRefs)
+        log(characterRefs.current[event.attacking_character_id])
+        log(event.attacking_character_id)
 
-        console.log(towerRefs);
-        console.log(event);
+        log(towerRefs);
+        log(event);
 
         const attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
         const defendingTowerPos = towerRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.current?.getBoundingClientRect();
 
         if (!attackingCharacterPos) {
-            console.log('Attacking character position not found!')
+            log('Attacking character position not found!')
             return;
         }
 
         if (!defendingTowerPos) {
-            console.log('Defending tower position not found!')
+            log('Defending tower position not found!')
             return;
         }
 
-        characterStyle = window.getComputedStyle(characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current);
-        characterWidth = characterStyle.getPropertyValue('width');
-        characterHeight = characterStyle.getPropertyValue('height');
+        // slice off the "px"
+        characterWidth = CHARACTER_BOX_WIDTH.slice(0, -2);
+        characterHeight = CHARACTER_BOX_HEIGHT.slice(0, -2);
+       
+        log(defendingTowerPos, attackingCharacterPos)
 
         const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - characterWidth / 2 - 18;
         const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - characterHeight / 2 + (event.attacking_player !== playerNum ? -20 : 8);
@@ -1008,6 +1027,9 @@ export default function GamePage({ }) {
         arrow.style.transform = `rotate(${angle}deg)`;
         arrow.style.transformOrigin = "0 50%";
 
+        log("To tower");
+        log(arrow);
+        
         document.body.appendChild(arrow);
 
 
@@ -1015,7 +1037,7 @@ export default function GamePage({ }) {
             document.body.removeChild(arrow);
         }, animationDelay * 0.67);
 
-        console.log('Animation successfully triggered!')
+        log('Animation successfully triggered!')
     }
 
     const highlightRevealingCharacter = (event) => {
@@ -1066,43 +1088,43 @@ export default function GamePage({ }) {
     }
 
     const triggerAnimations = async (finalGameState, animationQueue) => {
-        console.log('Triggering animations!');
-        console.log(animationQueue);
+        log('Triggering animations!');
+        log(animationQueue);
 
         for (let [event, newState] of animationQueue) {
             // Trigger the animation based on the event
-            console.log(event.event_type)
+            log(event.event_type)
             switch (event.event_type) {
                 case "start_of_roll":
                     setGameState(newState);
                     break;
                 case "character_attack":
                     // Run your animation function, e.g., showArrowToTower(event);
-                    console.log('attacking character');
+                    log('attacking character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     showArrowFromCharacterToCharacter(event, null);
                     setGameState(newState);
                     break;
                 case "tower_damage":
-                    console.log('attacking tower');
+                    log('attacking tower');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     showArrowFromCharacterToTower(event);
                     setGameState(newState);
                     break;
                 case "character_shackle":
-                    console.log('shackling character');
+                    log('shackling character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     showArrowFromCharacterToCharacter(event, 'shackle');
                     setGameState(newState);
                     break;
                 case "character_heal":
-                    console.log('healing character');
+                    log('healing character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     showArrowFromCharacterToCharacter(event, 'heal');
                     setGameState(newState);
                     break;
                 case "on_reveal":
-                    console.log('revealing card');
+                    log('revealing card');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     highlightRevealingCharacter(event);
                     setGameState(newState);
@@ -1161,13 +1183,6 @@ export default function GamePage({ }) {
         }
     };
     
-    const socket = io.connect('http://' + document.domain + ':' + location.port);
-
-    socket.on('connect', function () {
-        console.log('connected');
-        socket.emit('join', { room: gameId });
-    });
-
     useEffect(() => {
         let pollingInterval;
 
@@ -1228,6 +1243,7 @@ export default function GamePage({ }) {
         setDialogOpen(false);
     };
 
+
     const handleSubmit = () => {
         // Close the dialog first
         handleCloseDialog();
@@ -1248,7 +1264,7 @@ export default function GamePage({ }) {
         })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                log(data);
                 setSubmittedMove(true);
                 // Handle the response as required (e.g. update local state, or navigate elsewhere)
             })
@@ -1308,16 +1324,16 @@ export default function GamePage({ }) {
                             backgroundColor: getBackgroundColor(darkMode),
                         }}
                     >
-                        {SPEEDS.map((speed, index) => (
+                        {SPEEDS.map((speed, index) => ( 
                             <MenuItem key={index} value={speed.value}>
                                 {speed.label}
                             </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
-                <Select>
-                    <MenuItem value={BASE_ANIMATION_DELAY} onClick={() => setAnimationDelay(BASE_ANIMATION_DELAY)}>Normal</MenuItem>
-                </Select>
+                {/* <Select> */}
+                    {/* <MenuItem value={BASE_ANIMATION_DELAY} onClick={() => setAnimationDelay(BASE_ANIMATION_DELAY)}>Normal</MenuItem> */}
+                {/* </Select> */}
                 {/* <OldLanesDisplay 
                     lanes={laneData ? laneData : gameState.lanes} 
                     playerNum={playerNum} 
