@@ -16,7 +16,7 @@ from utils import generate_unique_id
 
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 
 def recurse_to_json(obj):
@@ -181,6 +181,8 @@ def join_game():
         game.usernames_by_player[1] = username
         game.decks_by_player[1] = deck
         game.start()
+        
+        socketio.emit('update', room=game.id)
 
         games[game_id] = game.to_json()
         rset_json('games', games)
@@ -233,6 +235,7 @@ def take_turn(game_id):
 
         game.game_state.has_moved_by_player[player_num] = True
         if game.game_state.all_players_have_moved():
+            socketio.emit('update', room=game.id)
             game.game_state.roll_turn()
 
         games[game_id] = game.to_json()
@@ -262,6 +265,6 @@ def on_leave(data):
 
 if __name__ == '__main__':
     if LOCAL:
-        app.run(debug=True)
+        socketio.run(app, host='0.0.0.0', debug=True)
     else:
-        app.run(host='0.0.0.0', port=5007)
+        socketio.run(app, host='0.0.0.0', port=5007)
