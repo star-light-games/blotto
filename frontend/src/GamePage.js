@@ -383,7 +383,7 @@ function LanesDisplay({
     if (!lanes) return null;
     return (
       <Grid container direction="row" justifyContent="center" spacing={5}>
-        {[0,1,2].map((i) => (<Grid item>
+        {[0,1,2].map((i) => (<Grid item style={{maxWidth: '25%'}}>
           <Lane 
             key={i}
             laneData={lanes[i]} 
@@ -438,7 +438,12 @@ function LaneForOneSide({
     const thirdCharacterToRender = charactersToRender?.length > 2 ? charactersToRender?.[2] : null
     const fourthCharacterToRender = charactersToRender?.length > 3 ? charactersToRender?.[3] : null
 
-    const boxSize = CHARACTER_BOX_SIZE; // Change this to set the size of each box
+    const paperStyle = {
+        height: `${CHARACTER_BOX_SIZE}px`,
+        width: `${CHARACTER_BOX_SIZE}px`,
+        textAlign: 'center',
+        lineHeight: `${CHARACTER_BOX_SIZE}px`,
+    }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '10px' }}>
@@ -449,24 +454,14 @@ function LaneForOneSide({
                                 character={firstCharacterToRender}
                                 setHoveredCard={setHoveredCard}
                                 type={playersSide ? 'player' : 'opponent'}
-                            /> : <Paper style={{ 
-                                height: `${boxSize}px`, 
-                                width: `${boxSize}px`, 
-                                textAlign: 'center', 
-                                lineHeight: `${boxSize}px`
-                            }} />}
+                            /> : <Paper style={paperStyle}/>}
                         </Grid>
                         <Grid item ref={characterRefs?.current?.[laneNumber]?.[lanePlayerNum]?.[1]}>
                             {secondCharacterToRender ? <CharacterDisplay
                                 character={secondCharacterToRender}
                                 setHoveredCard={setHoveredCard}
                                 type={playersSide ? 'player' : 'opponent'}
-                            /> : <Paper style={{ 
-                                height: `${boxSize}px`, 
-                                width: `${boxSize}px`, 
-                                textAlign: 'center', 
-                                lineHeight: `${boxSize}px`
-                            }} />}
+                            /> : <Paper style={paperStyle} />}
                         </Grid>                
                     </Grid>
                     <Grid item container direction="row" spacing={1}>
@@ -475,24 +470,14 @@ function LaneForOneSide({
                                 character={thirdCharacterToRender}
                                 setHoveredCard={setHoveredCard}
                                 type={playersSide ? 'player' : 'opponent'}
-                            /> : <Paper style={{ 
-                                height: `${boxSize}px`, 
-                                width: `${boxSize}px`, 
-                                textAlign: 'center', 
-                                lineHeight: `${boxSize}px`
-                            }} />}
+                            /> : <Paper style={paperStyle} />}
                         </Grid>
                         <Grid item ref={characterRefs?.current?.[laneNumber]?.[lanePlayerNum]?.[3]}>
                             {fourthCharacterToRender ? <CharacterDisplay
                                 character={fourthCharacterToRender}
                                 setHoveredCard={setHoveredCard}
                                 type={playersSide ? 'player' : 'opponent'}
-                            /> : <Paper style={{ 
-                                height: `${boxSize}px`, 
-                                width: `${boxSize}px`, 
-                                textAlign: 'center', 
-                                lineHeight: `${boxSize}px`
-                            }} />}
+                            /> : <Paper style={paperStyle} />}
                         </Grid>                
                     </Grid>            
                 </Grid>
@@ -544,7 +529,7 @@ function Lane({
     const opponentFontColor = opponentColorToneReversed(isDarkMode);
 
     return (
-        <LaneCard 
+        <LaneCard
             selectedCard={selectedCard} 
             onClick={handleLaneCardClick} 
             doNotOutlineOnHover={allLanesData[laneNumber].characters_by_player[playerNum].length >= 4}

@@ -1,7 +1,10 @@
+#!/usr/bin/python3
+
 from datetime import datetime, timedelta
 from card_templates_list import CARD_TEMPLATES
 from deck import Deck
 from flask import Flask, jsonify, request
+from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from flask_cors import CORS
 from game import Game
 import traceback
@@ -13,6 +16,7 @@ from utils import generate_unique_id
 
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 CORS(app)
 
 def recurse_to_json(obj):
@@ -236,7 +240,23 @@ def take_turn(game_id):
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
 
+@socketio.on('connect')
+def on_connect():
+    print('Connected')
 
+@socketio.on('join')
+def on_join(data):
+    username = data['username'] if 'username' in data else 'anonymous'
+    room = data['room']
+    join_room(room)
+    print(f'{username} joined {room}')
+    
+@socketio.on('leave')
+def on_leave(data):
+    username = data['username'] if 'username' in data else 'anonymous'
+    room = data['room']
+    leave_room(room)
+    print(f'{username} left {room}') 
 
 if __name__ == '__main__':
     if LOCAL:
