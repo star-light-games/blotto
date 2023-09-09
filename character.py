@@ -21,6 +21,7 @@ class Character:
         self.lane = lane
         self.new = True
         self.escaped_death = False
+        self.did_on_reveal = False
 
     def is_defender(self):
         return any([ability.name == 'Defender' for ability in self.template.abilities])
@@ -104,6 +105,11 @@ class Character:
             log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_to_deal} damage to the enemy {defending_character.template.name} in Lane {lane_number + 1}. "
                         f"{defending_character.template.name}'s health is now {defending_character.current_health}.")
 
+
+        if defending_character.current_health <= 0 and self.has_ability('OnKillBuffHealth'):
+            self.current_health += 2
+            self.max_health += 2
+
         if defending_character.has_ability('OnSurviveDamagePump') and defending_character.current_health > 0:
             defending_character.current_attack += 1
             defending_character.current_health += 1
@@ -139,10 +145,6 @@ class Character:
         if defending_character.current_health <= 0 and self.has_ability('OnKillSwitchLanes'):
             self.switch_lanes(game_state)
 
-        if defending_character.current_health <= 0 and self.has_ability('OnKillBuffHealth'):
-            self.current_health += 2
-            self.max_health += 2
-
     def can_fight(self):
         return self.current_health > 0
 
@@ -172,6 +174,10 @@ class Character:
                 character.current_health += 2
                 character.max_health += 2
 
+            if character.has_ability('CharacterMovesHereThatCharacterPumps'):
+                self.current_attack += 1
+                self.current_health += 1
+                self.max_health += 1
 
     def fully_heal(self):
         if self.current_health == self.max_health:
@@ -181,9 +187,14 @@ class Character:
         # pump friendly characters with the PumpOnFriendlyHeal ability
         for character in self.lane.characters_by_player[self.owner_number]:
             if character.has_ability('PumpOnFriendlyHeal'):
-                character.current_attack += 2
-                character.current_health += 2
-                character.max_health += 2
+                self.current_attack += 2
+                self.current_health += 2
+                self.max_health += 2
+
+            if character.has_ability('OnFriendlyHealPumpMyself'):
+                character.current_attack += 1
+                character.current_health += 1
+                character.max_health += 1
 
 
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState'):
@@ -200,6 +211,11 @@ class Character:
                             "lane_number": self.lane.lane_number,
                         }, game_state.to_json()])
         
+        for character in self.lane.characters_by_player[self.owner_number]:
+            if character.has_ability('EndOfTurnFullHealForAllFriendlies'):
+                self.fully_heal()
+                log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
+
         if self.shackled_turns > 0:
             log.append(f"{self.owner_username}'s {self.template.name} is shackled for {self.shackled_turns} more turns.")
             animations.append([{
@@ -214,6 +230,7 @@ class Character:
 
 
     def do_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
+        self.did_on_reveal = True
         if self.new:
             if self.has_ability('OnRevealShackle'):
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
@@ -340,6 +357,40 @@ class Character:
             if self.has_ability('OnRevealLaneFightsFirst'):
                 self.lane.additional_combat_priority -= 3
 
+            if self.has_ability('OnRevealFriendliesSwitchLanes'):
+                friendlies = self.lane.characters_by_player[self.owner_number][:]
+                random.shuffle(friendlies)
+                for character in friendlies:
+                    character.switch_lanes(game_state)
+
+                animations.append([
+                    {
+                        "event_type": "on_reveal",
+                        "revealing_character_id": self.id,
+                        "player": self.owner_number,
+                        "lane_number": self.lane.lane_number,
+                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    },
+                    game_state.to_json(),
+                ])
+
+            if self.has_ability('OnReveal1DamageToAll'):
+                for character in [*self.lane.characters_by_player[self.owner_number], *self.lane.characters_by_player[1 - self.owner_number]]:
+                    character.current_health -= 1
+                    log.append(f"{self.owner_username}'s {self.template.name} dealt 1 damage to {character.owner_username}'s {character.template.name} in Lane {self.lane.lane_number + 1}. "
+                                f"{character.template.name}'s health is now {character.current_health}.")
+                animations.append([
+                    {
+                        "event_type": "on_reveal",
+                        "revealing_character_id": self.id,
+                        "player": self.owner_number,
+                        "lane_number": self.lane.lane_number,
+                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    },
+                    game_state.to_json(),
+                ])
+
+        self.did_on_reveal = True
 
 
     def get_random_other_friendly_damaged_character(self) -> Optional['Character']:
@@ -363,6 +414,7 @@ class Character:
             "owner_username": self.owner_username,
             "new": self.new,   
             "escaped_death": self.escaped_death,         
+            "did_on_reveal": self.did_on_reveal,
             # Can't put lane in here because of infinite recursion
         }
 
@@ -383,4 +435,5 @@ class Character:
         character.has_attacked = json['has_attacked']
         character.new = json['new']
         character.escaped_death = json['escaped_death']
+        character.did_on_reveal = json['did_on_reveal']
         return character
