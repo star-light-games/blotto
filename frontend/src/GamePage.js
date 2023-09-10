@@ -22,6 +22,8 @@ import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { dark } from '@mui/material/styles/createPalette';
 import { useSocket } from './SocketContext';
 import { useNavigate } from 'react-router-dom';
+import io from 'socket.io-client';
+
 
 function log(...args) {
     if (process.env.REACT_APP_LOG != 'false') {
@@ -730,6 +732,7 @@ export default function GamePage({ }) {
     const [hoveredCard, setHoveredCard] = useState(null);
     const [cardsToLanes, setCardsToLanes] = useState({});
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [cardsToMulligan, setCardsToMulligan] = useState([]);
 
     const [submittedMove, setSubmittedMove] = useState(false);
 
@@ -1392,6 +1395,7 @@ export default function GamePage({ }) {
                     setSelectedCard={setSelectedCard}
                     setHoveredCard={setHoveredCard}
                     yourManaAmount={yourManaAmount}
+                    cardsToMulligan={cardsToMulligan}
                 />
                <div
                     style={{
