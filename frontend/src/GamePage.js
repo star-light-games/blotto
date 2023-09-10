@@ -24,8 +24,7 @@ import { useSocket } from './SocketContext';
 import { useNavigate } from 'react-router-dom';
 
 function log(...args) {
-    // change this to disable logs
-    if (true) {
+    if (process.env.REACT_APP_LOG != 'false') {
         console.log(...args);
     }
 }
@@ -709,7 +708,6 @@ export default function GamePage({ }) {
         socket.emit('join', { room: gameId });
     }
     window.addEventListener('unload', function () {
-        console.log('asdf');
         socket.emit('leave', { room: gameId });
     });
 
@@ -747,7 +745,26 @@ export default function GamePage({ }) {
         return storedValue ? parseInt(storedValue, 10) : BASE_ANIMATION_DELAY;
     });
 
+    useEffect(() => {
+        const f = (event) => {
+            if (dialogOpen) {
+                if (event.key == 'Enter') {
+                    event.preventDefault();
+                    handleSubmit();
+                } else if (event.key == 'Escape') {
+                    event.preventDefault();
+                    handleCloseDialog();
+                }
+            }             
+        }
+
+        window.addEventListener('keydown', f);
+        return () => window.removeEventListener('keydown', f);
+    }, [dialogOpen]);
+
     const navigate = useNavigate();
+
+
 
     // No longer using this relevantly, originally was gonna not display art on small screens
     function handleResize() {
@@ -972,9 +989,6 @@ export default function GamePage({ }) {
             arrow.classList.remove("healed");
         }
 
-        log("To character");
-        log(arrow);
-
         document.body.appendChild(arrow);
 
         setTimeout(() => {
@@ -1027,9 +1041,6 @@ export default function GamePage({ }) {
         arrow.style.transform = `rotate(${angle}deg)`;
         arrow.style.transformOrigin = "0 50%";
 
-        log("To tower");
-        log(arrow);
-        
         document.body.appendChild(arrow);
 
 
@@ -1151,7 +1162,6 @@ export default function GamePage({ }) {
     };
 
     const pollApiForGameUpdates = async () => {
-        console.log('poll fetch')
         try {
             const response = await fetch(`${URL}/api/games/${gameId}`);
             const data = await response.json();
@@ -1201,7 +1211,7 @@ export default function GamePage({ }) {
 
     useEffect(() => {
         // Fetch the game data from your backend.
-        console.log('useEffect fetch')
+        log('useEffect fetch');
         fetch(`${URL}/api/games/${gameId}`)
             .then(res => res.json())
             .then(data => {

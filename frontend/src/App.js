@@ -1,21 +1,18 @@
-import logo from './logo.svg';
 import './App.css';
 
-import React, { useState, useEffect } from 'react';
-import { Container, Grid, CircularProgress, Snackbar, Alert } from '@mui/material';
-import TcgCard from './TcgCard';
-import DeckBuilder from './DeckBuilder';
 import { URL } from './settings';
+import React, { useState, useEffect } from 'react';
+import { Container, CircularProgress, Snackbar, Alert } from '@mui/material';
+import DeckBuilder from './DeckBuilder';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import GamePage from './GamePage';
 import ThemeProvider from './ThemeProvider';
 import { CssBaseline } from '@mui/material';
-import { DarkModeContext, DarkModeProvider } from './DarkModeContext';
+import { DarkModeProvider } from './DarkModeContext';
+import { SocketProvider } from './SocketContext';
 import oldPainting from './oldPainting.jpg';
 
 import TopBar from './TopBar.js';
-
-
 
 
 function CardPoolPage() {
@@ -96,6 +93,7 @@ function CardPoolPage() {
 
 function App() {
   return (
+    <SocketProvider>
     <DarkModeProvider> 
       <ThemeProvider>
 
@@ -110,6 +108,7 @@ function App() {
     </Router>
     </ThemeProvider>
     </DarkModeProvider>
+    </SocketProvider>
   );
 }
 
