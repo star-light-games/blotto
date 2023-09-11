@@ -108,7 +108,7 @@ ABILITIES: dict[str, Ability] = {
     ),
     'PumpOnFriendlyHeal': Ability(
         name='PumpOnFriendlyHeal',
-        description='Whenever a friendly character in this lane is healed, it gets +2/+2.',
+        description='Whenever a friendly character in this lane is healed, I get +2/+2.',
     ),
     'OnKillBuffHealth': Ability(
         name='OnKillBuffHealth',
@@ -124,7 +124,7 @@ ABILITIES: dict[str, Ability] = {
     ),
     'OnReveal1DamageToAll': Ability(
         name='OnReveal1DamageToAll',
-        description='On reveal: deal 1 damage to ALL characters in this lane.',
+        description='On reveal: deal 1 damage to ALL characters in this lane (including your own).',
     ),
     'EndOfTurnFullHealForAllFriendlies': Ability(
         name='EndOfTurnFullHealForAllFriendlies',
