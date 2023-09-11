@@ -705,7 +705,6 @@ export default function GamePage({ }) {
     const socket = useSocket();
     window.onload = function () {
         document.body.style.zoom = "67%";
-        socket.emit('join', { room: gameId });
     }
     window.addEventListener('unload', function () {
         socket.emit('leave', { room: gameId });
@@ -1193,21 +1192,30 @@ export default function GamePage({ }) {
         }
     };
     
+    // useEffect(() => {
+    //     let pollingInterval;
+
+    //     if (submittedMove || !gameState) {
+    //         pollingInterval = setInterval(pollApiForGameUpdates, 500); // Poll every 0.5 seconds
+    //     }
+
+    //     return () => {
+    //         // This is the cleanup function that will run if the component is unmounted
+    //         // or if the dependencies of the useEffect change.
+    //         if (pollingInterval) {
+    //             clearInterval(pollingInterval);
+    //         }
+    //     };
+    // }, [submittedMove || !gameState]); // Depend on submittedMove, so the effect re-runs if its value changes
+
     useEffect(() => {
-        let pollingInterval;
-
-        if (submittedMove || !gameState) {
-            pollingInterval = setInterval(pollApiForGameUpdates, 500); // Poll every 0.5 seconds
-        }
-
-        return () => {
-            // This is the cleanup function that will run if the component is unmounted
-            // or if the dependencies of the useEffect change.
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-            }
-        };
-    }, [submittedMove || !gameState]); // Depend on submittedMove, so the effect re-runs if its value changes
+        socket.emit('join', { room: gameId });
+        socket.on('update', () => {
+            pollApiForGameUpdates();
+        })
+        pollApiForGameUpdates();
+        return () => socket.emit('leave', { room: gameId })
+    }, []);
 
     useEffect(() => {
         // Fetch the game data from your backend.

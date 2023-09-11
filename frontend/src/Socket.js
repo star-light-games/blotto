@@ -11,8 +11,4 @@ socket.on('disconnect', () => {
     console.log('disconnected');
 });
 
-socket.on('update', (data) => {
-    console.log('update', data);
-});
-
 export default socket;
