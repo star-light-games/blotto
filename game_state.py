@@ -37,11 +37,18 @@ class GameState:
             self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
 
     def mulligan_card(self, player_num: int, card_id: str):
-        if self.has_mulliganed_by_player[player_num]:
-            return
         self.draw_piles_by_player[player_num].append([card for card in self.hands_by_player[player_num] if card.id == card_id][0])
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
         self.log.append(f"{self.usernames_by_player[player_num]} mulliganed a card.")
+        self.draw_card(player_num)
+
+    def mulligan_cards(self, player_num: int, cards: list[str]):
+        if self.has_mulliganed_by_player[player_num]:
+            return   
+        cards = cards[:]   
+        random.shuffle(cards)  
+        for card_id in cards:
+            self.mulligan_card(player_num, card_id)
         self.has_mulliganed_by_player[player_num] = True
 
     def roll_turn(self):

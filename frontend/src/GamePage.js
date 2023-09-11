@@ -308,7 +308,15 @@ function OldLanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelec
     );
 }
 
-function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, yourManaAmount }) {
+function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, yourManaAmount, cardsToMulligan, setCardsToMulligan, mulliganing }) {        
+    const toggleMulliganingCard = (card) => {
+        if (cardsToMulligan.includes(card.id)) {
+            setCardsToMulligan(cardsToMulligan.filter(id => id !== card.id));
+        } else {
+            setCardsToMulligan([...cardsToMulligan, card.id]);
+        }
+    };
+
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap' }}>
             {cards.map((card, index) => (
@@ -317,9 +325,10 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
                         card={card.template}
                         isSelected={selectedCard ? selectedCard.id === card.id : false}
                         onMouseEnter={() => setHoveredCard(card.template)}
-                        onCardClick={yourManaAmount >= card.template.cost ? () => setSelectedCard(card) : () => { }}
+                        onCardClick={mulliganing ? () => toggleMulliganingCard(card) : yourManaAmount >= card.template.cost ? () => setSelectedCard(card) : () => { }}
                         doNotBorderOnHighlight={yourManaAmount < card.template.cost}
                         displayArt={true}
+                        displayRedX={cardsToMulligan.includes(card.id) && mulliganing}
                     />
                 </div>
             ))}
@@ -1265,35 +1274,59 @@ export default function GamePage({ }) {
         setDialogOpen(false);
     };
 
+    const mulliganing = !gameState.has_mulliganed_by_player[playerNum]
 
     const handleSubmit = () => {
         // Close the dialog first
         handleCloseDialog();
 
-        // Construct the payload
-        const payload = {
-            username: game.usernames_by_player[playerNum], // assuming username is in the local scope
-            cardsToLanes: cardsToLanes // adjust as per your setup
-        };
+        if (mulliganing) {
+            const payload = {
+                username: game.usernames_by_player[playerNum],
+                cards: cardsToMulligan,
+            };
 
-        // Make the API call
-        fetch(`${URL}/api/games/${gameId}/take_turn`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        })
-            .then(response => response.json())
-            .then(data => {
-                log(data);
-                setSubmittedMove(true);
-                // Handle the response as required (e.g. update local state, or navigate elsewhere)
+            fetch(`${URL}/api/games/${gameId}/mulligan`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    setGame(data.game);
+                    setGameState(data.game.game_state);
+                    // Handle the response as required (e.g. update local state, or navigate elsewhere)
+                })
+            }
+        else {
+
+            const payload = {
+                username: game.usernames_by_player[playerNum],
+                cardsToLanes: cardsToLanes,
+            };
+                        
+            // Make the API call
+            fetch(`${URL}/api/games/${gameId}/take_turn`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             })
-            .catch(error => {
-                console.error("There was an error making the submit API call:", error);
-            });
-    };
+                .then(response => response.json())
+                .then(data => {
+                    log(data);
+                    setSubmittedMove(true);
+                    // Handle the response as required (e.g. update local state, or navigate elsewhere)
+                })
+                .catch(error => {
+                    console.error("There was an error making the submit API call:", error);
+                });                
+            }
+        };
 
     return (
         <div style={{
@@ -1396,6 +1429,8 @@ export default function GamePage({ }) {
                     setHoveredCard={setHoveredCard}
                     yourManaAmount={yourManaAmount}
                     cardsToMulligan={cardsToMulligan}
+                    setCardsToMulligan={setCardsToMulligan}
+                    mulliganing={mulliganing}
                 />
                <div
                     style={{
@@ -1408,8 +1443,8 @@ export default function GamePage({ }) {
                     }}
                 >
                     {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={onRematch}>Rematch</Button>}
-                    {!gameOver && <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />}
-                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleOpenDialog} disabled={submittedMove || gameOver}>
+                    {!gameOver && !mulliganing && <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />}
+                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={mulliganing ? handleSubmit : handleOpenDialog} disabled={submittedMove || gameOver}>
                         <Typography variant="h6">
                             Submit
                         </Typography>
