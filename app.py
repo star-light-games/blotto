@@ -9,6 +9,7 @@ from flask_cors import CORS
 from game import Game
 import traceback
 from functools import wraps
+import random
 
 from redis_utils import rget_json, rlock, rset_json
 from settings import LOCAL
@@ -244,6 +245,51 @@ def take_turn(game_id):
     
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
+
+@app.route('/api/games/<game_id>/mulligan', methods=['POST'])
+@api_endpoint
+def mulligan(game_id):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+    
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+
+    cards_to_mulligan = data.get('cards')
+
+    if cards_to_mulligan is None:
+        return jsonify({"error": "Cards mapping is required"}), 400
+    
+    with rlock('games'):
+        games = rget_json('games') or {}
+        game_json = games.get(game_id)
+        if not game_json:
+            return jsonify({"error": "Game not found"}), 404
+
+        game = Game.from_json(game_json)
+
+        player_num = game.username_to_player_num(username)
+        assert player_num is not None
+        assert game.game_state is not None
+
+        random.shuffle(cards_to_mulligan)
+
+        for card_id in cards_to_mulligan:
+            game.game_state.mulligan_card(player_num, card_id)
+
+        game.game_state.has_mulliganed_by_player[player_num] = True
+
+        games[game_id] = game.to_json()
+
+        rset_json('games', games)
+    
+    return jsonify({"gameId": game.id,
+                    "game": game.to_json()})
+
 
 @socketio.on('connect')
 def on_connect():

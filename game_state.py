@@ -15,6 +15,7 @@ class GameState:
         self.hands_by_player = {0: self.player_0_hand, 1: self.player_1_hand}
         self.draw_piles_by_player = {0: self.player_0_draw_pile, 1: self.player_1_draw_pile}
         self.has_moved_by_player = {0: False, 1: False}
+        self.has_mulliganed_by_player = {0: False, 1: False}
         self.log: list[str] = []
         self.animations: list = []
         self.mana_by_player = {0: 0, 1: 0}
@@ -34,6 +35,21 @@ class GameState:
             self.draw_piles_by_player[player_num] = self.draw_piles_by_player[player_num][1:]
         else:
             self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
+
+    def mulligan_card(self, player_num: int, card_id: str):
+        self.draw_piles_by_player[player_num].append([card for card in self.hands_by_player[player_num] if card.id == card_id][0])
+        self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
+        self.log.append(f"{self.usernames_by_player[player_num]} mulliganed a card.")
+        self.draw_card(player_num)
+
+    def mulligan_cards(self, player_num: int, cards: list[str]):
+        if self.has_mulliganed_by_player[player_num]:
+            return   
+        cards = cards[:]   
+        random.shuffle(cards)  
+        for card_id in cards:
+            self.mulligan_card(player_num, card_id)
+        self.has_mulliganed_by_player[player_num] = True
 
     def roll_turn(self):
         self.turn += 1
@@ -87,6 +103,7 @@ class GameState:
             "usernames_by_player": self.usernames_by_player,
             "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()},
             **({"animations": self.animations} if not exclude_animations else {}),
+            "has_mulliganed_by_player": self.has_mulliganed_by_player
         }
     
     @staticmethod
@@ -100,5 +117,6 @@ class GameState:
         game_state.mana_by_player = json['mana_by_player']
         game_state.has_moved_by_player = json['has_moved_by_player']
         game_state.animations = json['animations']
+        game_state.has_mulliganed_by_player = json['has_mulliganed_by_player']
 
         return game_state

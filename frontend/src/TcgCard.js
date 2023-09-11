@@ -1,7 +1,7 @@
 import { Card, CardContent, Typography, Box, useTheme } from '@mui/material';
 import { snakeCase } from './utils';
 
-function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, displayArt , height, width }) {
+function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, displayArt , height, width, displayRedX }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
@@ -62,6 +62,23 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     alt={`${snakeCase(card.name)}-character-art`} 
                     style={{maxWidth: '100%', maxHeight: '100%'}} 
                 />
+                {displayRedX && (
+                    <img
+                        src={'/images/red_x.png'}
+                        alt="red-x"
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 2,
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                        }}
+                    />
+            )}
             </Box> : null}
             <Box mt={2} style={{ maxHeight: '150px', overflowY: 'auto' }}>  {/* Apply max-height and overflow-y */}
                 <Typography variant="body2" color="textSecondary">
@@ -77,11 +94,11 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
             </Box>
 
             <Box 
-            position="absolute" 
-            bottom={10} 
-            right={10} 
-            display="flex" 
-            alignItems="center"
+                position="absolute" 
+                bottom={10} 
+                right={10} 
+                display="flex" 
+                alignItems="center"
             >
             <Typography variant="h6">{card.attack}</Typography>
             <Typography variant="h6">/</Typography>
