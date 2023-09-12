@@ -87,7 +87,7 @@ CARD_TEMPLATES = {
         abilities=[],
         cost=2,
         attack=3,
-        health=6,
+        health=7,
         creature_types=['Water'],
     ),
     'Southern Raider': CardTemplate(
@@ -135,7 +135,7 @@ CARD_TEMPLATES = {
         abilities=[],
         cost=3,
         attack=4,
-        health=7,
+        health=8,
         creature_types=['Water'],
     ),
     'Admiral Zhao': CardTemplate(
