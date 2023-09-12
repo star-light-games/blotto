@@ -1,11 +1,17 @@
-
+from typing import Callable, Union
 from abilities_list import ABILITIES
 
 
 class CardTemplate:
-    def __init__(self, name: str, abilities: list[str], cost: int, attack: int, health: int, creature_types: list[str], not_in_card_pool: bool = False):
+    def __init__(self, name: str, abilities: list[Union[str, tuple[str, int]]], cost: int, attack: int, health: int, creature_types: list[str], not_in_card_pool: bool = False):
         self.name = name
-        self.abilities = [ABILITIES[ability_name] for ability_name in abilities]
+        self.abilities = []
+        for ability in abilities:
+            if isinstance(ability, tuple):
+                self.abilities.append(ABILITIES[ability[0]](ability[1]))  # type: ignore
+            else:
+                self.abilities.append(ABILITIES[ability])
+
         self.cost = cost
         self.attack = attack
         self.health = health
@@ -25,6 +31,7 @@ class CardTemplate:
     
     @staticmethod
     def from_json(json: dict):
-        return CardTemplate(json["name"], [ability["name"] for ability in json["abilities"]], json["cost"], json["attack"], json["health"], json["creatureTypes"],
+        return CardTemplate(json["name"], [(ability["name"], ability["number"]) if ability.get("number") is not None else ability["name"] for ability in json["abilities"]], 
+                            json["cost"], json["attack"], json["health"], json["creatureTypes"],
                             json["notInCardPool"] if "notInCardPool" in json else False)
     

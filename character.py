@@ -32,6 +32,11 @@ class Character:
     def has_ability(self, ability_name):
         return any([ability_name == ability.name for ability in self.template.abilities])
 
+    def number_of_ability(self, ability_name) -> int:
+        ability = [ability for ability in self.template.abilities if ability.name == ability_name][0]
+        assert ability.number is not None
+        return ability.number
+
     def compute_damage_to_deal(self, damage_by_player: dict[int, int], is_tower_attack: bool = False, starting_current_attack: Optional[int] = None):
         multiplier = 2 if self.has_ability('DoubleTowerDamage') and is_tower_attack else 1
         extra_for_losing = 6 if self.has_ability('DealSixMoreDamageWhenLosing') and damage_by_player[1 - self.owner_number] > damage_by_player[self.owner_number] else 0
@@ -313,8 +318,8 @@ class Character:
                 game_state.mana_by_player[self.owner_number] += 1
                 log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
 
-            count_of_characters_with_pump_friendlies_ability = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpAttackOfCharactersPlayedHere')])
-            self.current_attack += count_of_characters_with_pump_friendlies_ability
+            count_of_characters_with_pump_friendlies_ability = [character.number_of_ability('PumpAttackOfCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpAttackOfCharactersPlayedHere')]
+            self.current_attack += sum(count_of_characters_with_pump_friendlies_ability)
 
             if self.has_ability('HealFriendlyCharacterAndTower'):
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
@@ -375,10 +380,11 @@ class Character:
                     game_state.to_json(),
                 ])
 
-            if self.has_ability('OnReveal1DamageToAll'):
+            if self.has_ability('OnRevealDamageToAll'):
+                damage_amount = self.number_of_ability('OnRevealDamageToAll')
                 for character in [*self.lane.characters_by_player[self.owner_number], *self.lane.characters_by_player[1 - self.owner_number]]:
-                    character.current_health -= 1
-                    log.append(f"{self.owner_username}'s {self.template.name} dealt 1 damage to {character.owner_username}'s {character.template.name} in Lane {self.lane.lane_number + 1}. "
+                    character.current_health -= damage_amount
+                    log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_amount} damage to {character.owner_username}'s {character.template.name} in Lane {self.lane.lane_number + 1}. "
                                 f"{character.template.name}'s health is now {character.current_health}.")
                 animations.append([
                     {
@@ -390,6 +396,27 @@ class Character:
                     },
                     game_state.to_json(),
                 ])
+
+            if self.has_ability('OnRevealDrawCards'):
+                cards_to_draw = self.number_of_ability('OnRevealDrawCards')
+                for _ in range(cards_to_draw):
+                    game_state.draw_card(self.owner_number)
+
+            if self.has_ability('OnRevealDamageSelf'):
+                damage_amount = self.number_of_ability('OnRevealDamageSelf')
+                self.current_health -= damage_amount
+                log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_amount} damage to itself.")
+                animations.append([
+                    {
+                        "event_type": "on_reveal",
+                        "revealing_character_id": self.id,
+                        "player": self.owner_number,
+                        "lane_number": self.lane.lane_number,
+                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    },
+                    game_state.to_json(),
+                ])
+
 
         self.did_on_reveal = True
 

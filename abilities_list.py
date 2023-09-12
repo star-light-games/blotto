@@ -1,7 +1,8 @@
+from typing import Callable, Union
 from ability import Ability
 
 
-ABILITIES: dict[str, Ability] = {
+ABILITIES: dict[str, Union[Ability, Callable[[int], Ability]]] = {
     'Defender': Ability(
         name='Defender',
         description='Defender',
@@ -46,9 +47,10 @@ ABILITIES: dict[str, Ability] = {
         name='OnRevealPumpAttackers',
         description='On reveal: give +2/+2 to all friendly attackers in this lane (including myself).',
     ),
-    'PumpAttackOfCharactersPlayedHere': Ability(
+    'PumpAttackOfCharactersPlayedHere': lambda x: Ability(
         name='PumpAttackOfCharactersPlayedHere',
-        description='Whenever you play a character in this lane (including myself), it gets +1/+0.',
+        description=f'Whenever you play a character in this lane (including myself), it gets +{x}/+0.',
+        number=x,
     ),
     'OnTowerAttackDrawCard': Ability(
         name='OnTowerAttackDrawCard',
@@ -122,9 +124,10 @@ ABILITIES: dict[str, Ability] = {
         name='CharacterMovesHereThatCharacterPumps',
         description='Whenever a friendly character switches into this lane, it gets +1/+1.',
     ),
-    'OnReveal1DamageToAll': Ability(
-        name='OnReveal1DamageToAll',
-        description='On reveal: deal 1 damage to ALL characters in this lane (including your own).',
+    'OnRevealDamageToAll': lambda x: Ability(
+        name='OnRevealDamageToAll',
+        description=f'On reveal: deal {x} damage to ALL characters in this lane (including your own).',
+        number=x,
     ),
     'EndOfTurnFullHealForAllFriendlies': Ability(
         name='EndOfTurnFullHealForAllFriendlies',
@@ -133,5 +136,20 @@ ABILITIES: dict[str, Ability] = {
     'OnFriendlyHealPumpMyself': Ability(
         name='OnFriendlyHealPumpMyself',
         description='Whenever a friendly character is healed, I get +1/+1.',
+    ),
+    'OnRevealDamageSelf': lambda x: Ability(
+        name='OnRevealDamageSelf',
+        description=f'On reveal: I deal {x} damage to myself.',
+        number=x,
+    ),
+    'OnRevealDrawCards': lambda x: Ability(
+        name='OnRevealDrawCards',
+        description=f'On reveal: draw {x} cards.',
+        number=x,
+    ),
+    'OnDrawCardPump': lambda x: Ability(
+        name='OnDrawCardPump',
+        description=f'When you draw a card, I get +{x}/+{x}.',
+        number=x,
     ),
 }
