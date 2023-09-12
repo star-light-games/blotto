@@ -1194,6 +1194,11 @@ export default function GamePage({ }) {
 
                 handleReset();
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
+                if (data.game_state.turn === 9) {
+                    // Wait a quarter second
+                    await new Promise((resolve) => setTimeout(resolve, 250));
+                    handleSubmit();
+                }
             }
             else {
                 setGameState(data?.game_state);
@@ -1356,6 +1361,15 @@ export default function GamePage({ }) {
                         <CardContent>
                             <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center' }}>
                                 {tieGame ? 'You tied!' : winner ? 'You won!' : 'You lost!'}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </div>}
+                {gameState.turn === 9 && <div style={{ margin: '10px' }}>
+                    <Card variant="outlined">
+                        <CardContent>
+                            <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center' }}>
+                                Final battle!
                             </Typography>
                         </CardContent>
                     </Card>
