@@ -155,4 +155,10 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         number=x,
         number_2=y,
     ),
+    'OnDamageTowerPumpTeam': lambda x, y: Ability(
+        name='OnDamageTowerPumpTeam',
+        description=f'When I damage the enemy tower, all friendly characters in this lane get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    )
 }

@@ -61,6 +61,13 @@ class Character:
         if self.has_ability('OnTowerAttackDrawCard'):
             game_state.draw_card(attacking_player)
             log.append(f"{self.owner_username}'s {self.template.name} drew a card.")
+        if self.has_ability('OnDamageTowerPumpTeam'):
+            for character in self.lane.characters_by_player[self.owner_number]:
+                character.current_attack += self.number_of_ability('OnDamageTowerPumpTeam')
+                character.current_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
+                character.max_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
+                log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
+
         self.lane.maybe_give_lane_reward(attacking_player, game_state)
         try:
             attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)

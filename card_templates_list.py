@@ -412,4 +412,12 @@ CARD_TEMPLATES = {
         health=2,
         creature_types=['Water'],
     ),
+    'Izumi': CardTemplate(
+        name='Izumi',
+        abilities=[('OnDamageTowerPumpTeam', 1, 0)],
+        cost=2,
+        attack=1,
+        health=2,
+        creature_types=['Fire'],
+    ),
 }
