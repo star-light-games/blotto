@@ -416,7 +416,7 @@ CARD_TEMPLATES = {
         name='Izumi',
         abilities=[('OnDamageTowerPumpTeam', 1, 0)],
         cost=2,
-        attack=1,
+        attack=2,
         health=2,
         creature_types=['Fire'],
     ),
