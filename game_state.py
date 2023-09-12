@@ -72,6 +72,9 @@ class GameState:
             self.draw_card(player_num)
         self.log.append(f"Turn {self.turn}")
         self.has_moved_by_player = {0: False, 1: False}
+        if self.turn == 9:
+            self.log.append("The moon rises.")
+            self.mana_by_player = {0: 0, 1: 0}
 
     def play_card(self, player_num: int, card_id: str, lane_number: int):
         card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]

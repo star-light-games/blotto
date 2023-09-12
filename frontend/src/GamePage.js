@@ -1078,7 +1078,7 @@ export default function GamePage({ }) {
 
     const opponentManaAmount = gameState?.mana_by_player?.[opponentNum] || 1;
 
-    const gameOver = gameState?.turn > 8;
+    const gameOver = gameState?.turn > 9;
     const lane1winner = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
     const lane2winner = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
     const lane3winner = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
@@ -1162,6 +1162,12 @@ export default function GamePage({ }) {
         setAnimating(false);
     };
 
+    useEffect(() => {
+        if (!animating && gameState?.turn === 9) {
+            handleSubmit();
+        }
+    }, [animating])
+
 
     const handleReset = () => {
         setLaneData(null);
@@ -1194,11 +1200,6 @@ export default function GamePage({ }) {
 
                 handleReset();
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
-                if (data.game_state.turn === 9) {
-                    // Wait a quarter second
-                    await new Promise((resolve) => setTimeout(resolve, 250));
-                    handleSubmit();
-                }
             }
             else {
                 setGameState(data?.game_state);
@@ -1365,7 +1366,7 @@ export default function GamePage({ }) {
                         </CardContent>
                     </Card>
                 </div>}
-                {gameState.turn === 9 && <div style={{ margin: '10px' }}>
+                {gameState.turn > 8 && animating && <div style={{ margin: '10px' }}>
                     <Card variant="outlined">
                         <CardContent>
                             <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center' }}>
