@@ -5,9 +5,9 @@ CARD_TEMPLATES = {
     'Combustion Man': CardTemplate(
         name='Combustion Man',
         abilities=['Attacker', 'InvincibilityWhileAttacking'],
-        cost=1,
-        attack=2,
-        health=1,
+        cost=2,
+        attack=3,
+        health=2,
         creature_types=['Fire'],
     ),
     'Dai Li Agent': CardTemplate(
@@ -246,9 +246,9 @@ CARD_TEMPLATES = {
     'Gran Gran Kanna': CardTemplate(
         name='Gran Gran Kanna',
         abilities=['OnRevealHealAllFriendliesAndTowers'],
-        cost=5,
-        attack=4,
-        health=4,
+        cost=4,
+        attack=3,
+        health=3,
         creature_types=['Water'],
     ),
     'Fire Lord Ozai': CardTemplate(
