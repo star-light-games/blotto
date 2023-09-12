@@ -40,8 +40,8 @@ class GameState:
             for character in lane.characters_by_player[player_num]:
                 if character.has_ability('OnDrawCardPump'):
                     character.current_attack += character.number_of_ability('OnDrawCardPump')
-                    character.current_health += character.number_of_ability('OnDrawCardPump')
-                    character.max_health += character.number_of_ability('OnDrawCardPump')
+                    character.current_health += character.number_2_of_ability('OnDrawCardPump')
+                    character.max_health += character.number_2_of_ability('OnDrawCardPump')
 
 
     def mulligan_card(self, player_num: int, card_id: str):

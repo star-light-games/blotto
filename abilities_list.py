@@ -147,9 +147,10 @@ ABILITIES: dict[str, Union[Ability, Callable[[int], Ability]]] = {
         description=f'On reveal: draw {x} cards.',
         number=x,
     ),
-    'OnDrawCardPump': lambda x: Ability(
+    'OnDrawCardPump': lambda x, y: Ability(
         name='OnDrawCardPump',
-        description=f'When you draw a card, I get +{x}/+{x}.',
+        description=f'When you draw a card, I get +{x}/+{y}.',
         number=x,
+        number_2=y,
     ),
 }

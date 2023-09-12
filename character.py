@@ -37,6 +37,11 @@ class Character:
         assert ability.number is not None
         return ability.number
 
+    def number_2_of_ability(self, ability_name) -> int:
+        ability = [ability for ability in self.template.abilities if ability.name == ability_name][0]
+        assert ability.number_2 is not None
+        return ability.number_2
+
     def compute_damage_to_deal(self, damage_by_player: dict[int, int], is_tower_attack: bool = False, starting_current_attack: Optional[int] = None):
         multiplier = 2 if self.has_ability('DoubleTowerDamage') and is_tower_attack else 1
         extra_for_losing = 6 if self.has_ability('DealSixMoreDamageWhenLosing') and damage_by_player[1 - self.owner_number] > damage_by_player[self.owner_number] else 0
