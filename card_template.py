@@ -8,7 +8,6 @@ class CardTemplate:
         self.abilities = []
         for ability in abilities:
             if isinstance(ability, tuple):
-                print(ability)
                 if len(ability) == 2:
                     self.abilities.append(ABILITIES[ability[0]](ability[1]))  # type: ignore
                 elif len(ability) == 3:
