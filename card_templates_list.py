@@ -87,7 +87,7 @@ CARD_TEMPLATES = {
         abilities=[],
         cost=2,
         attack=3,
-        health=7,
+        health=6,
         creature_types=['Water'],
     ),
     'Southern Raider': CardTemplate(
