@@ -191,8 +191,8 @@ CARD_TEMPLATES = {
         name='Suyin',
         abilities=['OnRevealShackleAllEnemies'],
         cost=5,
-        attack=3,
-        health=4,
+        attack=4,
+        health=5,
         creature_types=['Earth'],
     ),
     'Baatar Jr': CardTemplate(
@@ -247,8 +247,8 @@ CARD_TEMPLATES = {
         name='Gran Gran Kanna',
         abilities=['OnRevealHealAllFriendliesAndTowers'],
         cost=5,
-        attack=2,
-        health=2,
+        attack=4,
+        health=4,
         creature_types=['Water'],
     ),
     'Fire Lord Ozai': CardTemplate(
