@@ -144,7 +144,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealDrawCards': lambda x: Ability(
         name='OnRevealDrawCards',
-        description=f'On reveal: draw {x} cards.',
+        description=f'On reveal: draw {x} card{"" if x != 1 else "s"}.',
         number=x,
     ),
     'OnDrawCardPump': lambda x, y: Ability(
