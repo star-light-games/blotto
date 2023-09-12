@@ -1,5 +1,6 @@
 from typing import Callable, Union
 from ability import Ability
+from utils import plural
 
 
 ABILITIES: dict[str, Union[Ability, Callable]] = {
@@ -96,9 +97,10 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealHealAllFriendliesAndTowers',
         description='On reveal: fully heal ALL friendly characters and ALL friendly towers for 5.',
     ),
-    'OnRevealBonusAttack': Ability(
+    'OnRevealBonusAttack': lambda x: Ability(
         name='OnRevealBonusAttack',
-        description='On reveal: I make a bonus attack.',
+        description=f'On reveal: I make {x} bonus attack{plural(x)}.',
+        number=x,
     ),
     'OnRevealLaneFightsFirst': Ability(
         name='OnRevealLaneFightsFirst',
@@ -144,7 +146,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealDrawCards': lambda x: Ability(
         name='OnRevealDrawCards',
-        description=f'On reveal: draw {x} card{"" if x == 1 else "s"}.',
+        description=f'On reveal: draw {x} card{plural(x)}.',
         number=x,
     ),
     'OnDrawCardPump': lambda x, y: Ability(

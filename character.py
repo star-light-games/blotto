@@ -361,9 +361,10 @@ class Character:
                 ])
 
             if self.has_ability('OnRevealBonusAttack'):
-                defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
-                self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state)
-                self.has_attacked = False
+                for _ in range(self.number_of_ability('OnRevealBonusAttack')):
+                    defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
+                    self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state)
+                    self.has_attacked = False
 
             if self.has_ability('OnRevealLaneFightsFirst'):
                 self.lane.additional_combat_priority -= 3

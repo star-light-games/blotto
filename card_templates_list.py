@@ -4,10 +4,10 @@ from card_template import CardTemplate
 CARD_TEMPLATES = {
     'Combustion Man': CardTemplate(
         name='Combustion Man',
-        abilities=['Attacker', 'InvincibilityWhileAttacking'],
-        cost=2,
-        attack=3,
-        health=2,
+        abilities=['Attacker', ('OnRevealBonusAttack', 2), 'InvincibilityWhileAttacking'],
+        cost=1,
+        attack=1,
+        health=1,
         creature_types=['Fire'],
     ),
     'Dai Li Agent': CardTemplate(
@@ -151,7 +151,7 @@ CARD_TEMPLATES = {
         abilities=[('PumpAttackOfCharactersPlayedHere', 1)],
         cost=1,
         attack=0,
-        health=1,
+        health=2,
         creature_types=['Fire'],
     ),
     'Great Sage': CardTemplate(
@@ -253,7 +253,7 @@ CARD_TEMPLATES = {
     ),
     'Fire Lord Ozai': CardTemplate(
         name='Fire Lord Ozai',
-        abilities=['Attacker', 'OnRevealBonusAttack'],
+        abilities=['Attacker', ('OnRevealBonusAttack', 1)],
         cost=5,
         attack=5,
         health=8,
@@ -368,7 +368,7 @@ CARD_TEMPLATES = {
         name='Sozin',
         abilities=[('PumpAttackOfCharactersPlayedHere', 2)],
         cost=3,
-        attack=1,
+        attack=2,
         health=2,
         creature_types=['Fire'],
     ),
@@ -377,7 +377,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealDamageToAll', 2)],
         cost=5,
         attack=4,
-        health=10,
+        health=9,
         creature_types=['Earth'],
     ),
     'The Big Bad Hippo': CardTemplate(
@@ -401,7 +401,7 @@ CARD_TEMPLATES = {
         abilities=[('OnDrawCardPump', 2, 0)],
         cost=2,
         attack=1,
-        health=2,
+        health=3,
         creature_types=['Water'],
     ),
     'Moon Spirit Yang': CardTemplate(
