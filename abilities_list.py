@@ -133,7 +133,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'EndOfTurnFullHealForAllFriendlies': Ability(
         name='EndOfTurnFullHealForAllFriendlies',
-        description='At the end of each turn, fully heal all friendly characters.',
+        description='At the end of each turn, fully heal all friendly characters in this lane.',
     ),
     'OnFriendlyHealPumpMyself': Ability(
         name='OnFriendlyHealPumpMyself',

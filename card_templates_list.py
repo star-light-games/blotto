@@ -4,7 +4,7 @@ from card_template import CardTemplate
 CARD_TEMPLATES = {
     'Combustion Man': CardTemplate(
         name='Combustion Man',
-        abilities=['Attacker', ('OnRevealBonusAttack', 2), 'InvincibilityWhileAttacking'],
+        abilities=['Attacker', ('OnRevealBonusAttack', 1), 'InvincibilityWhileAttacking'],
         cost=1,
         attack=1,
         health=1,
