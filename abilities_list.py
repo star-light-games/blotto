@@ -2,7 +2,7 @@ from typing import Callable, Union
 from ability import Ability
 
 
-ABILITIES: dict[str, Union[Ability, Callable[[int], Ability]]] = {
+ABILITIES: dict[str, Union[Ability, Callable]] = {
     'Defender': Ability(
         name='Defender',
         description='Defender',
@@ -90,7 +90,7 @@ ABILITIES: dict[str, Union[Ability, Callable[[int], Ability]]] = {
     ),
     'CharacterMovesHerePumps': Ability(
         name='CharacterMovesHerePumps',
-        description='Whenever a friendly character switches into this lane, it gets +2/+2.',
+        description='Whenever a friendly character switches into this lane, I get +2/+2.',
     ),
     'OnRevealHealAllFriendliesAndTowers': Ability(
         name='OnRevealHealAllFriendliesAndTowers',
