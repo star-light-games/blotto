@@ -52,7 +52,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
     setCurrentDeck(prev => [...prev, cardName]);
   };
 
-  if (currentDeck.length === 15) return null;
+  if (currentDeck.length === 18) return null;
 
   return (
     <React.Fragment>
