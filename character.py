@@ -155,7 +155,7 @@ class Character:
 
 
     def can_attack(self):
-        return self.can_fight() and not self.has_attacked and self.shackled_turns == 0
+        return self.can_fight() and not self.has_attacked and self.shackled_turns == 0 and self.current_attack > 0
 
 
     def switch_lanes(self, game_state: 'GameState'):
