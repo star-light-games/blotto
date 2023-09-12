@@ -38,8 +38,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
       return randomCards;
     };
 
-    // If drafting is enabled and currentDeck size is less than 20, get new draft options
-    if (currentDeck.length < 15) {
+    if (currentDeck.length < 18) {
       setDraftOptions(getRandomCards());
     }
     else {
