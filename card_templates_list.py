@@ -277,10 +277,10 @@ CARD_TEMPLATES = {
     ),
     'Jinora': CardTemplate(
         name='Jinora',
-        abilities=['Attacker', 'OnKillSwitchLanes'],
+        abilities=['Attacker', 'SwitchLanesAfterAttacking'],
         cost=3,
         attack=2,
-        health=9,
+        health=8,
         creature_types=['Air'],
     ),
     'Mother Kya': CardTemplate(
