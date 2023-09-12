@@ -2,7 +2,7 @@
 LANE_REWARDS = {
     'Fire Nation': {
         'name': 'Fire Nation',
-        'threshold': 45,
+        'threshold': 50,
         'reward_description': 'ALL friendly characters get +3/+0.',
     },
     'Southern Air Temple': {
