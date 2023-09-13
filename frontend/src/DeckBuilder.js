@@ -17,7 +17,6 @@ import TcgCard from './TcgCard';
 import { URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import DeleteIcon from '@material-ui/icons/Delete';
 import { ListItem, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 
 
@@ -318,7 +317,7 @@ function DeckBuilder({ cards }) {
                   <ListItemText primary={cardName} />
                   <ListItemSecondaryAction>
                       <IconButton edge="end" aria-label="delete" onClick={() => removeFromDeck(cardName)}>
-                          <DeleteIcon />
+                        ❌
                       </IconButton>
                   </ListItemSecondaryAction>
               </ListItem>
