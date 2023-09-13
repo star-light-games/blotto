@@ -4,7 +4,6 @@ import {
   TextField,
   Button,
   List,
-  ListItem,
   Typography,
   Grid,
   Snackbar,
@@ -18,6 +17,8 @@ import TcgCard from './TcgCard';
 import { URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import DeleteIcon from '@material-ui/icons/Delete';
+import { ListItem, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 
 
 function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, saveDeck }) {
@@ -312,9 +313,16 @@ function DeckBuilder({ cards }) {
     <CardContent>
     <Typography variant="h6">Deck You Are Building:</Typography>
       <List>
-        {currentDeck.map((cardName, index) => (
-          <ListItem key={index}>{cardName}</ListItem>
-        ))}
+          {currentDeck.map((cardName, index) => (
+              <ListItem key={index} component={Box} borderColor="grey.300" border={1} borderRadius={4} style={{ marginBottom: '8px' }}>
+                  <ListItemText primary={cardName} />
+                  <ListItemSecondaryAction>
+                      <IconButton edge="end" aria-label="delete" onClick={() => removeFromDeck(cardName)}>
+                          <DeleteIcon />
+                      </IconButton>
+                  </ListItemSecondaryAction>
+              </ListItem>
+          ))}
       </List>
   </CardContent>
 
