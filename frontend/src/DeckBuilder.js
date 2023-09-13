@@ -11,14 +11,32 @@ import {
   Box,
   CardContent,
   Card,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
 } from '@mui/material';
 import TcgCard from './TcgCard';
 
 import { URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ListItem, ListItemText, ListItemSecondaryAction, IconButton } from '@material-ui/core';
 
+
+const calculateManaCurve = (deck, cards) => {
+  const manaCurve = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+  deck.forEach(cardName => {
+      const card = cards.find(c => c.name === cardName);
+      if (card && card.cost !== undefined) {
+          if (manaCurve[card.cost]) {
+              manaCurve[card.cost]++;
+          } else {
+              manaCurve[card.cost] = 1;
+          }
+      }
+  });
+  return manaCurve;
+};
 
 function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, saveDeck }) {
   const [draftOptions, setDraftOptions] = useState([]);
@@ -42,7 +60,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
       setDraftOptions(getRandomCards());
     }
     else {
-      saveDeck('Draft deck');
+      saveDeck(`Draft deck with ${currentDeck[0]} and ${currentDeck[1]}`);
       setDrafting(false);
     }
 
@@ -83,7 +101,11 @@ function DeckBuilder({ cards }) {
   const [joinGameId, setJoinGameId] = useState(''); // For entering gameId
   const [drafting, setDrafting] = useState(false);
 
+  const [hoveredCard, setHoveredCard] = useState(null);
+
   const navigate = useNavigate();
+
+  const manaCurve = calculateManaCurve(currentDeck, cards);
 
   const hostGame = () => {
     const data = {
@@ -210,6 +232,10 @@ function DeckBuilder({ cards }) {
     setToastOpen(false);
   };
 
+  const removeFromDeck = (index) => {
+    setCurrentDeck(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <Container>
       <Card>
@@ -309,24 +335,57 @@ function DeckBuilder({ cards }) {
       </Grid>
     </Grid>
     </CardContent>
+
     <CardContent>
     <Typography variant="h6">Deck You Are Building:</Typography>
-      <List>
-          {currentDeck.map((cardName, index) => (
-              <ListItem key={index} component={Box} borderColor="grey.300" border={1} borderRadius={4} style={{ marginBottom: '8px' }}>
-                  <ListItemText primary={cardName} />
-                  <ListItemSecondaryAction>
-                      <IconButton edge="end" aria-label="delete" onClick={() => removeFromDeck(cardName)}>
-                        ❌
-                      </IconButton>
-                  </ListItemSecondaryAction>
-              </ListItem>
-          ))}
-      </List>
+      <Box style={{ maxWidth: '200px', alignItems: 'flex-start' }}>
+        <List>
+            {currentDeck.map((cardName, index) => (
+                <ListItem 
+                  key={index} 
+                  component={Box} 
+                  borderColor="grey.300" 
+                  border={1} 
+                  borderRadius={4} 
+                  style={{ marginBottom: '8px' }}
+                  onMouseEnter={() => setHoveredCard(cardName)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                >
+                    <ListItemText primary={cardName} />
+                    {!drafting && <ListItemSecondaryAction>
+                        <IconButton edge="end" aria-label="delete" onClick={() => removeFromDeck(index)}>
+                          ❌
+                        </IconButton>
+                    </ListItemSecondaryAction>}
+                </ListItem>
+            ))}
+        </List>
+      </Box>
   </CardContent>
 
+  {currentDeck && currentDeck.length > 0 && <CardContent>
+      <Typography variant="h6">Mana Curve:</Typography>
+      <Box display="flex" alignItems="flex-end" height={200}>
+          {Object.keys(manaCurve).sort((a, b) => parseInt(a) - parseInt(b)).map(mana => (
+              <Box key={mana} m={1} display="flex" flexDirection="column" alignItems="center">
+                  <Box bgcolor="blue" width={50} height={`${manaCurve[mana] * 20}px`}></Box>
+                  <Typography variant="body1">{mana}</Typography>
+              </Box>
+          ))}
+      </Box>
+    </CardContent>}
+
+  {hoveredCard && (
+    <Box position="fixed" top="10px" right="10px" zIndex={10}>
+        <TcgCard card={cards.find(card => card.name === hoveredCard)} doNotBorderOnHighlight={true} displayArt />
+    </Box>
+  )}
+
   {!drafting && <CardContent>
-    <Button variant="outlined" onClick={() => setDrafting(true)}>
+    <Button variant="outlined" onClick={() => {
+        setDrafting(true);
+        setCurrentDeck([]);
+    }}>
       Draft Cards
     </Button>
   </CardContent>}

@@ -256,7 +256,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealBonusAttack', 1)],
         cost=5,
         attack=5,
-        health=8,
+        health=10,
         creature_types=['Fire'],
     ),
     'Ming Hua': CardTemplate(
@@ -377,7 +377,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealDamageToAll', 2)],
         cost=5,
         attack=4,
-        health=9,
+        health=10,
         creature_types=['Earth'],
     ),
     'The Big Bad Hippo': CardTemplate(
