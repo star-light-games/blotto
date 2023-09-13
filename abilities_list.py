@@ -137,7 +137,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnFriendlyHealPumpMyself': Ability(
         name='OnFriendlyHealPumpMyself',
-        description='Whenever a friendly character is healed, I get +1/+1.',
+        description='Whenever a friendly character in this lane is healed, I get +1/+1.',
     ),
     'OnRevealDamageSelf': lambda x: Ability(
         name='OnRevealDamageSelf',
