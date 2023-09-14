@@ -13,7 +13,7 @@ LANE_REWARDS = {
     'Full Moon Bay': {
         'name': 'Full Moon Bay',
         'threshold': 10,
-        'reward_description': 'Draw a card.',
+        'reward_description': 'Draw a random card.',
     },
 }
 

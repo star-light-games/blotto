@@ -44,7 +44,7 @@ class Character:
 
     def compute_damage_to_deal(self, damage_by_player: dict[int, int], is_tower_attack: bool = False, starting_current_attack: Optional[int] = None):
         multiplier = 2 if self.has_ability('DoubleTowerDamage') and is_tower_attack else 1
-        extra_for_losing = 6 if self.has_ability('DealSixMoreDamageWhenLosing') and damage_by_player[1 - self.owner_number] > damage_by_player[self.owner_number] else 0
+        extra_for_losing = self.number_of_ability('DealMoreDamageWhenLosing') if self.has_ability('DealMoreDamageWhenLosing') and damage_by_player[1 - self.owner_number] > damage_by_player[self.owner_number] else 0
         base_attack = starting_current_attack if starting_current_attack is not None else self.current_attack
         damage_dealt = (base_attack + extra_for_losing) * multiplier
         return damage_dealt
@@ -54,13 +54,13 @@ class Character:
         damage_by_player[self.owner_number] += damage_dealt
         if self.has_ability('OnTowerAttackDealMassDamage'):
             for character in defending_characters:
-                character.current_health -= 2
+                character.current_health -= self.number_of_ability('OnTowerAttackDealMassDamage')
                 log.append(f"{self.owner_username}'s {self.template.name} dealt 2 damage to {character.owner_username}'s {character.template.name} in Lane {lane_number + 1}. "
                             f"{character.template.name}'s health is now {character.current_health}.")
         log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
         if self.has_ability('OnTowerAttackDrawCard'):
-            game_state.draw_card(attacking_player)
-            log.append(f"{self.owner_username}'s {self.template.name} drew a card.")
+            game_state.draw_random_card(attacking_player)
+            log.append(f"{self.owner_username}'s {self.template.name} drew a random card.")
         if self.has_ability('OnDamageTowerPumpTeam'):
             for character in self.lane.characters_by_player[self.owner_number]:
                 character.current_attack += self.number_of_ability('OnDamageTowerPumpTeam')
@@ -128,13 +128,14 @@ class Character:
 
 
         if defending_character.current_health <= 0 and self.has_ability('OnKillBuffHealth'):
-            self.current_health += 2
-            self.max_health += 2
+            self.current_attack += self.number_of_ability('OnKillBuffHealth')
+            self.current_health += self.number_2_of_ability('OnKillBuffHealth')
+            self.max_health += self.number_2_of_ability('OnKillBuffHealth')
 
         if defending_character.has_ability('OnSurviveDamagePump') and defending_character.current_health > 0:
-            defending_character.current_attack += 1
-            defending_character.current_health += 1
-            defending_character.max_health += 1
+            defending_character.current_attack += defending_character.number_of_ability('OnSurviveDamagePump')
+            defending_character.current_health += defending_character.number_2_of_ability('OnSurviveDamagePump')
+            defending_character.max_health += defending_character.number_2_of_ability('OnSurviveDamagePump')
             log.append(f"{defending_character.owner_username}'s {defending_character.template.name} got +1/+1 for surviving damage.")
             animations.append([{
                             "event_type": "character_pump",
@@ -191,14 +192,14 @@ class Character:
         # pump friendly characters with CharacterMovesHerePumps ability
         for character in target_lane.characters_by_player[self.owner_number]:
             if character.has_ability('CharacterMovesHerePumps'):
-                character.current_attack += 2
-                character.current_health += 2
-                character.max_health += 2
+                character.current_attack += character.number_of_ability('CharacterMovesHerePumps')
+                character.current_health += character.number_2_of_ability('CharacterMovesHerePumps')
+                character.max_health += character.number_2_of_ability('CharacterMovesHerePumps')
 
             if character.has_ability('CharacterMovesHereThatCharacterPumps'):
-                self.current_attack += 1
-                self.current_health += 1
-                self.max_health += 1
+                self.current_attack += character.number_of_ability('CharacterMovesHereThatCharacterPumps')
+                self.current_health += character.number_2_of_ability('CharacterMovesHereThatCharacterPumps')
+                self.max_health += character.number_2_of_ability('CharacterMovesHereThatCharacterPumps')
 
     def fully_heal(self):
         if self.current_health == self.max_health:
@@ -208,14 +209,14 @@ class Character:
         # pump friendly characters with the PumpOnFriendlyHeal ability
         for character in self.lane.characters_by_player[self.owner_number]:
             if character.has_ability('PumpOnFriendlyHeal'):
-                self.current_attack += 2
-                self.current_health += 2
-                self.max_health += 2
+                self.current_attack += character.number_of_ability('PumpOnFriendlyHeal')
+                self.current_health += character.number_2_of_ability('PumpOnFriendlyHeal')
+                self.max_health += character.number_2_of_ability('PumpOnFriendlyHeal')
 
             if character.has_ability('OnFriendlyHealPumpMyself'):
-                character.current_attack += 1
-                character.current_health += 1
-                character.max_health += 1
+                character.current_attack += character.number_of_ability('OnFriendlyHealPumpMyself')
+                character.current_health += character.number_2_of_ability('OnFriendlyHealPumpMyself')
+                character.max_health += character.number_2_of_ability('OnFriendlyHealPumpMyself')
 
 
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState'):
@@ -257,10 +258,10 @@ class Character:
             if self.has_ability('OnRevealShackle'):
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
                 num_friendly_characters_that_increase_shackled_turns = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesLastExtraTurn')])
-                num_friendly_characters_that_make_shackles_deal_two_damage = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesDealTwoDamage')])
+                total_damage_from_shackles = sum([character.number_of_ability('ShacklesDealDamage') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesDealDamage')])
                 if random_enemy_character is not None:
                     random_enemy_character.shackled_turns += 1 + num_friendly_characters_that_increase_shackled_turns
-                    random_enemy_character.current_health -= 2 * num_friendly_characters_that_make_shackles_deal_two_damage
+                    random_enemy_character.current_health -= total_damage_from_shackles
                     log.append(f"{self.owner_username}'s {self.template.name} shackled {random_enemy_character.owner_username}'s {random_enemy_character.template.name}.")
                     animations.append([
                         {
@@ -278,10 +279,10 @@ class Character:
 
             if self.has_ability('OnRevealShackleAllEnemies'):
                 num_friendly_characters_that_increase_shackled_turns = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesLastExtraTurn')])
-                num_friendly_characters_that_make_shackles_deal_two_damage = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesDealTwoDamage')])
+                total_damage_from_shackles = sum([character.number_of_ability('ShacklesDealDamage') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesDealDamage')])
                 for character in self.lane.characters_by_player[1 - self.owner_number]:
                     character.shackled_turns += 1 + num_friendly_characters_that_increase_shackled_turns
-                    character.current_health -= 2 * num_friendly_characters_that_make_shackles_deal_two_damage
+                    character.current_health -= total_damage_from_shackles
                     log.append(f"{self.owner_username}'s {self.template.name} shackled {character.owner_username}'s {character.template.name}.")
                 animations.append([
                     {
@@ -297,9 +298,9 @@ class Character:
 
             if self.has_ability('OnRevealPumpFriends'):
                 for character in self.lane.characters_by_player[self.owner_number]:
-                    character.current_attack += 1
-                    character.current_health += 1
-                    character.max_health += 1
+                    character.current_attack += self.number_of_ability('OnRevealPumpFriends')
+                    character.current_health += self.number_2_of_ability('OnRevealPumpFriends')
+                    character.max_health += self.number_2_of_ability('OnRevealPumpFriends')
                     log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
                 animations.append([
                     {
@@ -315,9 +316,9 @@ class Character:
             if self.has_ability('OnRevealPumpAttackers'):
                 for character in self.lane.characters_by_player[self.owner_number]:
                     if character.is_attacker():
-                        character.current_attack += 2
-                        character.current_health += 2
-                        character.max_health += 2
+                        character.current_attack += self.number_of_ability('OnRevealPumpAttackers')
+                        character.current_health += self.number_2_of_ability('OnRevealPumpAttackers')
+                        character.max_health += self.number_2_of_ability('OnRevealPumpAttackers')
                         log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
                 animations.append([
                     {
@@ -331,11 +332,15 @@ class Character:
                 ])
 
             if self.has_ability('OnRevealGainMana'):
-                game_state.mana_by_player[self.owner_number] += 1
-                log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
+                number = self.number_of_ability('OnRevealGainMana')
+                game_state.mana_by_player[self.owner_number] += number
+                log.append(f"{self.owner_username}'s {self.template.name} gained {number} mana.")
 
-            count_of_characters_with_pump_friendlies_ability = [character.number_of_ability('PumpAttackOfCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpAttackOfCharactersPlayedHere')]
-            self.current_attack += sum(count_of_characters_with_pump_friendlies_ability)
+            attack_buffs = [character.number_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
+            defense_buffs = [character.number_2_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
+            self.current_attack += sum(attack_buffs)
+            self.current_health += sum(defense_buffs)
+            self.max_health += sum(defense_buffs)
 
             if self.has_ability('HealFriendlyCharacterAndTower'):
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
@@ -353,13 +358,13 @@ class Character:
                         },
                         game_state.to_json(),
                     ])
-                self.lane.damage_by_player[1 - self.owner_number] = max(0, self.lane.damage_by_player[1 - self.owner_number] - 3)
+                self.lane.damage_by_player[1 - self.owner_number] = max(0, self.lane.damage_by_player[1 - self.owner_number] - self.number_of_ability('HealFriendlyCharacterAndTower'))
 
             if self.has_ability('OnRevealHealAllFriendliesAndTowers'):
                 for lane in game_state.lanes:
                     for character in lane.characters_by_player[self.owner_number]:
                         character.fully_heal()
-                    lane.damage_by_player[1 - self.owner_number] = max(0, lane.damage_by_player[1 - self.owner_number] - 5)
+                    lane.damage_by_player[1 - self.owner_number] = max(0, lane.damage_by_player[1 - self.owner_number] - self.number_of_ability('OnRevealHealAllFriendliesAndTowers'))
                 animations.append([
                     {
                         "event_type": "on_reveal",
@@ -417,7 +422,7 @@ class Character:
             if self.has_ability('OnRevealDrawCards'):
                 cards_to_draw = self.number_of_ability('OnRevealDrawCards')
                 for _ in range(cards_to_draw):
-                    game_state.draw_card(self.owner_number)
+                    game_state.draw_random_card(self.owner_number)
 
             if self.has_ability('OnRevealDamageSelf'):
                 damage_amount = self.number_of_ability('OnRevealDamageSelf')

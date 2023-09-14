@@ -16,9 +16,11 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealShackle',
         description='On reveal: shackle a random enemy character in this lane.',
     ),
-    'OnSurviveDamagePump': Ability(
+    'OnSurviveDamagePump': lambda x, y: Ability(
         name='OnSurviveDamagePump',
-        description='When I survive damage, I get +1/+1.',
+        description=f'When I survive damage, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
     'Deathtouch': Ability(
         name='Deathtouch',
@@ -36,66 +38,79 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='StartOfTurnFullHeal',
         description='At the start of each turn, I fully heal.',
     ),
-    'OnRevealPumpFriends': Ability(
+    'OnRevealPumpFriends': lambda x, y: Ability(
         name='OnRevealPumpFriends',
-        description='On reveal: give +1/+1 to all friendly characters in this lane (including myself).',
-    ),
-    'OnTowerAttackDealMassDamage': Ability(
-        name='OnTowerAttackDealMassDamage',
-        description='When I attack the enemy tower, I deal 2 damage to all enemy characters.',
-    ),
-    'OnRevealPumpAttackers': Ability(
-        name='OnRevealPumpAttackers',
-        description='On reveal: give +2/+2 to all friendly attackers in this lane (including myself).',
-    ),
-    'PumpAttackOfCharactersPlayedHere': lambda x: Ability(
-        name='PumpAttackOfCharactersPlayedHere',
-        description=f'Whenever you play a character in this lane (including myself), it gets +{x}/+0.',
+        description=f'On reveal: give +{x}/+{y} to all friendly characters in this lane (including myself).',
         number=x,
+        number_2=y,
+    ),
+    'OnTowerAttackDealMassDamage': lambda x: Ability(
+        name='OnTowerAttackDealMassDamage',
+        description=f'When I attack the enemy tower, I deal {x} damage to all enemy characters.',
+        number=x,
+    ),
+    'OnRevealPumpAttackers': lambda x, y: Ability(
+        name='OnRevealPumpAttackers',
+        description=f'On reveal: give +{x}/+{y} to all friendly attackers in this lane (including myself).',
+        number=x,
+        number_2=y,
+    ),
+    'PumpCharactersPlayedHere': lambda x, y: Ability(
+        name='PumpCharactersPlayedHere',
+        description=f'Whenever you play a character in this lane (including myself), it gets +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
     'OnTowerAttackDrawCard': Ability(
         name='OnTowerAttackDrawCard',
-        description='When I attack the enemy tower, draw a card.',
+        description='When I attack the enemy tower, draw a random card.',
     ),
     'ShacklesLastExtraTurn': Ability(
         name='ShacklesLastExtraTurn',
         description='Shackles on enemy characters last an additional turn in this lane.',
     ),
-    'OnRevealGainMana': Ability(
+    'OnRevealGainMana': lambda x: Ability(
         name='OnRevealGainMana',
-        description='On reveal: gain 1 mana next turn only.',
+        description=f'On reveal: gain {x} mana next turn only.',
+        number=x,
     ),
     'OnRevealShackleAllEnemies': Ability(
         name='OnRevealShackleAllEnemies',
         description='On reveal: shackle all enemy characters in this lane.',
     ),
-    'ShacklesDealTwoDamage': Ability(
-        name='ShacklesDealTwoDamage',
-        description='When you shackle an enemy character in this lane, deal 2 damage to it.',
+    'ShacklesDealDamage': lambda x: Ability(
+        name='ShacklesDealDamage',
+        description=f'When you shackle an enemy character in this lane, deal {x} damage to it.',
+        number=x,
     ),
-    'DealSixMoreDamageWhenLosing': Ability(
-        name='DealSixMoreDamageWhenLosing',
-        description='I deal 6 more damage when my team is losing this lane.',
+    'DealMoreDamageWhenLosing': lambda x: Ability(
+        name='DealMoreDamageWhenLosing',
+        description=f'I deal {x} more damage when my team is losing this lane.',
+        number=x,
     ),
     'SwitchLanesAfterAttacking': Ability(
         name='SwitchLanesAfterAttacking',
         description='After I attack, I switch lanes.',
     ),
-    'HealFriendlyCharacterAndTower': Ability(
+    'HealFriendlyCharacterAndTower': lambda x: Ability(
         name='HealFriendlyCharacterAndTower',
-        description='When I am played, heal a friendly character fully and your tower for 3.',
+        description=f'When I am played, heal a friendly character fully and your tower for {x}.',
+        number=x,
     ),
     'SwitchLanesInsteadOfDying': Ability(
         name='SwitchLanesInsteadOfDying',
         description='When I would die for the first time each turn, I heal fully and switch lanes instead.',
     ),
-    'CharacterMovesHerePumps': Ability(
+    'CharacterMovesHerePumps': lambda x, y: Ability(
         name='CharacterMovesHerePumps',
-        description='Whenever a friendly character switches into this lane, I get +2/+2.',
+        description=f'Whenever a friendly character switches into this lane, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
-    'OnRevealHealAllFriendliesAndTowers': Ability(
+    'OnRevealHealAllFriendliesAndTowers': lambda x: Ability(
         name='OnRevealHealAllFriendliesAndTowers',
-        description='On reveal: fully heal ALL friendly characters and ALL friendly towers for 5.',
+        description=f'On reveal: fully heal ALL friendly characters and ALL friendly towers for {x}.',
+        number=x,
     ),
     'OnRevealBonusAttack': lambda x: Ability(
         name='OnRevealBonusAttack',
@@ -110,21 +125,27 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnKillSwitchLanes',
         description='When I kill a character, I switch lanes.',
     ),
-    'PumpOnFriendlyHeal': Ability(
+    'PumpOnFriendlyHeal': lambda x, y: Ability(
         name='PumpOnFriendlyHeal',
-        description='Whenever a friendly character in this lane is healed, I get +2/+2.',
+        description=f'Whenever a friendly character in this lane is healed, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
-    'OnKillBuffHealth': Ability(
+    'OnKillBuffHealth': lambda x, y: Ability(
         name='OnKillBuffHealth',
-        description='When I kill a character, I get +0/+2.',
+        description=f'When I kill a character, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
     'OnRevealFriendliesSwitchLanes': Ability(
         name='OnRevealFriendliesSwitchLanes',
         description='On reveal: all friendly characters in this lane switch lanes.',
     ),
-    'CharacterMovesHereThatCharacterPumps': Ability(
+    'CharacterMovesHereThatCharacterPumps': lambda x, y: Ability(
         name='CharacterMovesHereThatCharacterPumps',
-        description='Whenever a friendly character switches into this lane, it gets +1/+1.',
+        description=f'Whenever a friendly character switches into this lane, it gets +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
     'OnRevealDamageToAll': lambda x: Ability(
         name='OnRevealDamageToAll',
@@ -135,9 +156,11 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='EndOfTurnFullHealForAllFriendlies',
         description='At the end of each turn, fully heal all friendly characters in this lane.',
     ),
-    'OnFriendlyHealPumpMyself': Ability(
+    'OnFriendlyHealPumpMyself': lambda x, y: Ability(
         name='OnFriendlyHealPumpMyself',
-        description='Whenever a friendly character in this lane is healed, I get +1/+1.',
+        description=f'Whenever a friendly character in this lane is healed, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
     'OnRevealDamageSelf': lambda x: Ability(
         name='OnRevealDamageSelf',
@@ -146,7 +169,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealDrawCards': lambda x: Ability(
         name='OnRevealDrawCards',
-        description=f'On reveal: draw {x} card{plural(x)}.',
+        description=f'On reveal: draw {x} random card{plural(x)}.',
         number=x,
     ),
     'OnDrawCardPump': lambda x, y: Ability(
