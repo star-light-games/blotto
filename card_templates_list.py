@@ -420,4 +420,12 @@ CARD_TEMPLATES = {
         health=2,
         creature_types=['Fire'],
     ),
+    'Kai': CardTemplate(
+        name='Kai',
+        abilities=[('OnTowerDamageGainMana', 2)],
+        cost=2,
+        attack=1,
+        health=3,
+        creature_types=['Air'],
+    ),
 }

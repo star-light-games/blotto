@@ -68,6 +68,10 @@ class Character:
                 character.max_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
                 log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
 
+        if self.has_ability('OnTowerDamageGainMana'):
+            game_state.mana_by_player[self.owner_number] += 1
+            log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
+
         self.lane.maybe_give_lane_reward(attacking_player, game_state)
         try:
             attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)

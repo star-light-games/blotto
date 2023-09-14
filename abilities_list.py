@@ -160,5 +160,16 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         description=f'When I damage the enemy tower, all friendly characters in this lane get +{x}/+{y}.',
         number=x,
         number_2=y,
-    )
+    ),
+    'OnFriendlySlayPump': lambda x, y: Ability(
+        name='OnFriendlySlayPump',
+        description=f'Whenever a friendly character kills an enemy character, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'OnTowerDamageGainMana': lambda x: Ability(
+        name='OnTowerDamageGainMana',
+        description=f'When I damage the enemy tower, gain {x} mana next turn.',
+        number=x,
+    ),
 }
