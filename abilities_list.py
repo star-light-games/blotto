@@ -34,9 +34,9 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='DoubleTowerDamage',
         description='When I attack the enemy tower, I deal double damage.',
     ),
-    'StartOfTurnFullHeal': Ability(
-        name='StartOfTurnFullHeal',
-        description='At the start of each turn, I fully heal.',
+    'EndOfTurnFullHeal': Ability(
+        name='EndOfTurnFullHeal',
+        description='At the end of each turn, I fully heal.',
     ),
     'OnRevealPumpFriends': lambda x, y: Ability(
         name='OnRevealPumpFriends',
@@ -236,5 +236,9 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'OnCharacterMoveHereShackle': Ability(
         name='OnCharacterMoveHereShackle',
         description='Whenever a friendly character moves into this lane, shackle a random enemy character in this lane.',
+    ),
+    'SwitchLanesAtEndOfTurn': Ability(
+        name='SwitchLanesAtEndOfTurn',
+        description='At the end of each turn, I switch lanes.',
     ),
 }

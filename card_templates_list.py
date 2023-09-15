@@ -20,7 +20,7 @@ CARD_TEMPLATES = {
     ),
     'Katara': CardTemplate(
         name='Katara',
-        abilities=['Defender', 'StartOfTurnFullHeal'],
+        abilities=['Defender', 'EndOfTurnFullHeal'],
         cost=3,
         attack=2,
         health=6,
@@ -68,7 +68,7 @@ CARD_TEMPLATES = {
     ),
     'Ikki': CardTemplate(
         name='Ikki',
-        abilities=[],
+        abilities=['SwitchLanesAtEndOfTurn'],
         cost=1,
         attack=2,
         health=6,
@@ -116,7 +116,7 @@ CARD_TEMPLATES = {
     ),
     'Sokka': CardTemplate(
         name='Sokka',
-        abilities=['Attacker', 'StartOfTurnFullHeal'],
+        abilities=['Attacker', 'EndOfTurnFullHeal'],
         cost=3,
         attack=3,
         health=5,

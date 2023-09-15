@@ -23,6 +23,7 @@ class Character:
         self.new = True
         self.escaped_death = False
         self.did_on_reveal = False
+        self.did_end_of_turn = False
 
     def is_defender(self):
         return any([ability.name == 'Defender' for ability in self.template.abilities])
@@ -253,7 +254,23 @@ class Character:
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState'):
         self.has_attacked = False
         self.new = False
-        if self.has_ability('StartOfTurnFullHeal'):
+
+        if self.shackled_turns > 0:
+            log.append(f"{self.owner_username}'s {self.template.name} is shackled for {self.shackled_turns} more turns.")
+            animations.append([{
+                            "event_type": "character_shackled",
+                            "character_id": self.id,
+                            "character_shackled_turns": self.shackled_turns,
+                            "player": self.owner_number,
+                            "lane_number": self.lane.lane_number,
+                        }, game_state.to_json()])
+            self.shackled_turns -= 1
+
+
+    def do_end_of_turn(self, log: list[str], animations: list, game_state: 'GameState'):
+        if self.did_end_of_turn:
+            return
+        if self.has_ability('EndOfTurnFullHeal'):
             self.fully_heal()
             log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
             animations.append([{
@@ -268,17 +285,12 @@ class Character:
             if character.has_ability('EndOfTurnFullHealForAllFriendlies'):
                 self.fully_heal()
                 log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
+        
+        if self.has_ability('SwitchLanesAtEndOfTurn'):
+            print('Ikki switched lanes!')
+            self.switch_lanes(log, animations, game_state)
 
-        if self.shackled_turns > 0:
-            log.append(f"{self.owner_username}'s {self.template.name} is shackled for {self.shackled_turns} more turns.")
-            animations.append([{
-                            "event_type": "character_shackled",
-                            "character_id": self.id,
-                            "character_shackled_turns": self.shackled_turns,
-                            "player": self.owner_number,
-                            "lane_number": self.lane.lane_number,
-                        }, game_state.to_json()])
-            self.shackled_turns -= 1
+        self.did_end_of_turn = True
 
 
     def shackle(self, shackling_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
@@ -519,6 +531,7 @@ class Character:
             "new": self.new,   
             "escaped_death": self.escaped_death,         
             "did_on_reveal": self.did_on_reveal,
+            "did_end_of_turn": self.did_end_of_turn,
             # Can't put lane in here because of infinite recursion
         }
 
@@ -540,4 +553,5 @@ class Character:
         character.new = json['new']
         character.escaped_death = json['escaped_death']
         character.did_on_reveal = json['did_on_reveal']
+        character.did_end_of_turn = json['did_end_of_turn']
         return character

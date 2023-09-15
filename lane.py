@@ -42,6 +42,7 @@ class Lane:
         for player_num in [0, 1]:
             for character in self.characters_by_player[player_num]:
                 character.escaped_death = False
+                character.did_end_of_turn = False
                 character.do_on_reveal(log, animations, game_state)        
 
 
@@ -55,6 +56,12 @@ class Lane:
                 character.roll_turn(log, animations, game_state)
 
         self.additional_combat_priority = 0
+
+
+    def do_end_of_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
+        for player_num in [0, 1]:
+            for character in self.characters_by_player[player_num]:
+                character.do_end_of_turn(log, animations, game_state)
 
 
     def resolve_combat(self, 

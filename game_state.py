@@ -76,6 +76,13 @@ class GameState:
             lane.do_start_of_turn(self.log, self.animations, self)
         for lane in sorted(self.lanes, key=lambda lane: lane.lane_number + lane.additional_combat_priority):
             lane.roll_turn(self.log, self.animations, self)
+        for lane in self.lanes:
+            print('doing end of turn now')
+            lane.do_end_of_turn(self.log, self.animations, self)
+        self.animations.append([{
+                        "event_type": "end_of_roll",
+                    }, self.to_json()])
+                    
         for player_num in [0, 1]:
             self.draw_card(player_num)
         self.log.append(f"Turn {self.turn}")

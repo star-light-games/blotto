@@ -1149,6 +1149,9 @@ export default function GamePage({ }) {
                     highlightRevealingCharacter(event);
                     setGameState(newState);
                     break;
+                case "end_of_roll":
+                    setGameState(newState);
+                    break;
             }
 
             // Pause execution to let animation complete

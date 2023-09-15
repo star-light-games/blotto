@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 from card_templates_list import CARD_TEMPLATES
+from common_decks import create_common_decks
 from deck import Deck
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
@@ -12,7 +13,7 @@ from functools import wraps
 import random
 
 from redis_utils import rget_json, rlock, rset_json
-from settings import LOCAL
+from settings import COMMON_DECK_USERNAME, LOCAL
 from utils import generate_unique_id
 
 
@@ -85,7 +86,7 @@ def create_deck():
 def get_decks():
     decks_json = rget_json('decks') or {}
     decks = [Deck.from_json(deck_json) for deck_json in decks_json.values()]
-    return recurse_to_json([deck for deck in decks if deck.username == request.args.get('username')])
+    return recurse_to_json([deck for deck in decks if deck.username in [request.args.get('username'), COMMON_DECK_USERNAME]])
 
 
 @app.route('/api/host_game', methods=['POST'])
@@ -313,6 +314,8 @@ def on_leave(data):
     print(f'{username} left {room}') 
 
 if __name__ == '__main__':
+    create_common_decks()
+
     if LOCAL:
         socketio.run(app, host='0.0.0.0', port=5001, debug=True)
     else:

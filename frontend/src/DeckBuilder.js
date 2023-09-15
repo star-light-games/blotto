@@ -256,7 +256,7 @@ function DeckBuilder({ cards }) {
   <br></br>
   <Card>
     <CardContent>
-    <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Created Decks:</Typography>
+    <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Decks:</Typography>
       {decks.map((deck, index) => (
         <Box 
           key={index}
