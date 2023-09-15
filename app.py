@@ -242,7 +242,8 @@ def take_turn(game_id):
 
         rset_json('games', games)
     
-    socketio.emit('update', room=game.id)
+    if game.game_state.all_players_have_moved():
+        socketio.emit('update', room=game.id)
 
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
