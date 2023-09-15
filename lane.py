@@ -106,12 +106,12 @@ class Lane:
             for lane in shuffled([lane for lane in game_state.lanes if not lane.lane_number == self.lane_number]):
                 for character in lane.characters_by_player[dying_character.owner_number]:
                     if character.has_ability('OnFriendlyCharacterDeathHealFullyAndSwitchLanes'):
-                        if dying_character.switch_lanes(game_state, lane_number=lane.lane_number, and_fully_heal_if_switching=True):
+                        if dying_character.switch_lanes(log, animations, game_state, lane_number=lane.lane_number, and_fully_heal_if_switching=True):
                             was_saved = True
                         
 
             if dying_character.has_ability('SwitchLanesInsteadOfDying') and not dying_character.escaped_death and not was_saved:
-                if dying_character.switch_lanes(game_state, and_fully_heal_if_switching=True):
+                if dying_character.switch_lanes(log, animations, game_state, and_fully_heal_if_switching=True):
                     dying_character.escaped_death = True      
                 
 

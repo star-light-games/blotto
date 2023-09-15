@@ -119,7 +119,7 @@ class Character:
                 self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
         
         if self.has_ability('SwitchLanesAfterAttacking'):
-            self.switch_lanes(game_state)
+            self.switch_lanes(log, animations, game_state)
 
         if self.has_ability('OnAttackDoubleAttack'):
             self.current_attack *= 2
@@ -176,7 +176,7 @@ class Character:
                     }, game_state.to_json()])
 
         if defending_character.current_health <= 0 and self.has_ability('OnKillSwitchLanes'):
-            self.switch_lanes(game_state)
+            self.switch_lanes(log, animations, game_state)
 
     def can_fight(self):
         return self.current_health > 0
@@ -186,7 +186,7 @@ class Character:
         return self.can_fight() and not self.has_attacked and self.shackled_turns == 0 and self.current_attack > 0
 
 
-    def switch_lanes(self, game_state: 'GameState', lane_number: Optional[int] = None, and_fully_heal_if_switching: bool = False) -> bool:
+    def switch_lanes(self, log: list[str], animations: list, game_state: 'GameState', lane_number: Optional[int] = None, and_fully_heal_if_switching: bool = False) -> bool:
         if lane_number is None:
             target_lane = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
         else:
@@ -223,6 +223,11 @@ class Character:
                 lane_to_spawn_in = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
                 if lane_to_spawn_in is not None:
                     lane_to_spawn_in.characters_by_player[self.owner_number].append(Character(CARD_TEMPLATES['Spirit'], lane_to_spawn_in, self.owner_number, game_state.usernames_by_player[self.owner_number]))
+                
+            if character.has_ability('OnSwitchLanesShackle'):
+                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
+                if random_enemy_character is not None:
+                    random_enemy_character.shackle(self, log, animations, game_state)
 
         return True
     
@@ -425,7 +430,7 @@ class Character:
                 friendlies = self.lane.characters_by_player[self.owner_number][:]
                 random.shuffle(friendlies)
                 for character in friendlies:
-                    character.switch_lanes(game_state)
+                    character.switch_lanes(log, animations, game_state)
 
                 animations.append([
                     {

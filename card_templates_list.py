@@ -493,4 +493,12 @@ CARD_TEMPLATES = {
         health=3,
         creature_types=['Fire'],
     ),
+    'Yangchen': CardTemplate(
+        name='Yangchen',
+        abilities=['OnSwitchLanesShackle'],
+        cost=2,
+        attack=3,
+        health=3,
+        creature_types=['Air'],
+    ),
 }

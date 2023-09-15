@@ -233,4 +233,8 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnFriendlyCharacterDeathHealFullyAndSwitchLanes',
         description='If a friendly character in ANY other lane would die, heal it fully and switch it to my lane instead.',
     ),
+    'OnCharacterMoveHereShackle': Ability(
+        name='OnCharacterMoveHereShackle',
+        description='Whenever a friendly character moves into this lane, shackle a random enemy character in this lane.',
+    ),
 }
