@@ -495,10 +495,10 @@ CARD_TEMPLATES = {
     ),
     'Yangchen': CardTemplate(
         name='Yangchen',
-        abilities=['OnSwitchLanesShackle'],
+        abilities=['OnCharacterMoveHereShackle'],
         cost=2,
         attack=3,
         health=3,
-        creature_types=['Air'],
+        creature_types=['Avatar'],
     ),
 }
