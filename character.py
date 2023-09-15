@@ -360,9 +360,9 @@ class Character:
             attack_buffs = [character.number_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
             defense_buffs = [character.number_2_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
             element_specific_attack_buffs = [character.number_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
-                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types]
+                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)]
             element_specific_defense_buffs = [character.number_2_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
-                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types]
+                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)]
             
             self.current_attack += sum(attack_buffs) + sum(element_specific_attack_buffs)
             self.current_health += sum(defense_buffs) + sum(element_specific_defense_buffs)
