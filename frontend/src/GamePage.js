@@ -13,7 +13,7 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import { ListItemSecondaryAction, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
-import { snakeCase } from './utils';
+import { snakeCase, getCardBackgroundColor } from './utils';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import battleOld from './battleOld.webp';
 import './arrow.css';
@@ -122,9 +122,7 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
-    const backgroundColor = type === 'player'
-        ? playerColor(isDarkMode)  // darker green for player in dark mode
-        : opponentColor(isDarkMode); // darker red for opponent in dark mode
+    const backgroundColor = getCardBackgroundColor(character.template, isDarkMode);
 
     const isDead = character.current_health <= 0;
     let filterStyle = '';

@@ -37,16 +37,17 @@ class GameState:
         else:
             self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
 
+    def draw_random_card(self, player_num: int):
+        random_template = random.choice(list(CARD_TEMPLATES.values()))
+        self.hands_by_player[player_num].append(Card(random_template))
+
+    def run_card_draw_triggers(self, player_num: int):
         for lane in self.lanes:
             for character in lane.characters_by_player[player_num]:
                 if character.has_ability('OnDrawCardPump'):
                     character.current_attack += character.number_of_ability('OnDrawCardPump')
                     character.current_health += character.number_2_of_ability('OnDrawCardPump')
                     character.max_health += character.number_2_of_ability('OnDrawCardPump')
-
-    def draw_random_card(self, player_num: int):
-        random_template = random.choice(list(CARD_TEMPLATES.values()))
-        self.hands_by_player[player_num].append(Card(random_template))
 
 
     def mulligan_card(self, player_num: int, card_id: str):

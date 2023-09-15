@@ -88,7 +88,7 @@ CARD_TEMPLATES = {
         cost=2,
         attack=3,
         health=7,
-        creature_types=['Water'],
+        creature_types=['Fire'],
     ),
     'Southern Raider': CardTemplate(
         name='Southern Raider',
@@ -104,7 +104,7 @@ CARD_TEMPLATES = {
         cost=2,
         attack=2,
         health=6,
-        creature_types=['Water'],
+        creature_types=['Air'],
     ),
     'Yon Rha': CardTemplate(
         name='Yon Rha',
@@ -265,7 +265,7 @@ CARD_TEMPLATES = {
         cost=3,
         attack=5,
         health=3,
-        creature_types=['Water'],
+        creature_types=['Fire'],
     ),
     'Master Pakku': CardTemplate(
         name='Master Pakku',

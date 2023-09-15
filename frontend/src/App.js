@@ -32,7 +32,30 @@ function CardPoolPage() {
         return response.json();
       })
       .then((data) => {
-        setCards(Object.values(data));
+        // Custom order map for creature types
+        const creatureTypeOrder = {
+          "Avatar": 1,
+          "Earth": 2,
+          "Water": 3,
+          "Air": 4,
+          "Fire": 5
+        };
+
+        setCards(Object.values(data).sort((a, b) => {
+          const aOrder = creatureTypeOrder[a.creatureTypes?.[0]] || Infinity;
+          const bOrder = creatureTypeOrder[b.creatureTypes?.[0]] || Infinity;
+
+          if (aOrder < bOrder) {
+              return -1;
+          }
+          if (aOrder > bOrder) {
+              return 1;
+          }
+
+          // If creatureTypes order is the same, compare the names
+          return a.name.localeCompare(b.name);
+        }));
+        
         setLoading(false);
       })
       .catch((error) => {

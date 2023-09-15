@@ -1,12 +1,12 @@
 import { Card, CardContent, Typography, Box, useTheme } from '@mui/material';
-import { snakeCase } from './utils';
+import { snakeCase, getCardBackgroundColor } from './utils';
 
 function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, displayArt , height, width, displayRedX }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
     // Define card background color based on theme mode
-    const cardBackgroundColor = isDarkMode ? '#555' : '#eee';
+    const cardBackgroundColor = getCardBackgroundColor(card, isDarkMode);
 
     const outlineSize = 2;
 

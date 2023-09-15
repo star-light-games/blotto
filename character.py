@@ -467,7 +467,7 @@ class Character:
 
             if 'Earth' in self.template.creature_types or 'Avatar' in self.template.creature_types:
                 for character in self.lane.characters_by_player[self.owner_number]:
-                    if character.has_ability('ShackleEnemyOnFriendlyEarth'):
+                    if character.has_ability('ShackleOnFriendlyEarth'):
                         random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
                         if random_enemy_character is not None:
                             random_enemy_character.shackle(character, log, animations, game_state)
