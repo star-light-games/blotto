@@ -24,7 +24,7 @@ import { Link } from 'react-router-dom';
 
 
 const calculateManaCurve = (deck, cards) => {
-  const manaCurve = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6:0};
+  const manaCurve = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
   deck.forEach(cardName => {
       const card = cards.find(c => c.name === cardName);
       if (card && card.cost !== undefined) {
