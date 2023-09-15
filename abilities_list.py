@@ -1,6 +1,6 @@
 from typing import Callable, Union
 from ability import Ability
-from utils import plural
+from utils import element_to_color, plural
 
 
 ABILITIES: dict[str, Union[Ability, Callable]] = {
@@ -194,5 +194,39 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnTowerDamageGainMana',
         description=f'When I damage the enemy tower, gain {x} mana next turn.',
         number=x,
+    ),
+    'DoNotDamageEnemyCharacters': Ability(
+        name='DoNotDamageEnemyCharacters',
+        description='I do not damage enemy characters.',
+    ),
+    'ShackleOnFriendlyEarth': Ability(
+        name='ShackleOnFriendlyEarth',
+        description='When a friendly Earth (green) character is played (including me), shackle a random enemy character in this lane.',
+    ),
+    'OnShackleDrawCard': Ability(
+        name='OnShackleDrawCard',
+        description='When you shackle an enemy character in this lane, draw a random card.',
+    ),
+    'OnRevealPumpFriendlyCharactersOfElement': lambda x, y, z: Ability(
+        name='OnRevealPumpFriendlyCharactersOfElement',
+        description=f'On reveal: give +{x}/+{y} to all friendly {z} ({element_to_color(z)}) characters in this lane (including myself).',
+        number=x,
+        number_2=y,
+        creature_type=z,
+    ),
+    'OnCharacterMoveHereMakeSpirit': Ability(
+        name='OnCharacterMoveHereMakeSpirit',
+        description='Whenever a friendly character moves into this lane, make a 3/1 Spirit in another lane.',
+    ),
+    'PumpFriendlyCharactersOfElementPlayedHere': lambda x, y, z: Ability(
+        name='PumpFriendlyCharactersOfElementPlayedHere',
+        description=f'Whenever you play a {z} ({element_to_color(z)}) character in this lane (including myself), it gets +{x}/+{y}.',
+        number=x,
+        number_2=y,
+        creature_type=z,
+    ),
+    'OnAttackDoubleAttack': Ability(
+        name='OnAttackDoubleAttack',
+        description='When I attack, double my attack strength.',
     ),
 }

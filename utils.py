@@ -7,3 +7,12 @@ def generate_unique_id():
 
 def plural(x):
     return 's' if x != 1 else ''
+
+
+def element_to_color(element):
+    return {
+        'Earth': 'green',
+        'Fire': 'red',
+        'Water': 'blue',
+        'Air': 'yellow',
+    }[element]

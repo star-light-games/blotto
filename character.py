@@ -1,5 +1,6 @@
 import random
 from card_template import CardTemplate
+from card_templates_list import CARD_TEMPLATES
 from utils import generate_unique_id
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
@@ -41,6 +42,11 @@ class Character:
         ability = [ability for ability in self.template.abilities if ability.name == ability_name][0]
         assert ability.number_2 is not None
         return ability.number_2
+    
+    def creature_type_of_ability(self, ability_name) -> str:
+        ability = [ability for ability in self.template.abilities if ability.name == ability_name][0]
+        assert ability.creature_type is not None
+        return ability.creature_type
 
     def compute_damage_to_deal(self, damage_by_player: dict[int, int], is_tower_attack: bool = False, starting_current_attack: Optional[int] = None):
         multiplier = 2 if self.has_ability('DoubleTowerDamage') and is_tower_attack else 1
@@ -115,11 +121,16 @@ class Character:
         if self.has_ability('SwitchLanesAfterAttacking'):
             self.switch_lanes(game_state)
 
+        if self.has_ability('OnAttackDoubleAttack'):
+            self.current_attack *= 2
+
     def punch(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState',
               starting_current_attack: Optional[int] = None):
         if self.has_ability('Deathtouch'):
             defending_character.current_health = 0
             log.append(f"{self.owner_username}'s {self.template.name} deathtouched {defending_character.owner_username}'s {defending_character.template.name}.")
+        elif self.has_ability('DoNotDamageEnemyCharacters'):
+            return
         else:
             damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player, starting_current_attack=starting_current_attack)
             defending_character.current_health -= damage_to_deal
@@ -201,6 +212,11 @@ class Character:
                 self.current_health += character.number_2_of_ability('CharacterMovesHereThatCharacterPumps')
                 self.max_health += character.number_2_of_ability('CharacterMovesHereThatCharacterPumps')
 
+            if character.has_ability('OnCharacterMoveHereMakeSpirit'):
+                lane_to_spawn_in = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
+                if lane_to_spawn_in is not None:
+                    lane_to_spawn_in.characters_by_player[self.owner_number].append(Character(CARD_TEMPLATES['Spirit'], lane_to_spawn_in, self.owner_number, game_state.usernames_by_player[self.owner_number]))
+
     def fully_heal(self):
         if self.current_health == self.max_health:
             return
@@ -250,6 +266,32 @@ class Character:
             self.shackled_turns -= 1
 
 
+    def shackle(self, shackling_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
+        self.shackled_turns += 1
+        num_enemy_characters_that_increase_shackled_turns = len([character for character in self.lane.characters_by_player[1 - self.owner_number] if character.has_ability('ShacklesLastExtraTurn')])
+        total_damage_from_shackles = sum([character.number_of_ability('ShacklesDealDamage') for character in self.lane.characters_by_player[1 - self.owner_number] if character.has_ability('ShacklesDealDamage')])
+        cards_drawn_from_shackles = len([character for character in self.lane.characters_by_player[1 - self.owner_number] if character.has_ability('OnShackleDrawCard')])
+
+        self.shackled_turns += 1 + num_enemy_characters_that_increase_shackled_turns
+        self.current_health -= total_damage_from_shackles
+
+        for _ in range(cards_drawn_from_shackles):
+            game_state.draw_random_card(1 - self.owner_number)
+
+        log.append(f"{shackling_character.owner_username}'s {shackling_character.template.name} shackled {self.owner_username}'s {self.template.name}.")
+        if not do_not_animate:
+            animations.append([{
+                "event_type": "character_shackle",
+                "shackling_character_id": shackling_character.id,
+                "shackled_character_id": self.id,
+                "character_shackled_turns": self.shackled_turns,
+                "player": 1 - self.owner_number,
+                "lane_number": self.lane.lane_number,
+                "shackling_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(shackling_character.id),
+                "shackled_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+            }, game_state.to_json()])
+
+
 
     def do_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
         if self.did_on_reveal:
@@ -257,33 +299,12 @@ class Character:
         if self.new:
             if self.has_ability('OnRevealShackle'):
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
-                num_friendly_characters_that_increase_shackled_turns = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesLastExtraTurn')])
-                total_damage_from_shackles = sum([character.number_of_ability('ShacklesDealDamage') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesDealDamage')])
                 if random_enemy_character is not None:
-                    random_enemy_character.shackled_turns += 1 + num_friendly_characters_that_increase_shackled_turns
-                    random_enemy_character.current_health -= total_damage_from_shackles
-                    log.append(f"{self.owner_username}'s {self.template.name} shackled {random_enemy_character.owner_username}'s {random_enemy_character.template.name}.")
-                    animations.append([
-                        {
-                            "event_type": "character_shackle",
-                            "shackling_character_id": self.id,
-                            "shackled_character_id": random_enemy_character.id,
-                            "character_shackled_turns": random_enemy_character.shackled_turns,
-                            "player": self.owner_number,
-                            "lane_number": self.lane.lane_number,
-                            "shackling_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                            "shackled_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(random_enemy_character.id),
-                        },
-                        game_state.to_json(),
-                    ])
+                    random_enemy_character.shackle(self, log, animations, game_state)
 
             if self.has_ability('OnRevealShackleAllEnemies'):
-                num_friendly_characters_that_increase_shackled_turns = len([character for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesLastExtraTurn')])
-                total_damage_from_shackles = sum([character.number_of_ability('ShacklesDealDamage') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('ShacklesDealDamage')])
                 for character in self.lane.characters_by_player[1 - self.owner_number]:
-                    character.shackled_turns += 1 + num_friendly_characters_that_increase_shackled_turns
-                    character.current_health -= total_damage_from_shackles
-                    log.append(f"{self.owner_username}'s {self.template.name} shackled {character.owner_username}'s {character.template.name}.")
+                    character.shackle(self, log, animations, game_state, do_not_animate=True)
                 animations.append([
                     {
                         "event_type": "on_reveal",
@@ -338,9 +359,14 @@ class Character:
 
             attack_buffs = [character.number_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
             defense_buffs = [character.number_2_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
-            self.current_attack += sum(attack_buffs)
-            self.current_health += sum(defense_buffs)
-            self.max_health += sum(defense_buffs)
+            element_specific_attack_buffs = [character.number_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
+                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types]
+            element_specific_defense_buffs = [character.number_2_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
+                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types]
+            
+            self.current_attack += sum(attack_buffs) + sum(element_specific_attack_buffs)
+            self.current_health += sum(defense_buffs) + sum(element_specific_defense_buffs)
+            self.max_health += sum(defense_buffs) + sum(element_specific_defense_buffs)
 
             if self.has_ability('HealFriendlyCharacterAndTower'):
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
@@ -439,6 +465,19 @@ class Character:
                     game_state.to_json(),
                 ])
 
+            if 'Earth' in self.template.creature_types or 'Avatar' in self.template.creature_types:
+                for character in self.lane.characters_by_player[self.owner_number]:
+                    if character.has_ability('ShackleEnemyOnFriendlyEarth'):
+                        random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
+                        if random_enemy_character is not None:
+                            random_enemy_character.shackle(character, log, animations, game_state)
+            
+            if self.has_ability('OnRevealPumpFriendlyCharactersOfElement'):
+                for character in self.lane.characters_by_player[self.owner_number]:
+                    if self.creature_type_of_ability('OnRevealPumpFriendlyCharactersOfElement') in character.template.creature_types or 'Avatar' in character.template.creature_types:
+                        character.current_attack += self.number_of_ability('OnRevealPumpFriendlyCharactersOfElement')
+                        character.current_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
+                        character.max_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
 
         self.did_on_reveal = True
 

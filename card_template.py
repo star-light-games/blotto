@@ -3,7 +3,7 @@ from abilities_list import ABILITIES
 
 
 class CardTemplate:
-    def __init__(self, name: str, abilities: list[Union[str, tuple[str, int], tuple[str, int, int]]], cost: int, attack: int, health: int, creature_types: list[str], not_in_card_pool: bool = False):
+    def __init__(self, name: str, abilities: list[Union[str, tuple[str, int], tuple[str, int, int], tuple[str, int, int, str]]], cost: int, attack: int, health: int, creature_types: list[str], not_in_card_pool: bool = False):
         self.name = name
         self.abilities = []
         for ability in abilities:
@@ -12,6 +12,8 @@ class CardTemplate:
                     self.abilities.append(ABILITIES[ability[0]](ability[1]))  # type: ignore
                 elif len(ability) == 3:
                     self.abilities.append(ABILITIES[ability[0]](ability[1], ability[2]))  # type: ignore
+                elif len(ability) == 4:
+                    self.abilities.append(ABILITIES[ability[0]](ability[1], ability[2], ability[3]))  # type: ignore
             else:
                 self.abilities.append(ABILITIES[ability])
 
@@ -39,9 +41,14 @@ class CardTemplate:
             number = ability.get("number")
             number_2 = ability.get("number_2")
 
+            creature_type = ability.get("creature_type")
+
             if number is not None:
                 if number_2 is not None:
-                    abilities.append((ability["name"], number, number_2))
+                    if creature_type is not None:
+                        abilities.append((ability["name"], number, number_2, creature_type))
+                    else:
+                        abilities.append((ability["name"], number, number_2))
                 else:
                     abilities.append((ability["name"], number))
             else:
