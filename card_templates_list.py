@@ -23,7 +23,7 @@ CARD_TEMPLATES = {
         abilities=['Defender', 'StartOfTurnFullHeal'],
         cost=3,
         attack=2,
-        health=5,
+        health=6,
         creature_types=['Water'],
     ),
     'Korra': CardTemplate(
@@ -271,8 +271,8 @@ CARD_TEMPLATES = {
         name='Master Pakku',
         abilities=['Defender'],
         cost=5,
-        attack=4,
-        health=11,
+        attack=3,
+        health=12,
         creature_types=['Water'],
     ),
     'Opal': CardTemplate(
