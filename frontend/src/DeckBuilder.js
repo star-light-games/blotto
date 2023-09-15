@@ -43,6 +43,8 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
 
   console.log(currentDeck.length);
 
+  const DRAFT_DECK_SIZE = 18;
+
   useEffect(() => {
     // Function to generate four distinct random cards from cardPool
     const getRandomCards = () => {
@@ -56,7 +58,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
       return randomCards;
     };
 
-    if (currentDeck.length < 18) {
+    if (currentDeck.length < DRAFT_DECK_SIZE) {
       setDraftOptions(getRandomCards());
     }
     else {
@@ -70,11 +72,11 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
     setCurrentDeck(prev => [...prev, cardName]);
   };
 
-  if (currentDeck.length === 18) return null;
+  if (currentDeck.length === DRAFT_DECK_SIZE) return null;
 
   return (
     <React.Fragment>
-      <Typography variant="h6" style={{ marginTop: '20px' }}>Draft Options:</Typography>
+      <Typography variant="h6">Drafting card {currentDeck.length + 1}/{DRAFT_DECK_SIZE}</Typography>
       <Grid container spacing={3}>
         {draftOptions.map((card) => (
           <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>

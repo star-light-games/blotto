@@ -1,4 +1,5 @@
 import secrets
+import random
 
 
 def generate_unique_id():
@@ -16,3 +17,8 @@ def element_to_color(element):
         'Water': 'blue',
         'Air': 'yellow',
     }[element]
+
+def shuffled(l):
+    l = l[:]
+    random.shuffle(l)
+    return l

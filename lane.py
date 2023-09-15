@@ -4,6 +4,7 @@ from typing import Optional
 from card_templates_list import CARD_TEMPLATES
 from character import Character
 from lane_rewards import LANE_REWARDS, LaneReward
+from utils import shuffled
 if TYPE_CHECKING:
     from game_state import GameState
 
@@ -101,10 +102,18 @@ class Lane:
                 "dying_character_index": [c.id for c in self.characters_by_player[dying_character.owner_number]].index(dying_character.id),
             }, game_state.to_json()])
 
-            if dying_character.has_ability('SwitchLanesInsteadOfDying') and not dying_character.escaped_death:
-                dying_character.escaped_death = True
-                dying_character.fully_heal()                
-                dying_character.switch_lanes(game_state)
+            was_saved = False
+            for lane in shuffled([lane for lane in game_state.lanes if not lane.lane_number == self.lane_number]):
+                for character in lane.characters_by_player[dying_character.owner_number]:
+                    if character.has_ability('OnFriendlyCharacterDeathHealFullyAndSwitchLanes'):
+                        if dying_character.switch_lanes(game_state, lane_number=lane.lane_number, and_fully_heal_if_switching=True):
+                            was_saved = True
+                        
+
+            if dying_character.has_ability('SwitchLanesInsteadOfDying') and not dying_character.escaped_death and not was_saved:
+                if dying_character.switch_lanes(game_state, and_fully_heal_if_switching=True):
+                    dying_character.escaped_death = True      
+                
 
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]

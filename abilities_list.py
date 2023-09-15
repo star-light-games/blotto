@@ -227,6 +227,10 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnAttackDoubleAttack': Ability(
         name='OnAttackDoubleAttack',
-        description='When I attack, double my attack strength.',
+        description='After I attack, double my strength.',
+    ),
+    'OnFriendlyCharacterDeathHealFullyAndSwitchLanes': Ability(
+        name='OnFriendlyCharacterDeathHealFullyAndSwitchLanes',
+        description='If a friendly character in ANY other lane would die, heal it fully and switch it to my lane instead.',
     ),
 }

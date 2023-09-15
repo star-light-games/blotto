@@ -186,15 +186,22 @@ class Character:
         return self.can_fight() and not self.has_attacked and self.shackled_turns == 0 and self.current_attack > 0
 
 
-    def switch_lanes(self, game_state: 'GameState'):
-        target_lane = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
+    def switch_lanes(self, game_state: 'GameState', lane_number: Optional[int] = None, and_fully_heal_if_switching: bool = False) -> bool:
+        if lane_number is None:
+            target_lane = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
+        else:
+            target_lane = game_state.lanes[lane_number]
+            if len(target_lane.characters_by_player[self.owner_number]) >= 4:
+                return False
 
         if target_lane is None:
-            return
+            return False
 
         self.lane.characters_by_player[self.owner_number] = [character for character in self.lane.characters_by_player[self.owner_number] if character.id != self.id]
+        if and_fully_heal_if_switching:
+            self.fully_heal()
         if self.current_health <= 0:
-            return
+            return False
 
         target_lane.characters_by_player[self.owner_number].append(self)
         self.lane = target_lane
@@ -216,6 +223,9 @@ class Character:
                 lane_to_spawn_in = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
                 if lane_to_spawn_in is not None:
                     lane_to_spawn_in.characters_by_player[self.owner_number].append(Character(CARD_TEMPLATES['Spirit'], lane_to_spawn_in, self.owner_number, game_state.usernames_by_player[self.owner_number]))
+
+        return True
+    
 
     def fully_heal(self):
         if self.current_health == self.max_health:

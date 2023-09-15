@@ -36,10 +36,12 @@ class GameState:
             self.draw_piles_by_player[player_num] = self.draw_piles_by_player[player_num][1:]
         else:
             self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
+        self.run_card_draw_triggers(player_num)
 
     def draw_random_card(self, player_num: int):
         random_template = random.choice(list(CARD_TEMPLATES.values()))
         self.hands_by_player[player_num].append(Card(random_template))
+        self.run_card_draw_triggers(player_num)
 
     def run_card_draw_triggers(self, player_num: int):
         for lane in self.lanes:

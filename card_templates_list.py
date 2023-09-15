@@ -15,7 +15,7 @@ CARD_TEMPLATES = {
         abilities=['OnRevealShackle'],
         cost=1,
         attack=2,
-        health=2,
+        health=3,
         creature_types=['Earth'],
     ),
     'Katara': CardTemplate(
@@ -88,7 +88,7 @@ CARD_TEMPLATES = {
         cost=2,
         attack=3,
         health=7,
-        creature_types=['Fire'],
+        creature_types=['Earth'],
     ),
     'Southern Raider': CardTemplate(
         name='Southern Raider',
@@ -122,8 +122,8 @@ CARD_TEMPLATES = {
         health=5,
         creature_types=['Water'],
     ),
-    'Zuko': CardTemplate(
-        name='Zuko',
+    'Mai': CardTemplate(
+        name='Mai',
         abilities=['DoubleTowerDamage'],
         cost=3,
         attack=3,
@@ -288,7 +288,7 @@ CARD_TEMPLATES = {
         abilities=[('PumpOnFriendlyHeal', 3, 3)],
         cost=2,
         attack=2,
-        health=5,
+        health=4,
         creature_types=['Water'],
     ),
     'Air Nomads': CardTemplate(
@@ -302,7 +302,7 @@ CARD_TEMPLATES = {
     ),
     'Taqukaq': CardTemplate(
         name='Taqukaq',
-        abilities=['Defender', ('OnKillBuffHealth', 1, 2)],
+        abilities=['Defender', ('OnKillBuffHealth', 1, 1)],
         cost=4,
         attack=2,
         health=7,
@@ -356,8 +356,8 @@ CARD_TEMPLATES = {
         health=1,
         creature_types=['Earth'],
     ),
-    'Hong Mushi': CardTemplate(
-        name='Hong Mushi',
+    'Zuko': CardTemplate(
+        name='Zuko',
         abilities=[('OnRevealDamageSelf', 4)],
         cost=1,
         attack=3,
@@ -440,8 +440,8 @@ CARD_TEMPLATES = {
         name='Kuvira',
         abilities=['ShackleOnFriendlyEarth', 'OnShackleDrawCard'],
         cost=2,
-        attack=1,
-        health=1,
+        attack=2,
+        health=2,
         creature_types=['Earth'],
     ),
     'Jinora': CardTemplate(
@@ -484,5 +484,13 @@ CARD_TEMPLATES = {
         attack=1,
         health=5,
         creature_types=['Earth'],
+    ),
+    'Uncle Iroh': CardTemplate(
+        name='Uncle Iroh',
+        abilities=['Defender', 'OnFriendlyCharacterDeathHealFullyAndSwitchLanes'],
+        cost=4,
+        attack=2,
+        health=3,
+        creature_types=['Fire'],
     ),
 }
