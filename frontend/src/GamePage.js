@@ -1240,7 +1240,7 @@ export default function GamePage({ }) {
             .then(res => res.json())
             .then(data => {
                 setGame(data);
-                setGameState(data?.gameState);
+                setGameState(data?.game_state);
                 setLoading(false);
                 setLaneData(data.game_state.lanes);
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
