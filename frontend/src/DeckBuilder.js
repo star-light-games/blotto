@@ -47,7 +47,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
     // Function to generate four distinct random cards from cardPool
     const getRandomCards = () => {
       let randomCards = [];
-      while (randomCards.length < 6) {
+      while (randomCards.length < 4) {
         const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
         if (!randomCards.includes(randomCard) && !currentDeck.includes(randomCard)) {
           randomCards.push(randomCard);
