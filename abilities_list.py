@@ -46,7 +46,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnTowerAttackDealMassDamage': lambda x: Ability(
         name='OnTowerAttackDealMassDamage',
-        description=f'When I attack the enemy tower, I deal {x} damage to all enemy characters.',
+        description=f'When I attack the enemy tower, I deal {x} damage to all enemy characters in this lane.',
         number=x,
     ),
     'OnRevealPumpAttackers': lambda x, y: Ability(
@@ -240,5 +240,9 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'SwitchLanesAtEndOfTurn': Ability(
         name='SwitchLanesAtEndOfTurn',
         description='At the end of each turn, I switch lanes.',
+    ),
+    'OnRevealFillEnemyLaneWithCabbages': Ability(
+        name='OnRevealFillEnemyLaneWithCabbages',
+        description='On reveal: fill the enemy lane with 0/1 Cabbages.',
     ),
 }

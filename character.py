@@ -287,7 +287,6 @@ class Character:
                 log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
         
         if self.has_ability('SwitchLanesAtEndOfTurn'):
-            print('Ikki switched lanes!')
             self.switch_lanes(log, animations, game_state)
 
         self.did_end_of_turn = True
@@ -505,6 +504,10 @@ class Character:
                         character.current_attack += self.number_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.current_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.max_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
+
+            if self.has_ability('OnRevealFillEnemyLaneWithCabbages'):
+                while len(self.lane.characters_by_player[1 - self.owner_number]) < 4:
+                    self.lane.characters_by_player[1 - self.owner_number].append(Character(CARD_TEMPLATES['Cabbage'], self.lane, 1 - self.owner_number, game_state.usernames_by_player[1 - self.owner_number]))
 
         self.did_on_reveal = True
 

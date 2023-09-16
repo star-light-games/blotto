@@ -39,7 +39,7 @@ class GameState:
         self.run_card_draw_triggers(player_num)
 
     def draw_random_card(self, player_num: int):
-        random_template = random.choice(list(CARD_TEMPLATES.values()))
+        random_template = random.choice([card_template for card_template in CARD_TEMPLATES.values() if not card_template.not_in_card_pool])
         self.hands_by_player[player_num].append(Card(random_template))
         self.run_card_draw_triggers(player_num)
 

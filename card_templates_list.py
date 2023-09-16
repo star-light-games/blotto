@@ -31,7 +31,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnSurviveDamagePump', 1, 1)],
         cost=5,
         attack=6,
-        health=9,
+        health=8,
         creature_types=['Avatar'],
     ),
     'Meelo': CardTemplate(
@@ -88,7 +88,7 @@ CARD_TEMPLATES = {
         cost=2,
         attack=3,
         health=7,
-        creature_types=['Earth'],
+        creature_types=['Air'],
     ),
     'Southern Raider': CardTemplate(
         name='Southern Raider',
@@ -500,5 +500,22 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Avatar'],
+    ),
+    'Cabbage Man': CardTemplate(
+        name='Cabbage Man',
+        abilities=['Attacker', 'OnRevealFillEnemyLaneWithCabbages'],
+        cost=3,
+        attack=1,
+        health=3,
+        creature_types=['Earth'],
+    ),
+    'Cabbage': CardTemplate(
+        name='Cabbage',
+        abilities=[],
+        cost=0,
+        attack=0,
+        health=1,
+        creature_types=[],
+        not_in_card_pool=True,
     ),
 }
