@@ -268,7 +268,7 @@ BOT_DRAFT_DECKS = [
   'Zaheer',
   'Kyoshi',
   'Korra',
-  'Momo']}
+  'Momo']},
 {'name': 'Bot draft deck 6',
  'cards': ['Jinora',
   'Aang',
