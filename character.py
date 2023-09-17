@@ -503,6 +503,16 @@ class Character:
                         character.current_attack += self.number_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.current_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.max_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
+                animations.append([
+                    {
+                        "event_type": "on_reveal",
+                        "revealing_character_id": self.id,
+                        "player": self.owner_number,
+                        "lane_number": self.lane.lane_number,
+                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    },
+                    game_state.to_json(),
+                ])
 
             if self.has_ability('OnRevealFillEnemyLaneWithCabbages'):
                 while len(self.lane.characters_by_player[1 - self.owner_number]) < 4:

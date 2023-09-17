@@ -108,7 +108,7 @@ def assess_intermediate_position(player_num: int, mana_amounts_by_player: dict[i
 
 
 def find_bot_move(player_num: int, game_state: GameState) -> dict[str, int]:
-    cards_in_hand = game_state.hands_by_player[player_num]
+    cards_in_hand = game_state.hands_by_player[player_num][:5]
 
     print('My cards: ', [card.template.name for card in cards_in_hand])
     print('My cards: ', [card.to_json() for card in cards_in_hand])
