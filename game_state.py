@@ -134,18 +134,6 @@ class GameState:
             return None
         return random.choice(lanes_with_empty_slots)    
 
-    def assess_final_positions(self) -> float:
-        CHARACTERISTIC_TOWER_HEALTH_AMOUNT = 20
-        probability_of_winning_each_lane = [sigmoid((lane.damage_by_player[0] - lane.damage_by_player[1]) / CHARACTERISTIC_TOWER_HEALTH_AMOUNT) for lane in self.lanes]
-        probability_of_winning_game = (
-            probability_of_winning_each_lane[0] * probability_of_winning_each_lane[1] * (1 - probability_of_winning_each_lane[2]) +
-            probability_of_winning_each_lane[0] * (1 - probability_of_winning_each_lane[1]) * probability_of_winning_each_lane[2] +
-            (1 - probability_of_winning_each_lane[0]) * probability_of_winning_each_lane[1] * probability_of_winning_each_lane[2] +
-            probability_of_winning_each_lane[0] * probability_of_winning_each_lane[1] * probability_of_winning_each_lane[2]
-        )
-
-        return probability_of_winning_game
-
     def to_json(self, exclude_animations: bool = True):
         return {
             "lanes": [lane.to_json() for lane in self.lanes],

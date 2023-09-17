@@ -37,6 +37,7 @@ class Game:
             "game_state": self.game_state.to_json(exclude_animations=False) if self.game_state is not None else None,
             "created_at": self.created_at,
             "rematch_game_id": self.rematch_game_id,
+            "is_bot_by_player": self.is_bot_by_player
         }
     
 
@@ -47,5 +48,6 @@ class Game:
         game.game_state = GameState.from_json(json['game_state']) if json['game_state'] is not None else None
         game.created_at = json['created_at']
         game.rematch_game_id = json['rematch_game_id']
+        game.is_bot_by_player = json['is_bot_by_player']
         return game
 
