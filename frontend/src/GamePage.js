@@ -795,6 +795,7 @@ export default function GamePage({ }) {
                     deckId: game?.decks_by_player?.[playerNum].id,
                     hostGameId: rematchGameId,
                     username: game.usernames_by_player[playerNum],
+                    bot_game: game.is_bot_by_player[1 - playerNum],
                 }
                 fetch(`${URL}/api/host_game`, {
                     method: 'POST',
