@@ -839,6 +839,9 @@ export default function GamePage({ }) {
                     })
                     .then(() => {
                         navigate(`/game/${rematchGameId}?playerNum=1`); // Redirect to the game page
+
+                        // Then refresh the page
+                        window.location.reload();
                     })
             }
         }
