@@ -81,7 +81,6 @@ class GameState:
         for lane in sorted(self.lanes, key=lambda lane: lane.lane_number + lane.additional_combat_priority):
             lane.roll_turn(self.log, self.animations, self)
         for lane in self.lanes:
-            print('doing end of turn now')
             lane.do_end_of_turn(self.log, self.animations, self)
         self.animations.append([{
                         "event_type": "end_of_roll",
@@ -140,7 +139,7 @@ class GameState:
             "turn": self.turn,
             "hands_by_player": {player_num: [card.to_json() for card in self.hands_by_player[player_num]] for player_num in self.hands_by_player},
             "draw_piles_by_player": {player_num: [card.to_json() for card in self.draw_piles_by_player[player_num]] for player_num in self.draw_piles_by_player},
-            "log": self.log,
+            "log": self.log[:],
             "mana_by_player": self.mana_by_player,
             "has_moved_by_player": self.has_moved_by_player,
             "usernames_by_player": self.usernames_by_player,
@@ -159,7 +158,8 @@ class GameState:
         game_state.log = json['log']
         game_state.mana_by_player = json['mana_by_player']
         game_state.has_moved_by_player = json['has_moved_by_player']
-        game_state.animations = json['animations']
+        if json.get('animations'):
+            game_state.animations = json['animations']
         game_state.has_mulliganed_by_player = json['has_mulliganed_by_player']
 
         return game_state

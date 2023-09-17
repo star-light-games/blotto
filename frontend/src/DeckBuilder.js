@@ -278,6 +278,8 @@ function DeckBuilder({ cards }) {
           <Button variant="contained" color="primary" onClick={() => hostGame(false)} disabled={!selectedDeck}>
             {selectedDeck ? 'Host Game' : 'Select Deck'}
           </Button>
+        </Grid>
+        <Grid item>
           <Button variant="contained" color="primary" onClick={() => hostGame(true)} disabled={!selectedDeck}>
             {selectedDeck ? 'Play against bot' : 'Select Deck'}
           </Button>

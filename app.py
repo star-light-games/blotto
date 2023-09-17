@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
-from bot import find_bot_move, get_bot_deck
+from bot import bot_move_in_game, bot_take_mulligan, find_bot_move, get_bot_deck
 from card_templates_list import CARD_TEMPLATES
 from common_decks import create_common_decks
 from deck import Deck
@@ -12,6 +12,7 @@ from game import Game
 import traceback
 from functools import wraps
 import random
+from _thread import start_new_thread
 
 from redis_utils import rget_json, rlock, rset_json
 from settings import COMMON_DECK_USERNAME, LOCAL
@@ -123,6 +124,15 @@ def host_game():
             bot_deck = get_bot_deck() or deck
             game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
             game.is_bot_by_player[1] = True
+            game.start()
+            
+            socketio.emit('update', room=game.id)      
+
+            assert game.game_state
+            bot_take_mulligan(game.game_state, 1)
+
+            start_new_thread(bot_move_in_game, (game, 1))
+
         else:
             game = Game({0: username, 1: None}, {0: deck, 1: None}, id=host_game_id)
 
@@ -241,11 +251,6 @@ def take_turn(game_id):
         assert player_num is not None
         assert game.game_state is not None
 
-        if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
-            bot_move = find_bot_move(1 - player_num, game.game_state)
-            for card_id, lane_number in bot_move.items():
-                game.game_state.play_card(1 - player_num, card_id, lane_number)
-
         for card_id, lane_number in cards_to_lanes.items():
             game.game_state.play_card(player_num, card_id, lane_number)
 
@@ -255,6 +260,9 @@ def take_turn(game_id):
             game.game_state.roll_turn()
 
         games[game_id] = game.to_json()
+
+        if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
+            start_new_thread(bot_move_in_game, (game, 1 - player_num))
 
         rset_json('games', games)
     

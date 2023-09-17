@@ -1,8 +1,9 @@
 from typing import Optional
 from card_templates_list import CARD_TEMPLATES
 from deck import Deck
+from game import Game
 from game_state import GameState
-from redis_utils import rget_json
+from redis_utils import rget_json, rlock, rset_json
 from utils import sigmoid
 
 
@@ -83,28 +84,79 @@ def assess_intermediate_position(player_num: int, mana_amounts_by_player: dict[i
 
 def find_bot_move(player_num: int, game_state: GameState) -> dict[str, int]:
     cards_in_hand = game_state.hands_by_player[player_num]
+
+    print('My cards: ', [card.template.name for card in cards_in_hand])
+    print('My cards: ', [card.to_json() for card in cards_in_hand])
     # Stores dict of mana spent to a tuple of (best game state, card id to lane number)
     best_game_state_spending_x_mana = {0: (game_state.copy(), {})}
     for x in range(1, game_state.mana_by_player[player_num] + 1):
+        print(f'Trying to find the best move in the position that spends {x} mana.')
         mana_amounts_by_player = game_state.mana_by_player.copy()
         mana_amounts_by_player[player_num] -= x
         best_probability_so_far = assess_intermediate_position(player_num, mana_amounts_by_player, game_state)
+        print('My assessment of the base position: ', best_probability_so_far)
         best_game_state_spending_x_mana[x] = (best_game_state_spending_x_mana[x-1][0], best_game_state_spending_x_mana[x-1][1].copy())
         for card in cards_in_hand:
             if card.template.cost <= x:
-                best_game_state_playing_that_card = best_game_state_spending_x_mana[card.template.cost][0].copy()
-                cards_played = best_game_state_spending_x_mana[card.template.cost][1]
-                if not card.id in cards_played:
+                print('Considering playing card', card.template.name, card.to_json())
+                best_game_state_playing_that_card = best_game_state_spending_x_mana[x - card.template.cost][0].copy()
+                cards_played = best_game_state_spending_x_mana[x - card.template.cost][1]
+                print('Here are the cards in my hand in this scenario: ', [card.to_json() for card in best_game_state_playing_that_card.hands_by_player[player_num]])
+                if card.id in [c.id for c in best_game_state_playing_that_card.hands_by_player[player_num]]:
                     for lane_number in [0, 1, 2]:
                         if len(best_game_state_playing_that_card.lanes[lane_number].characters_by_player[player_num]) < 4:
-                            best_game_state_playing_that_card.play_card(player_num, card.id, lane_number)
-                            probability_of_winning = assess_intermediate_position(player_num, mana_amounts_by_player, best_game_state_playing_that_card)
+                            best_game_state_playing_that_card_copy = best_game_state_playing_that_card.copy()
+                            best_game_state_playing_that_card_copy.play_card(player_num, card.id, lane_number)
+                            print('Trying to play card: ', card.to_json(), ' in lane: ', lane_number)
+                            probability_of_winning = assess_intermediate_position(player_num, mana_amounts_by_player, best_game_state_playing_that_card_copy)
+                            print('My assessment of the resulting position: ', probability_of_winning)
 
                             if probability_of_winning > best_probability_so_far:
                                 new_cards_played = cards_played.copy()
                                 new_cards_played[card.id] = lane_number
-                                best_game_state_spending_x_mana[x] = (best_game_state_playing_that_card, new_cards_played)
+                                best_game_state_spending_x_mana[x] = (best_game_state_playing_that_card_copy, new_cards_played)
                                 best_probability_so_far = probability_of_winning
+
+        print(f'I think the best move that spends {x} mana is: ', best_game_state_spending_x_mana[x][1])
 
     return best_game_state_spending_x_mana[game_state.mana_by_player[player_num]][1]
 
+
+def bot_take_mulligan(game_state: GameState, player_num: int) -> None:
+    cards_in_hand = game_state.hands_by_player[player_num]
+    print('My cards: ', [card.template.name for card in cards_in_hand])
+
+    if all([card.template.cost > 2 for card in cards_in_hand]):
+        # Mulligan everything if I have no one or two drops
+        print('Pitching all cards; I have no one or two drops')
+        return game_state.mulligan_cards(player_num, [card.id for card in cards_in_hand])
+
+    else:
+        # Mulligan all four and five drops
+        print('Pitching the following cards: ', [card.template.name for card in cards_in_hand if card.template.cost >= 4])
+        return game_state.mulligan_cards(player_num, [card.id for card in cards_in_hand if card.template.cost >= 4])
+
+
+def bot_move_in_game(game: Game, player_num: int) -> None:
+    assert game.game_state 
+    bot_move = find_bot_move(player_num, game.game_state)
+    print('The bot has chosen the following move: ', bot_move)
+    game_id = game.id
+    with rlock('games'):
+        games = rget_json('games') or {}
+        game_json = games.get(game_id)
+        game_from_json = Game.from_json(game_json)
+
+        assert game_from_json.game_state
+
+        for card_id, lane_number in bot_move.items():
+            game_from_json.game_state.play_card(player_num, card_id, lane_number)
+        game_from_json.game_state.has_moved_by_player[player_num] = True        
+
+        have_moved = game_from_json.game_state.all_players_have_moved()
+        if have_moved:
+            game_from_json.game_state.roll_turn()
+
+        games[game.id] = game_from_json.to_json()
+
+        rset_json('games', games)
