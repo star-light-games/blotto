@@ -228,7 +228,7 @@ class Character:
             if character.has_ability('OnCharacterMoveHereShackle'):
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
                 if random_enemy_character is not None:
-                    random_enemy_character.shackle(self, log, animations, game_state)
+                    random_enemy_character.shackle(character, log, animations, game_state)
 
         return True
     

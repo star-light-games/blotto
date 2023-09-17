@@ -1218,6 +1218,15 @@ export default function GamePage({ }) {
         }
     };
     
+    const replayAnimations = () => {
+        if (animating) return;
+        if (gameState?.animations?.length > 0) {
+            setGameState(gameState?.animations[0][1]);
+            setAnimating(true);
+            triggerAnimations(gameState, gameState?.animations || []);
+        }
+    }
+
     // useEffect(() => {
     //     let pollingInterval;
 
@@ -1474,7 +1483,16 @@ export default function GamePage({ }) {
                         alignItems: 'center'
                     }}
                 >
-                    {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={onRematch}>Rematch</Button>}
+                    {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={onRematch}>
+                        <Typography variant="h6">
+                            Rematch
+                        </Typography>
+                    </Button>}
+                    {!animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={replayAnimations}>
+                        <Typography variant="h6">
+                            Replay animations
+                        </Typography>
+                    </Button>}
                     {!gameOver && !mulliganing && <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />}
                     {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={mulliganing ? handleSubmit : handleOpenDialog} disabled={submittedMove || gameOver}>
                         <Typography variant="h6">
