@@ -853,6 +853,7 @@ export default function GamePage({ }) {
 
     const SPEEDS = [
         { label: '0.5x', value: BASE_ANIMATION_DELAY * 2 },
+        { label: '0.75x', value: BASE_ANIMATION_DELAY * 1.33 },
         { label: '1x', value: BASE_ANIMATION_DELAY },
         { label: '1.5x', value: BASE_ANIMATION_DELAY / 1.5 },
         { label: '2x', value: BASE_ANIMATION_DELAY / 2 },
