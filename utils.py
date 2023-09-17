@@ -35,3 +35,9 @@ def get_game_with_hidden_information_redis_key(game_id):
 
 def get_game_lock_redis_key(game_id):
     return f'game:{game_id}:lock'
+
+def get_deck_description_json_from_deck(deck):
+    return {
+        'name': deck.name,
+        'cards': [card.name for card in deck.cards],
+    }

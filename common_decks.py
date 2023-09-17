@@ -1,6 +1,6 @@
 from deck import Deck
 from redis_utils import rget_json, rlock, rset_json
-from settings import COMMON_DECK_USERNAME
+from settings import BOT_DECK_USERNAME, COMMON_DECK_USERNAME
 
 
 COMMON_DECKS = [
@@ -169,6 +169,109 @@ COMMON_DECKS = [
 ]
 
 
+BOT_DRAFT_DECKS = [
+    {
+        'name': 'Bot draft deck 1',
+        'cards': [
+            'Monk Gyatso',
+            'Kai',
+            'Appa',
+            'Hakoda',
+            'Fang',
+            'Hakoda',
+            'Kai',
+            'Appa',
+            'Admiral Zhao',
+            'Naga',
+            'Tenzin',
+            'Appa',
+            'Admiral Zhao',
+            'Bumi II',
+            'Hakoda',
+            'Fang',
+            'Riley',
+            'Combustion Man',
+        ]
+    },
+    {'name': 'Bot draft deck 2',
+    'cards': ['Toph',
+    'Fire Lord Ozai',
+    'Combustion Man',
+    'Fire Lord Ozai',
+    'Iroh II',
+    'Hakoda',
+    'Hakoda',
+    'Korra',
+    'Mai',
+    'Yon Rha',
+    'Uncle Iroh',
+    'Sozin',
+    'Uncle Iroh',
+    'Pabu',
+    'Sozin',
+    'Mai',
+    'Mai',
+    'Pabu']},
+    {'name': 'Bot draft deck 3',
+ 'cards': ['Izumi',
+  'Mother Kya',
+  'Zaheer',
+  'Master Pakku',
+  'Mother Kya',
+  'Katara',
+  'Mother Kya',
+  'Cabbage Man',
+  'Sokka',
+  'Hama',
+  'Naga',
+  'Ghazan',
+  'Gran Gran Kanna',
+  'Zuko',
+  'Zaheer',
+  'Hama',
+  'Kya',
+  'Zuko']},
+  {'name': 'Bot draft deck 4',
+ 'cards': ['Baatar Jr',
+  'La',
+  'Zaheer',
+  'Korra',
+  'Fang',
+  'Zaheer',
+  'Dai Li Agent',
+  'La',
+  'Sozin',
+  'Uncle Iroh',
+  'Zaheer',
+  'Kyoshi',
+  'Hakoda',
+  'Dai Li Agent',
+  'Kai',
+  'Ghazan',
+  'Kai',
+  'Appa']},
+  {'name': 'Bot draft deck 5',
+  'cards': ['Yangchen',
+  'Roku',
+  'Aang',
+  'Cabbage Man',
+  'Tonraq',
+  'Hiroshi',
+  'Appa',
+  'Aang',
+  'Kuvira',
+  'Zaheer',
+  'Korra',
+  'Aang',
+  'Sozin',
+  'Opal',
+  'Zaheer',
+  'Kyoshi',
+  'Korra',
+  'Momo']}
+]
+
+
 def create_common_decks():
     with rlock('decks'):
         decks_json = rget_json('decks') or {}
@@ -180,3 +283,9 @@ def create_common_decks():
                 decks_json[deck_id] = deck.to_json()
 
         rset_json('decks', decks_json)
+
+        for deck in BOT_DRAFT_DECKS:
+            if deck['name'] not in [d['name'] for d in decks_json.values()]:
+                deck = Deck(deck['cards'], BOT_DECK_USERNAME, deck['name'])
+                deck_id = deck.id
+                decks_json[deck_id] = deck.to_json()

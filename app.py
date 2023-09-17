@@ -121,7 +121,7 @@ def host_game():
     deck = Deck.from_json(deck_json)
 
     if is_bot_game:
-        bot_deck = get_bot_deck() or deck
+        bot_deck = get_bot_deck(deck.name) or deck
         game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
         game.is_bot_by_player[1] = True
         game.start()

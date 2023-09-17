@@ -1,4 +1,5 @@
 LOCAL = False
 COMMON_DECK_USERNAME = 'COMMON_DECK'
+BOT_DECK_USERNAME = 'BOT_DECK'
 
 from local_settings import *
