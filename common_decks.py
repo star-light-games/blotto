@@ -282,10 +282,10 @@ def create_common_decks():
                 deck_id = deck.id
                 decks_json[deck_id] = deck.to_json()
 
-        rset_json('decks', decks_json)
-
         for deck in BOT_DRAFT_DECKS:
             if deck['name'] not in [d['name'] for d in decks_json.values()]:
                 deck = Deck(deck['cards'], BOT_DECK_USERNAME, deck['name'])
                 deck_id = deck.id
                 decks_json[deck_id] = deck.to_json()
+
+        rset_json('decks', decks_json)                

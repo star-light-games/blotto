@@ -25,6 +25,8 @@ RANDOM_CARDS_TO_PLAY = {
 }
 
 def get_bot_deck(player_deck_name: str) -> Optional[Deck]:
+    from common_decks import COMMON_DECKS, BOT_DRAFT_DECKS
+    from deck import Deck
     decks = rget_json('decks') or {}
     if player_deck_name == 'Learn to play':
         for deck_json in decks.values():
@@ -38,7 +40,9 @@ def get_bot_deck(player_deck_name: str) -> Optional[Deck]:
             if deck.name == bot_deck_name:
                 return deck
     elif 'Draft deck' in player_deck_name:
+        print('hi')
         draft_deck_name = random.choice([bot_draft_deck['name'] for bot_draft_deck in BOT_DRAFT_DECKS])
+        print(draft_deck_name)
         for deck_json in decks.values():
             deck = Deck.from_json(deck_json)
             if deck.name == draft_deck_name:
