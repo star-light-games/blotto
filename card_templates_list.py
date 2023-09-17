@@ -457,7 +457,7 @@ CARD_TEMPLATES = {
         abilities=[],
         cost=1,
         attack=3,
-        health=1,
+        health=2,
         creature_types=[],
         not_in_card_pool=True,
     ),
