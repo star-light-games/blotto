@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
+from bot import create_game_state_with_bot_move, find_bot_move, get_bot_deck
 from card_templates_list import CARD_TEMPLATES
 from common_decks import create_common_decks
 from deck import Deck
@@ -108,6 +109,8 @@ def host_game():
         return jsonify({"error": "Username is required"}), 400
     
     host_game_id = data.get('hostGameId')
+
+    is_bot_game = bool(data.get('bot_game'))
     
     with rlock('games'):
         decks = rget_json('decks') or {}
@@ -116,7 +119,13 @@ def host_game():
             return jsonify({"error": "Deck not found"}), 404
         deck = Deck.from_json(deck_json)
 
-        game = Game({0: username, 1: None}, {0: deck, 1: None}, id=host_game_id)
+        if is_bot_game:
+            bot_deck = get_bot_deck() or deck
+            game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
+            game.is_bot_by_player[1] = True
+        else:
+            game = Game({0: username, 1: None}, {0: deck, 1: None}, id=host_game_id)
+
         games = rget_json('games') or {}
         games[game.id] = game.to_json()
 
@@ -231,6 +240,11 @@ def take_turn(game_id):
         player_num = game.username_to_player_num(username)
         assert player_num is not None
         assert game.game_state is not None
+
+        if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
+            bot_move = find_bot_move(1 - player_num, game.game_state)
+            for card_id, lane_number in bot_move.items():
+                game.game_state.play_card(1 - player_num, card_id, lane_number)
 
         for card_id, lane_number in cards_to_lanes.items():
             game.game_state.play_card(player_num, card_id, lane_number)

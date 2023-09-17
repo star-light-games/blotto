@@ -14,6 +14,7 @@ class Game:
         self.game_state = None
         self.created_at = datetime.now().timestamp()
         self.rematch_game_id = None
+        self.is_bot_by_player = {0: False, 1: False}
 
 
     def start(self):

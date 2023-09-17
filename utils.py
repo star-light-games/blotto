@@ -1,5 +1,6 @@
 import secrets
 import random
+import math
 
 
 def generate_unique_id():
@@ -22,3 +23,6 @@ def shuffled(l):
     l = l[:]
     random.shuffle(l)
     return l
+
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))

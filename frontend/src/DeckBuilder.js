@@ -109,11 +109,11 @@ function DeckBuilder({ cards }) {
 
   const manaCurve = calculateManaCurve(currentDeck, cards);
 
-  const hostGame = () => {
+  const hostGame = (botGame) => {
     const data = {
       deckId: selectedDeck.id, // Assuming each deck object has an 'id' property
       username: userName,
-      rand: Math.random(), // To prevent caching
+      bot_game: botGame,
     };
 
     fetch(`${URL}/api/host_game`, {
@@ -275,8 +275,11 @@ function DeckBuilder({ cards }) {
       {/* Host and Join game actions */}
       <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
         <Grid item>
-          <Button variant="contained" color="primary" onClick={hostGame} disabled={!selectedDeck}>
+          <Button variant="contained" color="primary" onClick={() => hostGame(false)} disabled={!selectedDeck}>
             {selectedDeck ? 'Host Game' : 'Select Deck'}
+          </Button>
+          <Button variant="contained" color="primary" onClick={() => hostGame(true)} disabled={!selectedDeck}>
+            {selectedDeck ? 'Play against bot' : 'Select Deck'}
           </Button>
         </Grid>
         <Grid item>

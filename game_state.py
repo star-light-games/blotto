@@ -1,9 +1,13 @@
 import random
+from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
 from deck import Deck
 from lane import Lane
 from card import Card
 from typing import Optional
+import math
+
+from utils import sigmoid
 
 
 class GameState:
@@ -98,6 +102,13 @@ class GameState:
         self.lanes[lane_number].characters_by_player[player_num].append(character)
         self.log.append(f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.")
 
+    # Should be used only by bots
+    def play_card_from_template(self, player_num: int, card_template: CardTemplate, lane_number: int):
+        card = Card(card_template)
+        character = card.to_character(self.lanes[lane_number], player_num, self.usernames_by_player[player_num])
+        self.lanes[lane_number].characters_by_player[player_num].append(character)
+        self.log.append(f"{self.usernames_by_player[player_num]} played {card_template.name} in Lane {lane_number + 1}.")
+
     def all_players_have_moved(self) -> bool:
         return all([self.has_moved_by_player[player_num] for player_num in [0, 1]])
 
@@ -116,6 +127,24 @@ class GameState:
 
         target_lane = self.lanes[target_lane_number]
         return target_lane
+
+    def get_random_lane_with_empty_slot(self, player_num: int) -> Optional[int]:
+        lanes_with_empty_slots = [lane_number for lane_number in [0, 1, 2] if len(self.lanes[lane_number].characters_by_player[player_num]) < 4]
+        if lanes_with_empty_slots == []:
+            return None
+        return random.choice(lanes_with_empty_slots)    
+
+    def assess_final_positions(self) -> float:
+        CHARACTERISTIC_TOWER_HEALTH_AMOUNT = 20
+        probability_of_winning_each_lane = [sigmoid((lane.damage_by_player[0] - lane.damage_by_player[1]) / CHARACTERISTIC_TOWER_HEALTH_AMOUNT) for lane in self.lanes]
+        probability_of_winning_game = (
+            probability_of_winning_each_lane[0] * probability_of_winning_each_lane[1] * (1 - probability_of_winning_each_lane[2]) +
+            probability_of_winning_each_lane[0] * (1 - probability_of_winning_each_lane[1]) * probability_of_winning_each_lane[2] +
+            (1 - probability_of_winning_each_lane[0]) * probability_of_winning_each_lane[1] * probability_of_winning_each_lane[2] +
+            probability_of_winning_each_lane[0] * probability_of_winning_each_lane[1] * probability_of_winning_each_lane[2]
+        )
+
+        return probability_of_winning_game
 
     def to_json(self, exclude_animations: bool = True):
         return {
@@ -146,3 +175,6 @@ class GameState:
         game_state.has_mulliganed_by_player = json['has_mulliganed_by_player']
 
         return game_state
+    
+    def copy(self):
+        return GameState.from_json(self.to_json())
