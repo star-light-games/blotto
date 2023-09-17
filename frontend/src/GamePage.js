@@ -1181,7 +1181,7 @@ export default function GamePage({ }) {
 
     const pollApiForGameUpdates = async () => {
         try {
-            const response = await fetch(`${URL}/api/games/${gameId}`);
+            const response = await fetch(`${URL}/api/games/${gameId}?playerNum=${playerNum}`);
             const data = await response.json();
 
             // Check the data for the conditions you want. For example:
@@ -1239,7 +1239,7 @@ export default function GamePage({ }) {
     useEffect(() => {
         // Fetch the game data from your backend.
         log('useEffect fetch');
-        fetch(`${URL}/api/games/${gameId}`)
+        fetch(`${URL}/api/games/${gameId}?playerNum=${playerNum}`)
             .then(res => res.json())
             .then(data => {
                 setGame(data);

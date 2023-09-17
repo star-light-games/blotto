@@ -1,5 +1,6 @@
 import IPython
 
-from redis_utils import rget_json, rlock, rset_json, rget, rset
+from redis_utils import *
+from utils import *
 
 IPython.embed()

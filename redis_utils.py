@@ -29,12 +29,16 @@ def rget_json(key: str):
     return json.loads(raw_result, object_hook=jsonKeys2int) if raw_result is not None else None
 
 
-def rset(key: str, value: Any) -> None:
-    redis.set(key, value)
+def rset(key: str, value: Any, ex: Optional[int] = None) -> None:
+    redis.set(key, value, ex=ex)
 
 
-def rset_json(key: str, value: Any) -> None:
-    rset(key, json.dumps(value))
+def rset_json(key: str, value: Any, ex: Optional[int] = None) -> None:
+    rset(key, json.dumps(value), ex=ex)
+
+
+def rdel(key: str) -> None:
+    redis.delete(key)
 
 
 def rlock(key: str):

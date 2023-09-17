@@ -3,8 +3,8 @@ from card_templates_list import CARD_TEMPLATES
 from deck import Deck
 from game import Game
 from game_state import GameState
-from redis_utils import rget_json, rlock, rset_json
-from utils import sigmoid
+from redis_utils import rdel, rget_json, rlock, rset_json
+from utils import get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, sigmoid
 
 
 RANDOM_CARDS_TO_PLAY = {
@@ -142,12 +142,14 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
     bot_move = find_bot_move(player_num, game.game_state)
     print('The bot has chosen the following move: ', bot_move)
     game_id = game.id
-    with rlock('games'):
-        games = rget_json('games') or {}
-        game_json = games.get(game_id)
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
         game_from_json = Game.from_json(game_json)
 
         assert game_from_json.game_state
+
+        if not game.game_state.has_moved_by_player[1 - player_num]:
+            rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
 
         for card_id, lane_number in bot_move.items():
             game_from_json.game_state.play_card(player_num, card_id, lane_number)
@@ -156,7 +158,6 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         have_moved = game_from_json.game_state.all_players_have_moved()
         if have_moved:
             game_from_json.game_state.roll_turn()
+            rdel(get_game_with_hidden_information_redis_key(game.id))
 
-        games[game.id] = game_from_json.to_json()
-
-        rset_json('games', games)
+        rset_json(get_game_redis_key(game_id), game_from_json.to_json(), ex=24 * 60 * 60)

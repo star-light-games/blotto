@@ -14,9 +14,9 @@ from functools import wraps
 import random
 from _thread import start_new_thread
 
-from redis_utils import rget_json, rlock, rset_json
+from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import COMMON_DECK_USERNAME, LOCAL
-from utils import generate_unique_id
+from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key
 
 
 app = Flask(__name__)
@@ -113,53 +113,32 @@ def host_game():
 
     is_bot_game = bool(data.get('bot_game'))
     
-    with rlock('games'):
-        decks = rget_json('decks') or {}
-        deck_json = decks.get(deck_id)
-        if not deck_json:
-            return jsonify({"error": "Deck not found"}), 404
-        deck = Deck.from_json(deck_json)
+    decks = rget_json('decks') or {}
+    deck_json = decks.get(deck_id)
+    if not deck_json:
+        return jsonify({"error": "Deck not found"}), 404
+    deck = Deck.from_json(deck_json)
 
-        if is_bot_game:
-            bot_deck = get_bot_deck() or deck
-            game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
-            game.is_bot_by_player[1] = True
-            game.start()
-            
-            socketio.emit('update', room=game.id)      
-
-            assert game.game_state
-            bot_take_mulligan(game.game_state, 1)
-
-            start_new_thread(bot_move_in_game, (game, 1))
-
-        else:
-            game = Game({0: username, 1: None}, {0: deck, 1: None}, id=host_game_id)
-
-        games = rget_json('games') or {}
-        games[game.id] = game.to_json()
-
-        game_ids_to_delete = []
-
-        for game_id in games:
-            # Delete games that are more than 1 day old
-
-            if datetime.now() - datetime.fromtimestamp(games[game_id]['created_at']) > timedelta(days=1):
-                game_ids_to_delete.append(game_id)
+    if is_bot_game:
+        bot_deck = get_bot_deck() or deck
+        game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
+        game.is_bot_by_player[1] = True
+        game.start()
         
-        for game_id in game_ids_to_delete:
-            del games[game_id]
+        socketio.emit('update', room=game.id)      
 
-        rset_json('games', games)
-    
+        assert game.game_state
+        bot_take_mulligan(game.game_state, 1)
+
+        start_new_thread(bot_move_in_game, (game, 1))
+
+    else:
+        game = Game({0: username, 1: None}, {0: deck, 1: None}, id=host_game_id)
+
+    with rlock(get_game_lock_redis_key(game.id)):
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
     return jsonify({"gameId": game.id})
-
-
-@app.route('/api/games', methods=['GET'])
-@api_endpoint
-def get_games():
-    games = rget_json('games') or {}
-    return jsonify(list(games.values()))
 
 
 @app.route('/api/join_game', methods=['POST'])
@@ -185,9 +164,8 @@ def join_game():
     if not deck_id:
         return jsonify({"error": "Deck ID is required"}), 400
 
-    with rlock('games'):
-        games = rget_json('games') or {}
-        game_json = games.get(game_id)
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
         if not game_json:
             return jsonify({"error": "Game not found"}), 404
         
@@ -203,10 +181,9 @@ def join_game():
         game.decks_by_player[1] = deck
         game.start()
         
-        socketio.emit('update', room=game.id)
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
-        games[game_id] = game.to_json()
-        rset_json('games', games)
+        socketio.emit('update', room=game.id)
     
     return jsonify({"gameId": game.id})
 
@@ -214,11 +191,19 @@ def join_game():
 @app.route('/api/games/<game_id>', methods=['GET'])
 @api_endpoint
 def get_game(game_id):
-    games = rget_json('games') or {}
-    game = games.get(game_id)
-    if not game:
+    player_num = int(request.args.get('playerNum')) if request.args.get('playerNum') is not None else None
+
+    if player_num is not None and (hidden_game_info := rget_json(get_game_with_hidden_information_redis_key(game_id))) and hidden_game_info.get(player_num):
+        # Intentionally give a slightly stale game if one exists to the opponent who might have refreshed their page
+        print('Returning the things ')
+        print(hidden_game_info[player_num])
+        return jsonify(hidden_game_info[player_num])
+
+    game_json = rget_json(get_game_redis_key(game_id))
+
+    if not game_json:
         return jsonify({"error": "Game not found"}), 404    
-    return recurse_to_json(game)
+    return recurse_to_json(game_json)
 
 
 @app.route('/api/games/<game_id>/take_turn', methods=['POST'])
@@ -239,9 +224,8 @@ def take_turn(game_id):
     if cards_to_lanes is None:
         return jsonify({"error": "Cards mapping is required"}), 400
     
-    with rlock('games'):
-        games = rget_json('games') or {}
-        game_json = games.get(game_id)
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
         if not game_json:
             return jsonify({"error": "Game not found"}), 404
 
@@ -251,6 +235,9 @@ def take_turn(game_id):
         assert player_num is not None
         assert game.game_state is not None
 
+        if not game.game_state.has_moved_by_player[1 - player_num]:
+            rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
+
         for card_id, lane_number in cards_to_lanes.items():
             game.game_state.play_card(player_num, card_id, lane_number)
 
@@ -258,13 +245,12 @@ def take_turn(game_id):
         have_moved = game.game_state.all_players_have_moved()
         if have_moved:
             game.game_state.roll_turn()
-
-        games[game_id] = game.to_json()
+            rdel(get_game_with_hidden_information_redis_key(game.id))
 
         if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
             start_new_thread(bot_move_in_game, (game, 1 - player_num))
 
-        rset_json('games', games)
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
     
     if have_moved:
         socketio.emit('update', room=game.id)
@@ -290,9 +276,8 @@ def mulligan(game_id):
     if cards_to_mulligan is None:
         return jsonify({"error": "Cards mapping is required"}), 400
     
-    with rlock('games'):
-        games = rget_json('games') or {}
-        game_json = games.get(game_id)
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
         if not game_json:
             return jsonify({"error": "Game not found"}), 404
 
@@ -309,9 +294,7 @@ def mulligan(game_id):
 
         game.game_state.has_mulliganed_by_player[player_num] = True
 
-        games[game_id] = game.to_json()
-
-        rset_json('games', games)
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
     
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})

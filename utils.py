@@ -26,3 +26,12 @@ def shuffled(l):
 
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
+
+def get_game_redis_key(game_id):
+    return f'game:{game_id}'
+
+def get_game_with_hidden_information_redis_key(game_id):
+    return f'game:{game_id}:hidden'
+
+def get_game_lock_redis_key(game_id):
+    return f'game:{game_id}:lock'
