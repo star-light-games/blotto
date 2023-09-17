@@ -1494,8 +1494,8 @@ export default function GamePage({ }) {
                             Replay animations
                         </Typography>
                     </Button>}
-                    {!gameOver && !mulliganing && <ResetButton onReset={handleReset} disabled={submittedMove || gameOver} />}
-                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={mulliganing ? handleSubmit : handleOpenDialog} disabled={submittedMove || gameOver}>
+                    {!gameOver && !mulliganing && <ResetButton onReset={handleReset} disabled={animating || submittedMove || gameOver} />}
+                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={mulliganing ? handleSubmit : handleOpenDialog} disabled={animating || submittedMove || gameOver}>
                         <Typography variant="h6">
                             {mulliganing ? 'Submit mulligan' : 'Submit'}
                         </Typography>
