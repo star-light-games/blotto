@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
-from bot import create_game_state_with_bot_move, find_bot_move, get_bot_deck
+from bot import find_bot_move, get_bot_deck
 from card_templates_list import CARD_TEMPLATES
 from common_decks import create_common_decks
 from deck import Deck
