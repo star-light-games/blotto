@@ -138,24 +138,25 @@ class GameState:
             "lanes": [lane.to_json() for lane in self.lanes],
             "turn": self.turn,
             "hands_by_player": {player_num: [card.to_json() for card in self.hands_by_player[player_num]] for player_num in self.hands_by_player},
-            "draw_piles_by_player": {player_num: [card.to_json() for card in self.draw_piles_by_player[player_num]] for player_num in self.draw_piles_by_player},
-            "log": self.log[:],
+            "draw_piles_by_player": {player_num: [card.to_json() for card in self.draw_piles_by_player[player_num]] for player_num in self.draw_piles_by_player} if not exclude_animations else {0: [], 1: []},
+            "log": self.log if not exclude_animations else [],
             "mana_by_player": self.mana_by_player,
             "has_moved_by_player": self.has_moved_by_player,
             "usernames_by_player": self.usernames_by_player,
-            "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()},
+            "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()} if not exclude_animations else {0: Deck([], '', '').to_json(), 1: Deck([], '', '').to_json()},
             **({"animations": self.animations} if not exclude_animations else {}),
             "has_mulliganed_by_player": self.has_mulliganed_by_player
         }
     
     @staticmethod
     def from_json(json):
-        game_state = GameState(json['usernames_by_player'], {k: Deck.from_json(v) for k, v in json['decks_by_player'].items()})
+        decks_by_player_json = {k: Deck.from_json(v) for k, v in json['decks_by_player'].items()} if json.get('decks_by_player') else {0: Deck([], '', ''), 1: Deck([], '', '')}
+        game_state = GameState(json['usernames_by_player'], decks_by_player_json)
         game_state.lanes = [Lane.from_json(lane_json) for lane_json in json['lanes']]
         game_state.turn = json['turn']
         game_state.hands_by_player = {player_num: [Card.from_json(card_json) for card_json in json['hands_by_player'][player_num]] for player_num in json['hands_by_player']}
-        game_state.draw_piles_by_player = {player_num: [Card.from_json(card_json) for card_json in json['draw_piles_by_player'][player_num]] for player_num in json['draw_piles_by_player']}
-        game_state.log = json['log']
+        game_state.draw_piles_by_player = {player_num: [Card.from_json(card_json) for card_json in json['draw_piles_by_player'][player_num]] for player_num in json['draw_piles_by_player']} if json.get('draw_piles_by_player') else {0: [], 1: []}
+        game_state.log = json.get('log') or []
         game_state.mana_by_player = json['mana_by_player']
         game_state.has_moved_by_player = json['has_moved_by_player']
         if json.get('animations'):

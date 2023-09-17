@@ -13,7 +13,7 @@ class Ability:
         return {
             "name": self.name,
             "description": self.description,
-            "number": self.number,
-            "number_2": self.number_2,
-            "creature_type": self.creature_type,
+            **({"number": self.number} if self.number is not None else {}),
+            **({"number_2": self.number_2} if self.number_2 is not None else {}),
+            **({"creature_type": self.creature_type} if self.creature_type is not None else {}),
         }
