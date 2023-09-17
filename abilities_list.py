@@ -216,7 +216,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnCharacterMoveHereMakeSpirit': Ability(
         name='OnCharacterMoveHereMakeSpirit',
-        description='Whenever a friendly character moves into this lane, make a 3/2 Spirit in another lane.',
+        description='Whenever a friendly character moves into this lane, make a 3/3 Spirit in another lane.',
     ),
     'PumpFriendlyCharactersOfElementPlayedHere': lambda x, y, z: Ability(
         name='PumpFriendlyCharactersOfElementPlayedHere',

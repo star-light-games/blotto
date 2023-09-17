@@ -449,7 +449,7 @@ CARD_TEMPLATES = {
         abilities=['OnCharacterMoveHereMakeSpirit'],
         cost=3,
         attack=3,
-        health=2,
+        health=3,
         creature_types=['Air'],
     ),
     'Spirit': CardTemplate(
@@ -457,7 +457,7 @@ CARD_TEMPLATES = {
         abilities=[],
         cost=1,
         attack=3,
-        health=2,
+        health=3,
         creature_types=[],
         not_in_card_pool=True,
     ),
