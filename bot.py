@@ -176,8 +176,27 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         if not game.game_state.has_moved_by_player[1 - player_num]:
             rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
 
-        for card_id, lane_number in bot_move.items():
-            game_from_json.game_state.play_card(player_num, card_id, lane_number)
+        try:
+            for card_id, lane_number in bot_move.items():
+                game_from_json.game_state.play_card(player_num, card_id, lane_number)
+        except Exception:
+            print(f'The bot tried to play an invalid move: {bot_move}.')
+            hidden_info_game = rget_json(get_game_with_hidden_information_redis_key(game.id))
+            if hidden_info_game is not None and hidden_info_game.get(player_num) is not None:
+                game_from_hidden_json = Game.from_json(hidden_info_game[player_num])
+                assert game_from_hidden_json.game_state
+                bot_move = find_bot_move(player_num, game_from_hidden_json.game_state)
+            else:
+                game_from_nonhidden_json = Game.from_json(game_json)
+                assert game_from_nonhidden_json.game_state
+                bot_move = find_bot_move(player_num, game_from_nonhidden_json.game_state)
+
+            try:
+                for card_id, lane_number in bot_move.items():
+                    game_from_json.game_state.play_card(player_num, card_id, lane_number)
+            except Exception:
+                print(f'The bot tried to play an invalid move: {bot_move} again. Giving up.')
+
         game_from_json.game_state.has_moved_by_player[player_num] = True        
 
         have_moved = game_from_json.game_state.all_players_have_moved()
