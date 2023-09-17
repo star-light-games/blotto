@@ -50,6 +50,7 @@ def api_endpoint(func):
 @app.route('/api/card_pool', methods=['GET'])
 @api_endpoint
 def get_card_pool():
+    print('Getting card pool')
     return recurse_to_json(CARD_TEMPLATES)
 
 
