@@ -269,6 +269,25 @@ BOT_DRAFT_DECKS = [
   'Kyoshi',
   'Korra',
   'Momo']}
+{'name': 'Bot draft deck 6',
+ 'cards': ['Jinora',
+  'Aang',
+  'Uncle Iroh',
+  'Zuko',
+  'Momo',
+  'Hakoda',
+  'Katara',
+  'Suyin',
+  'Opal',
+  'Opal',
+  'Aang',
+  'Gran Gran Kanna',
+  'Korra',
+  'Yangchen',
+  'Suyin',
+  'Lin',
+  'Pabu',
+  'Monk Gyatso']}  
 ]
 
 
