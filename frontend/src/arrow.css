@@ -32,3 +32,11 @@
   .arrow.healed:after {
     border-left-color: green;
   }    
+
+  .arrow.switchLanes {
+    background-color: blue;
+  }
+
+  .arrow.switchLanes:after {
+    border-left-color: blue;
+  }

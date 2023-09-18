@@ -954,6 +954,9 @@ export default function GamePage({ }) {
         else if (arrowType === 'heal') {
             attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healing_character_array_index]?.current?.getBoundingClientRect();
         }
+        else if (arrowType === 'switchLanes') {
+            attackingCharacterPos = characterRefs?.current?.[event.original_lane_number]?.[event.player]?.[event.original_spot_array_index]?.current?.getBoundingClientRect();
+        }
         else {
             attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
         }
@@ -962,6 +965,9 @@ export default function GamePage({ }) {
         }
         else if (arrowType === 'heal') {
             defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healed_character_array_index]?.current?.getBoundingClientRect();
+        }
+        else if (arrowType === 'switchLanes') {
+            defendingCharacterPos = characterRefs?.current?.[event.new_lane_number]?.[event.player]?.[event.new_spot_array_index]?.current?.getBoundingClientRect();
         }
         else {
             defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.[event.defending_character_array_index]?.current?.getBoundingClientRect();
@@ -1001,7 +1007,10 @@ export default function GamePage({ }) {
             arrow.classList.add("shackled");
         } else if (arrowType === 'heal') {
             arrow.classList.add("healed");
-        } else {
+        } else if (arrowType === 'switchLanes') {
+            arrow.classList.add("switchLanes");
+        }
+        else {
             arrow.classList.remove("shackled");
             arrow.classList.remove("healed");
         }
@@ -1157,6 +1166,12 @@ export default function GamePage({ }) {
                     highlightRevealingCharacter(event);
                     setGameState(newState);
                     break;
+                case "character_switch_lanes":
+                    log('switching lanes');
+                    await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                    showArrowFromCharacterToCharacter(event, 'switchLanes');
+                    setGameState(newState);
+                    break;
                 case "end_of_roll":
                     setGameState(newState);
                     break;
@@ -1250,7 +1265,9 @@ export default function GamePage({ }) {
         socket.on('update', () => {
             pollApiForGameUpdates();
         })
-        pollApiForGameUpdates();
+        if (!gameState) {
+            pollApiForGameUpdates();
+        }
         return () => socket.emit('leave', { room: gameId })
     }, []);
 

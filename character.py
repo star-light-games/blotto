@@ -188,6 +188,9 @@ class Character:
 
 
     def switch_lanes(self, log: list[str], animations: list, game_state: 'GameState', lane_number: Optional[int] = None, and_fully_heal_if_switching: bool = False) -> bool:
+        original_spot_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
+        original_lane_number = self.lane.lane_number
+
         if lane_number is None:
             target_lane = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
         else:
@@ -207,6 +210,18 @@ class Character:
         target_lane.characters_by_player[self.owner_number].append(self)
         self.lane = target_lane
         self.has_attacked = False
+
+        animations.append([
+            {
+                "event_type": "character_switch_lanes",
+                "player": self.owner_number,
+                "original_spot_array_index": original_spot_array_index,
+                "original_lane_number": original_lane_number,
+                "new_spot_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                "new_lane_number": self.lane.lane_number,
+            },
+            game_state.to_json()
+        ])
 
         # pump friendly characters with CharacterMovesHerePumps ability
         for character in target_lane.characters_by_player[self.owner_number]:
