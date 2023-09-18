@@ -31,7 +31,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnSurviveDamagePump', 1, 1)],
         cost=5,
         attack=6,
-        health=8,
+        health=7,
         creature_types=['Avatar'],
     ),
     'Meelo': CardTemplate(
@@ -482,7 +482,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', 'OnAttackDoubleAttack'],
         cost=3,
         attack=1,
-        health=5,
+        health=6,
         creature_types=['Earth'],
     ),
     'Uncle Iroh': CardTemplate(
@@ -504,7 +504,7 @@ CARD_TEMPLATES = {
     'Cabbage Man': CardTemplate(
         name='Cabbage Man',
         abilities=['Attacker', 'OnRevealFillEnemyLaneWithCabbages'],
-        cost=3,
+        cost=2,
         attack=1,
         health=3,
         creature_types=['Earth'],
