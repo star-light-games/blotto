@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
-from bot import bot_move_in_game, bot_take_mulligan, find_bot_move, get_bot_deck
+from bot import bot_take_mulligan, find_bot_move, get_bot_deck
 from card_templates_list import CARD_TEMPLATES
 from common_decks import create_common_decks
 from deck import Deck
@@ -22,6 +22,56 @@ from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_ke
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
+
+
+def bot_move_in_game(game: Game, player_num: int) -> None:
+    assert game.game_state 
+    bot_move = find_bot_move(player_num, game.game_state)
+    print('The bot has chosen the following move: ', bot_move)
+    game_id = game.id
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
+        game_from_json = Game.from_json(game_json)
+
+        assert game_from_json.game_state
+
+        if not game.game_state.has_moved_by_player[1 - player_num]:
+            rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
+
+        try:
+            for card_id, lane_number in bot_move.items():
+                game_from_json.game_state.play_card(player_num, card_id, lane_number)
+        except Exception:
+            print(f'The bot tried to play an invalid move: {bot_move}.')
+            hidden_info_game = rget_json(get_game_with_hidden_information_redis_key(game.id))
+            if hidden_info_game is not None and hidden_info_game.get(player_num) is not None:
+                game_from_hidden_json = Game.from_json(hidden_info_game[player_num])
+                assert game_from_hidden_json.game_state
+                bot_move = find_bot_move(player_num, game_from_hidden_json.game_state)
+            else:
+                game_from_nonhidden_json = Game.from_json(game_json)
+                assert game_from_nonhidden_json.game_state
+                bot_move = find_bot_move(player_num, game_from_nonhidden_json.game_state)
+
+            try:
+                for card_id, lane_number in bot_move.items():
+                    game_from_json.game_state.play_card(player_num, card_id, lane_number)
+            except Exception:
+                print(f'The bot tried to play an invalid move: {bot_move} again. Giving up.')
+
+        game_from_json.game_state.has_moved_by_player[player_num] = True        
+
+        have_moved = game_from_json.game_state.all_players_have_moved()
+        if have_moved:
+            game_from_json.game_state.roll_turn()
+            rdel(get_game_with_hidden_information_redis_key(game.id))
+
+        rset_json(get_game_redis_key(game_id), game_from_json.to_json(), ex=24 * 60 * 60)
+
+        if have_moved:
+            socketio.emit('update', room=game_id)
+
+
 
 def recurse_to_json(obj):
     if isinstance(obj, dict):
