@@ -320,7 +320,7 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
             <Grid item>
                 <Card>
                     <CardContent>
-                        <Typography variant="h5" align="center" gutterBottom>
+                        <Typography variant="h5" align="center">
                             Your Hand
                         </Typography>
                     </CardContent>
