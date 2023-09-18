@@ -55,7 +55,7 @@ CARD_TEMPLATES = {
         abilities=['Defender'],
         cost=1,
         attack=1,
-        health=5,
+        health=6,
         creature_types=['Water'],
     ),
     'Zaheer': CardTemplate(
@@ -118,8 +118,8 @@ CARD_TEMPLATES = {
         name='Sokka',
         abilities=['Attacker', 'EndOfTurnFullHeal'],
         cost=3,
-        attack=3,
-        health=5,
+        attack=4,
+        health=4,
         creature_types=['Water'],
     ),
     'Mai': CardTemplate(
