@@ -316,24 +316,48 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px', flexWrap: 'wrap' }}>
-            {cards.map((card, index) => (
-                <div key={index} style={{ margin: '5px' }}>
-                    <TcgCard
-                        card={card.template}
-                        isSelected={selectedCard ? selectedCard.id === card.id : false}
-                        onMouseEnter={() => setHoveredCard(card.template)}
-                        onCardClick={mulliganing ? () => toggleMulliganingCard(card) : yourManaAmount >= card.template.cost ? () => setSelectedCard(card) : () => { }}
-                        doNotBorderOnHighlight={yourManaAmount < card.template.cost}
-                        displayArt={true}
-                        displayRedX={cardsToMulligan.includes(card.id) && mulliganing}
-                    />
+        <Grid container direction="column" spacing={1}>
+            <Grid item>
+                <Card>
+                    <CardContent>
+                        <Typography variant="h5" align="center" gutterBottom>
+                            Your Hand
+                        </Typography>
+                    </CardContent>
+                </Card>
+            </Grid>
+            <Grid item>
+                <div style={{ 
+                    width: '800px', // Adjusted width to fit three cards
+                    maxHeight: '120vh', 
+                    overflowY: 'auto', 
+                    border: '1px solid gray',
+                }}>
+                    <Grid container spacing={2}>
+                        {cards.map((card, index) => (
+                            <Grid item key={index} xs={4}>
+                                <TcgCard
+                                    card={card.template}
+                                    isSelected={selectedCard ? selectedCard.id === card.id : false}
+                                    onMouseEnter={() => setHoveredCard(card.template)}
+                                    onCardClick={mulliganing ? 
+                                        () => toggleMulliganingCard(card) : 
+                                        yourManaAmount >= card.template.cost ? 
+                                        () => setSelectedCard(card) : 
+                                        () => { }
+                                    }
+                                    doNotBorderOnHighlight={yourManaAmount < card.template.cost}
+                                    displayArt={true}
+                                    displayRedX={cardsToMulligan.includes(card.id) && mulliganing}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
                 </div>
-            ))}
-        </div>
+            </Grid>
+        </Grid>
     );
 }
-
 function ResetButton({ onReset, disabled }) {
     return (
         <div style={{ display: 'flex', justifyContent: 'center', margin: '10px' }}>
@@ -1464,34 +1488,40 @@ export default function GamePage({ }) {
                     yourManaAmount={yourManaAmount}
                     setYourManaAmount={setYourManaAmount}
                 /> */}
-                <LanesDisplay
-                    lanes={laneData ? laneData : gameState.lanes}
-                    playerNum={playerNum}
-                    opponentNum={opponentNum}
-                    selectedCard={selectedCard}
-                    setSelectedCard={setSelectedCard}
-                    setLaneData={setLaneData}
-                    handData={handData ? handData : gameState.hands_by_player[playerNum]}
-                    setHandData={setHandData}
-                    setHoveredCard={setHoveredCard}
-                    cardsToLanes={cardsToLanes}
-                    setCardsToLanes={setCardsToLanes}
-                    yourManaAmount={yourManaAmount}
-                    setYourManaAmount={setYourManaAmount}
-                    characterRefs={characterRefs}
-                    towerRefs={towerRefs}
-                    displayArt={displayArt}
-                />
-                <HandDisplay
-                    cards={handData ? handData : gameState.hands_by_player[playerNum]}
-                    selectedCard={selectedCard}
-                    setSelectedCard={setSelectedCard}
-                    setHoveredCard={setHoveredCard}
-                    yourManaAmount={yourManaAmount}
-                    cardsToMulligan={cardsToMulligan}
-                    setCardsToMulligan={setCardsToMulligan}
-                    mulliganing={mulliganing}
-                />
+                <Grid container direction="row" style={{margin: '1px'}} spacing={2}>
+                    <Grid item>
+                        <HandDisplay
+                            cards={handData ? handData : gameState.hands_by_player[playerNum]}
+                            selectedCard={selectedCard}
+                            setSelectedCard={setSelectedCard}
+                            setHoveredCard={setHoveredCard}
+                            yourManaAmount={yourManaAmount}
+                            cardsToMulligan={cardsToMulligan}
+                            setCardsToMulligan={setCardsToMulligan}
+                            mulliganing={mulliganing}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <LanesDisplay
+                            lanes={laneData ? laneData : gameState.lanes}
+                            playerNum={playerNum}
+                            opponentNum={opponentNum}
+                            selectedCard={selectedCard}
+                            setSelectedCard={setSelectedCard}
+                            setLaneData={setLaneData}
+                            handData={handData ? handData : gameState.hands_by_player[playerNum]}
+                            setHandData={setHandData}
+                            setHoveredCard={setHoveredCard}
+                            cardsToLanes={cardsToLanes}
+                            setCardsToLanes={setCardsToLanes}
+                            yourManaAmount={yourManaAmount}
+                            setYourManaAmount={setYourManaAmount}
+                            characterRefs={characterRefs}
+                            towerRefs={towerRefs}
+                            displayArt={displayArt}
+                        />
+                    </Grid>
+                </Grid> 
                <div
                     style={{
                         position: 'fixed',
