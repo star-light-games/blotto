@@ -134,6 +134,7 @@ function DeckBuilder({ cards }) {
     .then(data => {
       setHostGameId(data.gameId); // Display the received gameId
       navigate(`/game/${data.gameId}?playerNum=0`);
+      window.location.reload();
     })
     .catch(error => {
       setErrorMessage(error.message);
@@ -166,6 +167,7 @@ function DeckBuilder({ cards }) {
     })
     .then(() => {
       navigate(`/game/${joinGameId}?playerNum=1`); // Redirect to the game page
+      window.location.reload();
     })
     .catch(error => {
       setErrorMessage(error.message);
