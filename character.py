@@ -79,7 +79,6 @@ class Character:
             game_state.mana_by_player[self.owner_number] += 1
             log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
 
-        self.lane.maybe_give_lane_reward(attacking_player, game_state, log, animations)
         try:
             attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
         except Exception:
@@ -94,6 +93,9 @@ class Character:
                         "attacking_player": self.owner_number,
                         "attacking_character_array_index": attacking_character_array_index,
                     }, game_state.to_json()])
+
+        self.lane.maybe_give_lane_reward(attacking_player, game_state, log, animations)
+
 
     def attack(self, attacking_player: int, 
                damage_by_player: dict[int, int], 
@@ -555,7 +557,19 @@ class Character:
                 defending_character = self.lane.get_random_enemy_character(self.owner_number)
                 if defending_character is not None:
                     defending_character.current_health -= damage_to_deal
-                self.lane.process_dying_characters(log, animations, game_state)
+
+                    animations.append([{
+                        "event_type": "character_attack",
+                        "attacking_character_id": self.id,
+                        "defending_character_id": defending_character.id,
+                        "defending_character_health_post_attack": defending_character.current_health,
+                        "lane_number": self.lane.lane_number,
+                        "attacking_player": self.owner_number,
+                        "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                        "defending_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),
+                    }, game_state.to_json()])
+
+                    self.lane.process_dying_characters(log, animations, game_state) 
 
         self.did_on_reveal = True
 
