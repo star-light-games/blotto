@@ -7,12 +7,10 @@ COMMON_DECKS = [
     {
         'name': 'Learn to play',
         'cards': [
-            'Ikki',
             'Pabu',
             'Meelo',
             'Roku',
             'Hakoda',
-            'Prince Wu',
             'Visola',
             'Momo',
             'Tarrloq',
@@ -23,8 +21,10 @@ COMMON_DECKS = [
             'Yon Rha',
             'Zaheer',
             'Fang',
+            'Gran Gran Kanna',
             'Korra',
             'Master Pakku',
+            'Kyoshi',
         ],
     },
     {
