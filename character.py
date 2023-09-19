@@ -547,7 +547,9 @@ class Character:
 
             if self.has_ability('OnRevealFillEnemyLaneWithCabbages'):
                 while len(self.lane.characters_by_player[1 - self.owner_number]) < 4:
-                    self.lane.characters_by_player[1 - self.owner_number].append(Character(CARD_TEMPLATES['Cabbage'], self.lane, 1 - self.owner_number, game_state.usernames_by_player[1 - self.owner_number]))
+                    cabbage_character = Character(CARD_TEMPLATES['Cabbage'], self.lane, 1 - self.owner_number, game_state.usernames_by_player[1 - self.owner_number])
+                    self.lane.characters_by_player[1 - self.owner_number].append(cabbage_character)
+                    cabbage_character.did_on_reveal = True
 
             if self.has_ability('OnRevealDiscardRandomCardAndDealDamageEqualToCost'):
                 if len(game_state.hands_by_player[self.owner_number]) > 0:
