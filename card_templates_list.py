@@ -401,7 +401,7 @@ CARD_TEMPLATES = {
         abilities=[('OnDrawCardPump', 2, 0)],
         cost=2,
         attack=1,
-        health=3,
+        health=2,
         creature_types=['Water'],
     ),
     'Moon Spirit Yang': CardTemplate(
