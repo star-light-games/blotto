@@ -460,6 +460,7 @@ class Character:
                 for _ in range(self.number_of_ability('OnRevealBonusAttack')):
                     defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
                     self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)
+                self.lane.process_dying_characters(log, animations, game_state)
 
             if self.has_ability('OnRevealLaneFightsFirst'):
                 self.lane.additional_combat_priority -= 3
@@ -497,6 +498,7 @@ class Character:
                     },
                     game_state.to_json(),
                 ])
+                self.lane.process_dying_characters(log, animations, game_state)
 
             if self.has_ability('OnRevealDrawCards'):
                 cards_to_draw = self.number_of_ability('OnRevealDrawCards')
@@ -553,6 +555,7 @@ class Character:
                 defending_character = self.lane.get_random_enemy_character(self.owner_number)
                 if defending_character is not None:
                     defending_character.current_health -= damage_to_deal
+                self.lane.process_dying_characters(log, animations, game_state)
 
         self.did_on_reveal = True
 

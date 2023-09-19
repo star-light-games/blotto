@@ -46,6 +46,8 @@ class Lane:
                 for character in lane.characters_by_player[player_num]:
                     defending_characters = [character for character in character.lane.characters_by_player[1 - character.owner_number] if character.can_fight()]
                     character.attack(character.owner_number, character.lane.damage_by_player, defending_characters, character.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                    
+                    lane.process_dying_characters(log, animations, game_state)
+
         elif self.lane_reward.effect[0] == 'discardHand':
             game_state.hands_by_player[player_num] = []
 
@@ -103,22 +105,7 @@ class Lane:
             self.resolve_combat(done_attacking_by_player, log, animations, game_state, 1 - attacking_player)
 
 
-    def player_single_attack(self, 
-                             attacking_player: int,
-                             done_attacking_by_player: dict[int, bool], 
-                             log: list[str],
-                             animations: list,
-                             game_state: 'GameState'):
-        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack()]            
-        
-        if len(characters_that_can_attack) == 0:
-            done_attacking_by_player[attacking_player] = True
-        else:
-            characters_that_can_attack = [character for character in characters_that_can_attack if character.can_attack()]
-            character = random.choice(characters_that_can_attack)
-            defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
-            character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log, animations, game_state)
-
+    def process_dying_characters(self, log: list[str], animations: list, game_state: 'GameState') -> None:
         dying_characters = [character for character in self.characters_by_player[0] + self.characters_by_player[1] if character.current_health <= 0]
 
         for dying_character in dying_characters:
@@ -148,6 +135,26 @@ class Lane:
 
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]
+
+
+
+    def player_single_attack(self, 
+                             attacking_player: int,
+                             done_attacking_by_player: dict[int, bool], 
+                             log: list[str],
+                             animations: list,
+                             game_state: 'GameState'):
+        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack()]            
+        
+        if len(characters_that_can_attack) == 0:
+            done_attacking_by_player[attacking_player] = True
+        else:
+            characters_that_can_attack = [character for character in characters_that_can_attack if character.can_attack()]
+            character = random.choice(characters_that_can_attack)
+            defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
+            character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log, animations, game_state)
+
+        self.process_dying_characters(log, animations, game_state)
 
 
     def get_random_enemy_character(self, player_num: int) -> Optional[Character]:
