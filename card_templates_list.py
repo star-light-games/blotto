@@ -256,7 +256,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealPumpFriendlyCharactersOfElement', 3, 0, 'Fire')],
         cost=5,
         attack=2,
-        health=7,
+        health=8,
         creature_types=['Fire'],
     ),
     'Ming Hua': CardTemplate(
@@ -463,9 +463,9 @@ CARD_TEMPLATES = {
     ),
     'Unalaq': CardTemplate(
         name='Unalaq',
-        abilities=[('OnRevealPumpFriendlyCharactersOfElement', 1, 3, 'Water')],
+        abilities=['Attacker', ('OnRevealPumpFriendlyCharactersOfElement', 1, 3, 'Water')],
         cost=4,
-        attack=3,
+        attack=2,
         health=4,
         creature_types=['Water'],
     ),
@@ -474,7 +474,7 @@ CARD_TEMPLATES = {
         abilities=[('PumpFriendlyCharactersOfElementPlayedHere', 2, 1, 'Air')],
         cost=2,
         attack=0,
-        health=1,
+        health=2,
         creature_types=['Air'],
     ),
     'Toph': CardTemplate(
