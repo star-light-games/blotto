@@ -53,6 +53,16 @@ function CardPoolPage() {
               return 1;
           }
 
+          const aCost = a.cost;
+          const bCost = b.cost;
+
+          if (aCost < bCost) {
+              return -1;
+          }
+          if (aCost > bCost) {
+              return 1;
+          }
+
           // If creatureTypes order is the same, compare the names
           return a.name.localeCompare(b.name);
         }));
