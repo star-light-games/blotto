@@ -244,7 +244,6 @@ class Character:
                 if lane_to_spawn_in is not None:
                     character = Character(CARD_TEMPLATES['Spirit'], lane_to_spawn_in, self.owner_number, game_state.usernames_by_player[self.owner_number])
                     lane_to_spawn_in.characters_by_player[self.owner_number].append(character)
-                    character.do_on_reveal(log, animations, game_state)
                 
             if character.has_ability('OnCharacterMoveHereShackle'):
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)

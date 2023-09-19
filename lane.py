@@ -37,7 +37,6 @@ class Lane:
             if lane_to_spawn_in is not None:
                 character = Character(CARD_TEMPLATES[self.lane_reward.effect[1]], lane_to_spawn_in, player_num, game_state.usernames_by_player[player_num])  # type: ignore
                 lane_to_spawn_in.characters_by_player[player_num].append(character)
-                character.do_on_reveal(log, animations, game_state)
         elif self.lane_reward.effect[0] == 'drawRandomCards':
             for _ in range(self.lane_reward.effect[1]):  # type: ignore
                 game_state.draw_random_card(player_num)
@@ -62,7 +61,6 @@ class Lane:
                 for _ in range(self.lane_reward.effect[2]):  # type: ignore
                     character = Character(CARD_TEMPLATES[self.lane_reward.effect[1]], self, player_num, game_state.usernames_by_player[player_num])  # type: ignore
                     self.characters_by_player[player_num].append(character)
-                    character.do_on_reveal(log, animations, game_state)
 
 
     def do_start_of_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
