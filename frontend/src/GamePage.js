@@ -748,10 +748,10 @@ export default function GamePage({ }) {
         else if (window.innerWidth < 1050) {
             document.body.style.zoom = "30%";
         }
-        else if (window.innerWidth < 1300) {
+        else if (window.innerWidth < 1400) {
             document.body.style.zoom = "40%";
         }
-        else if (window.innerWidth < 1600) {
+        else if (window.innerWidth < 1700) {
             document.body.style.zoom = "50%";
         }
         else if (window.innerWidth < 2000) {
