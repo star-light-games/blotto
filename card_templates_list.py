@@ -585,7 +585,7 @@ CARD_TEMPLATES = {
         abilities=['OnRevealDiscardRandomCardAndDealDamageEqualToCost'],
         cost=2,
         attack=3,
-        health=2,
+        health=4,
         creature_types=['Fire'],
     ),
 }
