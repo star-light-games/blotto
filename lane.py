@@ -21,8 +21,8 @@ class Lane:
 
     def maybe_give_lane_reward(self, player_num: int, game_state: 'GameState', log: list[str], animations: list) -> None:
         if not self.earned_rewards_by_player[player_num] and self.lane_reward.threshold is not None and self.damage_by_player[player_num] >= self.lane_reward.threshold:
+            self.earned_rewards_by_player[player_num] = True            
             self.give_lane_reward(player_num, game_state, log, animations)
-            self.earned_rewards_by_player[player_num] = True
 
 
     def give_lane_reward(self, player_num: int, game_state: 'GameState', log: list[str], animations: list) -> None:
