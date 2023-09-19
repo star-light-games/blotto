@@ -46,7 +46,7 @@ class Lane:
                 for character in lane.characters_by_player[player_num]:
                     defending_characters = [character for character in character.lane.characters_by_player[1 - character.owner_number] if character.can_fight()]
                     character.attack(character.owner_number, character.lane.damage_by_player, defending_characters, character.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                    
-                    lane.process_dying_characters(log, animations, game_state)
+                lane.process_dying_characters(log, animations, game_state)
 
         elif self.lane_reward.effect[0] == 'discardHand':
             game_state.hands_by_player[player_num] = []
