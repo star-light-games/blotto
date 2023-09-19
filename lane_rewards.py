@@ -15,18 +15,6 @@ LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enume
         'effect': ['pumpAllFriendlies', 3, 0],
     },
     {
-        'name': 'Southern Air Temple',
-        'threshold': 25,
-        'reward_description': 'Create a 4/4 in another lane.',
-        'effect': ['spawn', 'Air Nomads'],
-    },    
-    {
-        'name': 'Gaoling',
-        'threshold': 20,
-        'reward_description': 'ALL friendly characters get +0/+2.',
-        'effect': ['pumpAllFriendlies', 0, 2],
-    },
-    {
         'name': 'Omashu',
         'threshold': 40,
         'reward_description': 'ALL friendly characters make a bonus attack.',
@@ -39,11 +27,29 @@ LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enume
         'effect': ['drawRandomCards', 3],
     },    
     {
+        'name': 'Southern Air Temple',
+        'threshold': 25,
+        'reward_description': 'Create a 4/4 in another lane.',
+        'effect': ['spawn', 'Air Nomads'],
+    },    
+    {
+        'name': 'Hegemon\'s Folly',
+        'threshold': 25,
+        'reward_description': 'Discard your hand.',
+        'effect': ['discardHand'],
+    },    
+    {
         'name': 'Ba Sing Se',
         'threshold': 25,
         'reward_description': 'Gain 2 mana next turn.',
         'effect': ['gainMana', 2],
     },    
+    {
+        'name': 'Gaoling',
+        'threshold': 20,
+        'reward_description': 'ALL friendly characters get +0/+2.',
+        'effect': ['pumpAllFriendlies', 0, 2],
+    },
     {
         'name': 'Bhanti Island',
         'threshold': 20,
@@ -55,12 +61,6 @@ LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enume
         'threshold': 10,
         'reward_description': 'Draw a random card.',
         'effect': ['drawRandomCards', 1],
-    },
-    {
-        'name': 'Hegemon\'s Folly',
-        'threshold': 25,
-        'reward_description': 'Discard your hand.',
-        'effect': ['discardHand'],
     },
     {
         'name': 'Taihua Mountains',
