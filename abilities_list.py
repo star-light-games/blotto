@@ -245,4 +245,12 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealFillEnemyLaneWithCabbages',
         description='On reveal: fill the enemy lane with 0/1 Cabbages.',
     ),
+    'DealDamageEqualToCurrentHealth': Ability(
+        name='DealDamageEqualToCurrentHealth',
+        description='I deal damage equal to my current health.',
+    ),
+    'OnRevealDiscardRandomCardAndDealDamageEqualToCost': Ability(
+        name='OnRevealDiscardRandomCardAndDealDamageEqualToCost',
+        description='On reveal: discard a random card and deal damage to a random enemy in this lane equal to its cost.',
+    ),
 }

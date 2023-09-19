@@ -17,6 +17,7 @@ import TopBar from './TopBar.js';
 
 function CardPoolPage() {
   const [cards, setCards] = useState([]);
+  const [laneRewards, setLaneRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toastOpen, setToastOpen] = useState(false);
@@ -41,7 +42,7 @@ function CardPoolPage() {
           "Fire": 5
         };
 
-        setCards(Object.values(data).sort((a, b) => {
+        setCards(Object.values(data.cards).sort((a, b) => {
           const aOrder = creatureTypeOrder[a.creatureTypes?.[0]] || Infinity;
           const bOrder = creatureTypeOrder[b.creatureTypes?.[0]] || Infinity;
 
@@ -55,7 +56,7 @@ function CardPoolPage() {
           // If creatureTypes order is the same, compare the names
           return a.name.localeCompare(b.name);
         }));
-        
+        setLaneRewards(data.laneRewards);
         setLoading(false);
       })
       .catch((error) => {
@@ -107,7 +108,7 @@ function CardPoolPage() {
           </Grid>
         ))}
       </Grid> */}
-      <DeckBuilder cards={cards}/>
+      <DeckBuilder cards={cards} laneRewards={laneRewards}/>
     </Container>
     </div>
   );

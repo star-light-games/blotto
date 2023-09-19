@@ -21,3 +21,7 @@ export function getCardBackgroundColor(card, isDarkMode) {
         : '#888'
     );
 }
+
+export function objectToArray(obj) {
+    return Object.keys(obj).map(key => obj[key]);
+}

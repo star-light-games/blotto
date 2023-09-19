@@ -21,6 +21,7 @@ import TcgCard from './TcgCard';
 import { URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { objectToArray } from './utils';
 
 
 const calculateManaCurve = (deck, cards) => {
@@ -38,7 +39,7 @@ const calculateManaCurve = (deck, cards) => {
   return manaCurve;
 };
 
-function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, saveDeck }) {
+function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, saveDeck, currentLaneReward, setCurrentLaneReward }) {
   const [draftOptions, setDraftOptions] = useState([]);
 
   console.log(currentDeck.length);
@@ -62,8 +63,9 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
       setDraftOptions(getRandomCards());
     }
     else {
-      saveDeck(`Draft deck with ${currentDeck[0]} and ${currentDeck[1]}`);
+      saveDeck(`Draft deck with ${currentDeck[0]} and ${currentDeck[1]}`, currentLaneReward.name);
       setDrafting(false);
+      setCurrentLaneReward(null);
     }
 
   }, [currentDeck]);
@@ -76,7 +78,12 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
 
   return (
     <React.Fragment>
+      <Typography variant="h6">Your games will contain the following lane:</Typography>
+      <Typography variant="h5">{currentLaneReward?.name}</Typography>
+      <Typography variant="h6">{currentLaneReward.threshold ? `${currentLaneReward.threshold}: ${currentLaneReward?.reward_description}` : currentLaneReward?.reward_description}</Typography>
+      <br />
       <Typography variant="h6">Drafting card {currentDeck.length + 1}/{DRAFT_DECK_SIZE}</Typography>
+      <br />
       <Grid container spacing={3}>
         {draftOptions.map((card) => (
           <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
@@ -89,7 +96,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
 }
 
 
-function DeckBuilder({ cards }) {
+function DeckBuilder({ cards, laneRewards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
   console.log(currentDeck);
   const [decks, setDecks] = useState([]);
@@ -102,6 +109,10 @@ function DeckBuilder({ cards }) {
   const [hostGameId, setHostGameId] = useState(''); // For displaying gameId
   const [joinGameId, setJoinGameId] = useState(''); // For entering gameId
   const [drafting, setDrafting] = useState(false);
+  const [currentLaneReward, setCurrentLaneReward] = useState(null);
+
+  console.log(laneRewards);
+  console.log(currentLaneReward);
 
   const [hoveredCard, setHoveredCard] = useState(null);
 
@@ -198,12 +209,12 @@ function DeckBuilder({ cards }) {
     setCurrentDeck([...currentDeck, cardName]);
   };
 
-  const saveDeck = (deckName) => {
+  const saveDeck = (deckName, laneRewardName) => {
     const deckData = {
       name: deckName,
       username: userName,
       cards: currentDeck,
-      rand: Math.random(), // To prevent caching
+      laneRewardName: laneRewardName || null,
     };
 
     fetch(`${URL}/api/decks`, {
@@ -392,15 +403,25 @@ function DeckBuilder({ cards }) {
 
   {!drafting && <CardContent>
     <Button variant="outlined" onClick={() => {
+        const laneRewardsArray = objectToArray(laneRewards);
         setDrafting(true);
         setCurrentDeck([]);
+        setCurrentLaneReward(laneRewardsArray[Math.floor(Math.random() * laneRewardsArray.length)]);
     }}>
       Draft Cards
     </Button>
   </CardContent>}
 
   {drafting && <CardContent>
-    <DraftComponent cardPool={cards.filter((card) => !card?.notInCardPool)} setCurrentDeck={setCurrentDeck} currentDeck={currentDeck} setDrafting={setDrafting} saveDeck={saveDeck} />
+    <DraftComponent 
+      cardPool={cards.filter((card) => !card?.notInCardPool)} 
+      setCurrentDeck={setCurrentDeck} 
+      currentDeck={currentDeck} 
+      setDrafting={setDrafting} 
+      saveDeck={saveDeck} 
+      currentLaneReward={currentLaneReward}
+      setCurrentLaneReward={setCurrentLaneReward}
+    />
   </CardContent>}
 
   {!drafting && <CardContent>

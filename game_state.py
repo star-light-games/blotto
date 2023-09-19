@@ -11,8 +11,9 @@ from utils import sigmoid
 
 
 class GameState:
-    def __init__(self, usernames_by_player: dict[int, str], decks_by_player: dict[int, Deck]):
-        self.lanes = [Lane(lane_number, lane_reward_str) for (lane_number, lane_reward_str) in zip(list(range(3)), ['Fire Nation', 'Southern Air Temple', 'Full Moon Bay'])]
+    def __init__(self, usernames_by_player: dict[int, str], decks_by_player: dict[int, Deck], lane_rewards: list[str]):
+        self.lane_reward_names = lane_rewards
+        self.lanes = [Lane(lane_number, lane_reward_str) for (lane_number, lane_reward_str) in zip(list(range(3)), lane_rewards)]
         self.turn = 0        
         self.usernames_by_player = usernames_by_player
         self.player_0_hand, self.player_0_draw_pile = self.draw_initial_hand(decks_by_player[0])
@@ -33,6 +34,10 @@ class GameState:
         hand = draw_pile[:3]
         draw_pile = draw_pile[3:]
         return hand, draw_pile
+
+    def do_start_of_game(self):
+        for lane in self.lanes:
+            lane.do_start_of_game(self.log, self.animations, self)
 
     def draw_card(self, player_num: int):
         if len(self.draw_piles_by_player[player_num]) > 0:
@@ -135,6 +140,7 @@ class GameState:
 
     def to_json(self, exclude_animations: bool = True):
         return {
+            "lane_reward_names": self.lane_reward_names,
             "lanes": [lane.to_json() for lane in self.lanes],
             "turn": self.turn,
             "hands_by_player": {player_num: [card.to_json() for card in self.hands_by_player[player_num]] for player_num in self.hands_by_player},
@@ -151,7 +157,7 @@ class GameState:
     @staticmethod
     def from_json(json):
         decks_by_player_json = {k: Deck.from_json(v) for k, v in json['decks_by_player'].items()} if json.get('decks_by_player') else {0: Deck([], '', ''), 1: Deck([], '', '')}
-        game_state = GameState(json['usernames_by_player'], decks_by_player_json)
+        game_state = GameState(json['usernames_by_player'], decks_by_player_json, json['lane_reward_names'])
         game_state.lanes = [Lane.from_json(lane_json) for lane_json in json['lanes']]
         game_state.turn = json['turn']
         game_state.hands_by_player = {player_num: [Card.from_json(card_json) for card_json in json['hands_by_player'][player_num]] for player_num in json['hands_by_player']}

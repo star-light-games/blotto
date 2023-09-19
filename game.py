@@ -1,6 +1,8 @@
+import random
 from deck import Deck
 from game_state import GameState
 from lane import Lane
+from lane_rewards import LANE_REWARDS
 from utils import generate_unique_id
 from typing import Optional
 from datetime import datetime
@@ -21,7 +23,16 @@ class Game:
         assert all([username is not None for username in self.usernames_by_player.values()])
         assert all([deck is not None for deck in self.decks_by_player.values()])
 
-        self.game_state = GameState(self.usernames_by_player, self.decks_by_player)  # type: ignore
+        if any([deck.name == 'Learn to play' for deck in self.decks_by_player.values()]):  # type: ignore
+            lane_reward_names = ['Fire Nation', 'Southern Air Temple', 'Full Moon Bay']
+        else:
+            lanes_from_decks = [deck.associated_lane_reward_name for deck in self.decks_by_player.values() if deck.associated_lane_reward_name is not None]  # type: ignore
+            random_lanes = random.sample([lane_reward['name'] for lane_reward in LANE_REWARDS.values() if lane_reward['name'] not in lanes_from_decks], 3 - len(lanes_from_decks))
+            lane_reward_names = [*lanes_from_decks, *random_lanes]
+            lane_reward_names.sort(key=lambda lane_reward_name: LANE_REWARDS[lane_reward_name]['priority'])
+
+        self.game_state = GameState(self.usernames_by_player, self.decks_by_player, lane_reward_names)  # type: ignore
+        self.game_state.do_start_of_game()
         self.rematch_game_id = generate_unique_id()
 
 
@@ -37,13 +48,14 @@ class Game:
             "game_state": self.game_state.to_json(exclude_animations=False) if self.game_state is not None else None,
             "created_at": self.created_at,
             "rematch_game_id": self.rematch_game_id,
-            "is_bot_by_player": self.is_bot_by_player
+            "is_bot_by_player": self.is_bot_by_player,
         }
     
 
     @staticmethod
     def from_json(json):
-        game = Game(json['usernames_by_player'], {k: Deck.from_json(v) if v is not None else None for k, v in json['decks_by_player'].items()})
+        game = Game(json['usernames_by_player'], 
+                    {k: Deck.from_json(v) if v is not None else None for k, v in json['decks_by_player'].items()})
         game.id = json['id']
         game.game_state = GameState.from_json(json['game_state']) if json['game_state'] is not None else None
         game.created_at = json['created_at']

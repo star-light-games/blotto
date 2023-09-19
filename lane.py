@@ -19,23 +19,44 @@ class Lane:
         self.earned_rewards_by_player: dict[int, bool] = {0: False, 1: False}
 
 
-    def maybe_give_lane_reward(self, player_num: int, game_state: 'GameState') -> None:
-        if not self.earned_rewards_by_player[player_num] and self.damage_by_player[player_num] >= self.lane_reward.threshold:
-            self.give_lane_reward(player_num, game_state)
+    def maybe_give_lane_reward(self, player_num: int, game_state: 'GameState', log: list[str], animations: list) -> None:
+        if not self.earned_rewards_by_player[player_num] and self.lane_reward.threshold is not None and self.damage_by_player[player_num] >= self.lane_reward.threshold:
+            self.give_lane_reward(player_num, game_state, log, animations)
             self.earned_rewards_by_player[player_num] = True
 
 
-    def give_lane_reward(self, player_num: int, game_state: 'GameState') -> None:
-        if self.lane_reward.name == 'Fire Nation':
+    def give_lane_reward(self, player_num: int, game_state: 'GameState', log: list[str], animations: list) -> None:
+        if self.lane_reward.effect[0] == 'pumpAllFriendlies':
             for lane in game_state.lanes:
                 for character in lane.characters_by_player[player_num]:
-                    character.current_attack += 3
-        elif self.lane_reward.name == 'Southern Air Temple':
+                    character.current_attack += self.lane_reward.effect[1]  # type: ignore
+                    character.current_health += self.lane_reward.effect[2]  # type: ignore
+                    character.max_health += self.lane_reward.effect[2]  # type: ignore
+        elif self.lane_reward.effect[0] == 'spawn':
             lane_to_spawn_in = game_state.find_random_empty_slot_in_other_lane(self.lane_number, player_num)
             if lane_to_spawn_in is not None:
-                lane_to_spawn_in.characters_by_player[player_num].append(Character(CARD_TEMPLATES['Air Nomads'], lane_to_spawn_in, player_num, game_state.usernames_by_player[player_num]))
-        elif self.lane_reward.name == 'Full Moon Bay':
-            game_state.draw_card(player_num)
+                character = Character(CARD_TEMPLATES[self.lane_reward.effect[1]], lane_to_spawn_in, player_num, game_state.usernames_by_player[player_num])  # type: ignore
+                lane_to_spawn_in.characters_by_player[player_num].append(character)
+                character.do_on_reveal(log, animations, game_state)
+        elif self.lane_reward.effect[0] == 'drawRandomCards':
+            for _ in range(self.lane_reward.effect[1]):  # type: ignore
+                game_state.draw_random_card(player_num)
+        elif self.lane_reward.effect[0] == 'bonusAttackAllFriendlies':
+            for lane in game_state.lanes:
+                for character in lane.characters_by_player[player_num]:
+                    defending_characters = [character for character in character.lane.characters_by_player[1 - character.owner_number] if character.can_fight()]
+                    character.attack(character.owner_number, character.lane.damage_by_player, defending_characters, character.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                    
+        elif self.lane_reward.effect[0] == 'discardHand':
+            game_state.hands_by_player[player_num] = []
+
+
+    def do_start_of_game(self, log: list[str], animations: list, game_state: 'GameState') -> None:
+        if self.lane_reward.effect[0] == 'spawnAtStart':
+            for player_num in [0, 1]:
+                for _ in range(self.lane_reward.effect[2]):  # type: ignore
+                    character = Character(CARD_TEMPLATES[self.lane_reward.effect[1]], self, player_num, game_state.usernames_by_player[player_num])  # type: ignore
+                    self.characters_by_player[player_num].append(character)
+                    character.do_on_reveal(log, animations, game_state)
 
 
     def do_start_of_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
@@ -120,7 +141,10 @@ class Lane:
             if dying_character.has_ability('SwitchLanesInsteadOfDying') and not dying_character.escaped_death and not was_saved:
                 if dying_character.switch_lanes(log, animations, game_state, and_fully_heal_if_switching=True):
                     dying_character.escaped_death = True      
-                
+            
+            if not dying_character.escaped_death and not was_saved:
+                if dying_character.lane.lane_reward.effect[0] == 'ownerGainsManaNextTurnWhenCharacterDiesHere':
+                    game_state.mana_by_player[dying_character.owner_number] += dying_character.lane.lane_reward.effect[1]  # type: ignore
 
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]

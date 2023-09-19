@@ -13,6 +13,7 @@ import traceback
 from functools import wraps
 import random
 from _thread import start_new_thread
+from lane_rewards import LANE_REWARDS
 
 from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import COMMON_DECK_USERNAME, LOCAL
@@ -101,7 +102,7 @@ def api_endpoint(func):
 @api_endpoint
 def get_card_pool():
     print('Getting card pool')
-    return recurse_to_json(CARD_TEMPLATES)
+    return recurse_to_json({'cards': CARD_TEMPLATES, 'laneRewards': LANE_REWARDS})
 
 
 @app.route('/api/decks', methods=['POST'])
@@ -123,10 +124,12 @@ def create_deck():
     if not deck_name:
         return jsonify({"error": "Deck name is required"}), 400
 
+    lane_reward_name = data.get('laneRewardName') or None
+
     # Process the cards data as needed, e.g., save to a database or check game state
     with rlock('decks'):
         decks = rget_json('decks') or {}
-        deck = Deck(cards, username, deck_name)
+        deck = Deck(cards, username, deck_name, associated_lane_reward_name=lane_reward_name)
         deck_id = deck.id
         decks[deck_id] = deck.to_json()
         rset_json('decks', decks)
