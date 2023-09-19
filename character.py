@@ -551,25 +551,26 @@ class Character:
                     self.lane.characters_by_player[1 - self.owner_number].append(Character(CARD_TEMPLATES['Cabbage'], self.lane, 1 - self.owner_number, game_state.usernames_by_player[1 - self.owner_number]))
 
             if self.has_ability('OnRevealDiscardRandomCardAndDealDamageEqualToCost'):
-                random_card = random.choice(game_state.hands_by_player[self.owner_number])
-                game_state.hands_by_player[self.owner_number] = [card for card in game_state.hands_by_player[self.owner_number] if card.id != random_card.id]
-                damage_to_deal = random_card.template.cost
-                defending_character = self.lane.get_random_enemy_character(self.owner_number)
-                if defending_character is not None:
-                    defending_character.current_health -= damage_to_deal
+                if len(game_state.hands_by_player[self.owner_number]) > 0:
+                    random_card = random.choice(game_state.hands_by_player[self.owner_number])
+                    game_state.hands_by_player[self.owner_number] = [card for card in game_state.hands_by_player[self.owner_number] if card.id != random_card.id]
+                    damage_to_deal = random_card.template.cost
+                    defending_character = self.lane.get_random_enemy_character(self.owner_number)
+                    if defending_character is not None:
+                        defending_character.current_health -= damage_to_deal
 
-                    animations.append([{
-                        "event_type": "character_attack",
-                        "attacking_character_id": self.id,
-                        "defending_character_id": defending_character.id,
-                        "defending_character_health_post_attack": defending_character.current_health,
-                        "lane_number": self.lane.lane_number,
-                        "attacking_player": self.owner_number,
-                        "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                        "defending_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),
-                    }, game_state.to_json()])
+                        animations.append([{
+                            "event_type": "character_attack",
+                            "attacking_character_id": self.id,
+                            "defending_character_id": defending_character.id,
+                            "defending_character_health_post_attack": defending_character.current_health,
+                            "lane_number": self.lane.lane_number,
+                            "attacking_player": self.owner_number,
+                            "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                            "defending_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),
+                        }, game_state.to_json()])
 
-                    self.lane.process_dying_characters(log, animations, game_state) 
+                        self.lane.process_dying_characters(log, animations, game_state) 
 
         self.did_on_reveal = True
 
