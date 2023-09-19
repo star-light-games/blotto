@@ -52,6 +52,9 @@ class Lane:
         elif self.lane_reward.effect[0] == 'discardHand':
             game_state.hands_by_player[player_num] = []
 
+        elif self.lane_reward.effect[0] == 'gainMana':
+            game_state.mana_by_player[player_num] += self.lane_reward.effect[1]  # type: ignore
+
 
     def do_start_of_game(self, log: list[str], animations: list, game_state: 'GameState') -> None:
         if self.lane_reward.effect[0] == 'spawnAtStart':
