@@ -77,7 +77,7 @@ LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enume
     {
         'name': 'Foggy Swamp',
         'threshold': None,
-        'reward_description': 'Characters played here get -1/-0 (min. 1 strength).',
+        'reward_description': 'Characters played here get -1/-0.',
         'effect': ['pumpAllCharactersPlayedHere', -1, 0],
     },
     {

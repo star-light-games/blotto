@@ -420,8 +420,8 @@ class Character:
             self.current_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
             self.max_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
 
-            if self.template.attack > 0 and self.current_attack <= 0:
-                self.current_attack = 1
+            if self.current_attack < 0:
+                self.current_attack = 0
 
             if self.has_ability('HealFriendlyCharacterAndTower'):
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
