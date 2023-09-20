@@ -133,8 +133,9 @@ function App() {
 
       <CssBaseline />
 
-      <TopBar />
     <Router>
+      <TopBar />
+
       <Routes>
         <Route exact path="/" element={<CardPoolPage />} />
         <Route path="/game/:gameId" element={<GamePage />} />
