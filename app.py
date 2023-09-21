@@ -350,6 +350,11 @@ def mulligan(game_id):
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
     
+    # Silly kludge to prevent leakage of hidden info because I didn't want to bother using the hidden_game_info logic
+    for lane in game.game_state.lanes:
+        lane.characters_by_player[0] = []
+        lane.characters_by_player[1] = []
+
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
 
