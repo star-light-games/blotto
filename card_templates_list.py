@@ -406,10 +406,10 @@ CARD_TEMPLATES = {
     ),
     'Moon Spirit Yang': CardTemplate(
         name='Moon Spirit Yang',
-        abilities=['Attacker', ('OnDrawCardPump', 3, 3)],
+        abilities=['Attacker', ('OnDrawCardPump', 2, 2)],
         cost=4,
-        attack=2,
-        health=2,
+        attack=3,
+        health=3,
         creature_types=['Water'],
     ),
     'Izumi': CardTemplate(
