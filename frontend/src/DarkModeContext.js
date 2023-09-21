@@ -9,7 +9,7 @@ export const DarkModeProvider = ({ children }) => {
   // Initialize state with value from localStorage or default to false
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const storedValue = localStorage.getItem('isDarkMode');
-    return storedValue === 'true';
+    return storedValue === null ? true : storedValue === 'true';
   });
 
   // Function to toggle dark mode
