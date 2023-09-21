@@ -498,7 +498,7 @@ CARD_TEMPLATES = {
         abilities=['OnCharacterMoveHereShackle'],
         cost=2,
         attack=3,
-        health=3,
+        health=4,
         creature_types=['Avatar'],
     ),
     'Cabbage Man': CardTemplate(
