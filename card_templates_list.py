@@ -280,7 +280,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', 'SwitchLanesAfterAttacking'],
         cost=3,
         attack=2,
-        health=6,
+        health=7,
         creature_types=['Air'],
     ),
     'Mother Kya': CardTemplate(
@@ -329,7 +329,7 @@ CARD_TEMPLATES = {
         abilities=[('CharacterMovesHereThatCharacterPumps', 1, 1)],
         cost=1,
         attack=2,
-        health=2,
+        health=3,
         creature_types=['Air'],
     ),
     'Ghazan': CardTemplate(
