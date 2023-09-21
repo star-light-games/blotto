@@ -68,6 +68,9 @@ class Lane:
             for character in self.characters_by_player[player_num]:
                 character.escaped_death = False
                 character.did_end_of_turn = False
+
+        for player_num in [0, 1]:
+            for character in self.characters_by_player[player_num]:
                 character.do_on_reveal(log, animations, game_state)        
 
 
