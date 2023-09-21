@@ -175,8 +175,8 @@ CARD_TEMPLATES = {
         name='Lin',
         abilities=['OnRevealShackle', 'ShacklesLastExtraTurn'],
         cost=4,
-        attack=4,
-        health=6,
+        attack=5,
+        health=5,
         creature_types=['Earth'],
     ),
     'Prince Wu': CardTemplate(
@@ -264,7 +264,7 @@ CARD_TEMPLATES = {
         abilities=['OnRevealLaneFightsFirst'],
         cost=3,
         attack=5,
-        health=3,
+        health=4,
         creature_types=['Fire'],
     ),
     'Master Pakku': CardTemplate(
@@ -337,7 +337,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealDamageToAll', 1)],
         cost=3,
         attack=3,
-        health=5,
+        health=6,
         creature_types=['Earth'],
     ),
     'Hama': CardTemplate(
@@ -466,7 +466,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealPumpFriendlyCharactersOfElement', 1, 3, 'Water')],
         cost=4,
         attack=2,
-        health=4,
+        health=5,
         creature_types=['Water'],
     ),
     'Bumi II': CardTemplate(
