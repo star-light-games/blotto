@@ -38,6 +38,6 @@ def get_game_lock_redis_key(game_id):
 
 def get_deck_description_json_from_deck(deck):
     return {
-        'name': deck.name,
-        'cards': [card.name for card in deck.cards],
+        'name': deck['name'],
+        'cards': [card['name'] for card in deck['card_templates']],
     }

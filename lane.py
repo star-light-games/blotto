@@ -170,7 +170,7 @@ class Lane:
     def to_json(self):
         return {
             "damage_by_player": self.damage_by_player.copy(),
-            "characters_by_player": {player: [character.to_json() for character in self.characters_by_player[player]] for player in self.characters_by_player},
+            "characters_by_player": {player: [character.to_json() for character in self.characters_by_player[player].copy()] for player in self.characters_by_player},
             "lane_number": self.lane_number,
             "lane_reward": self.lane_reward.to_json(),
             "earned_rewards_by_player": self.earned_rewards_by_player.copy(),

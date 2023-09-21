@@ -1180,6 +1180,9 @@ export default function GamePage({ }) {
         for (let [event, newState] of animationQueue) {
             // Trigger the animation based on the event
             log(event.event_type)
+            console.log(gameState);
+            console.log(game);
+            console.log(newState);
             switch (event.event_type) {
                 case "start_of_roll":
                     setGameState(newState);
@@ -1251,7 +1254,7 @@ export default function GamePage({ }) {
         // If you also want to reset hand data or any other state, do it here.
     };
 
-    const pollApiForGameUpdates = async () => {
+    const pollApiForGameUpdates = async (playAnimations) => {
         try {
             const response = await fetch(`${URL}/api/games/${gameId}?playerNum=${playerNum}`);
             const data = await response.json();
@@ -1260,13 +1263,13 @@ export default function GamePage({ }) {
             if (!data.game_state.has_moved_by_player[playerNum]) {
                 setSubmittedMove(false);
                 setGame(data);
-                if (data?.game_state?.animations?.length > 0) {
+                if (data?.game_state?.animations?.length > 0 && playAnimations) {
                     setGameState(data?.game_state?.animations[0][1]);
                 }
                 else {
                     setGameState(data?.game_state);
                 }
-                if (!animating && data?.game_state?.animations?.length > 0) {
+                if (!animating && playAnimations && data?.game_state?.animations?.length > 0) {
                     setAnimating(true);
                     triggerAnimations(data?.game_state, data?.game_state?.animations || []);
                 }
@@ -1312,10 +1315,12 @@ export default function GamePage({ }) {
     useEffect(() => {
         socket.emit('join', { room: gameId });
         socket.on('update', () => {
-            pollApiForGameUpdates();
+            console.log('update received')
+            pollApiForGameUpdates(true);
         })
         if (!gameState) {
-            pollApiForGameUpdates();
+            console.log('initial poll')
+            pollApiForGameUpdates(false);
         }
         return () => socket.emit('leave', { room: gameId })
     }, []);
