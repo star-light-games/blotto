@@ -253,4 +253,8 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealDiscardRandomCardAndDealDamageEqualToCost',
         description='On reveal: discard a random card and deal damage to a random enemy in this lane equal to its cost.',
     ),
+    'OnRevealAllAttackersMakeBonusAttack': Ability(
+        name='OnRevealAllAttackersMakeBonusAttack',
+        description='On reveal: ALL your friendly attackers (including me and across all lanes) make a bonus attack.',
+    ),
 }

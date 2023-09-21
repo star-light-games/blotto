@@ -588,4 +588,12 @@ CARD_TEMPLATES = {
         health=4,
         creature_types=['Fire'],
     ),
+    'Kuruk': CardTemplate(
+        name='Kuruk',
+        abilities=['Attacker', 'OnRevealAllAttackersMakeBonusAttack'],
+        cost=5,
+        attack=4,
+        health=9,
+        creature_types=['Avatar'],
+    ),
 }

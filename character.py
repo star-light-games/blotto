@@ -572,6 +572,15 @@ class Character:
 
                         self.lane.process_dying_characters(log, animations, game_state) 
 
+            if self.has_ability('OnRevealAllAttackersMakeBonusAttack'):
+                for lane in game_state.lanes:
+                    for character in lane.characters_by_player[self.owner_number]:
+                        if character.is_attacker():
+                            defending_characters = [character for character in lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
+                            character.attack(self.owner_number, lane.damage_by_player, defending_characters, lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                
+                    lane.process_dying_characters(log, animations, game_state)
+
+
         self.did_on_reveal = True
 
 
