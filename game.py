@@ -26,7 +26,7 @@ class Game:
         if any([deck.name == 'Learn to play' for deck in self.decks_by_player.values()]):  # type: ignore
             lane_reward_names = ['Fire Nation', 'Southern Air Temple', 'Full Moon Bay']
         else:
-            lanes_from_decks = [deck.associated_lane_reward_name for deck in self.decks_by_player.values() if deck.associated_lane_reward_name is not None]  # type: ignore
+            lanes_from_decks = set([deck.associated_lane_reward_name for deck in self.decks_by_player.values() if deck.associated_lane_reward_name is not None])  # type: ignore
             random_lanes = random.sample([lane_reward['name'] for lane_reward in LANE_REWARDS.values() if lane_reward['name'] not in lanes_from_decks], 3 - len(lanes_from_decks))
             lane_reward_names = [*lanes_from_decks, *random_lanes]
             lane_reward_names.sort(key=lambda lane_reward_name: LANE_REWARDS[lane_reward_name]['priority'])
