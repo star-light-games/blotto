@@ -250,7 +250,6 @@ def get_game(game_id):
     if player_num is not None and (hidden_game_info := rget_json(get_game_with_hidden_information_redis_key(game_id))) and hidden_game_info.get(player_num):
         # Intentionally give a slightly stale game if one exists to the opponent who might have refreshed their page
         print('Returning the things ')
-        print(hidden_game_info[player_num])
         return jsonify(hidden_game_info[player_num])
 
     game_json = rget_json(get_game_redis_key(game_id))
@@ -352,8 +351,8 @@ def mulligan(game_id):
     
     # Silly kludge to prevent leakage of hidden info because I didn't want to bother using the hidden_game_info logic
     for lane in game.game_state.lanes:
-        lane.characters_by_player[0] = []
-        lane.characters_by_player[1] = []
+        lane.characters_by_player[0] = [character for character in lane.characters_by_player[0] if not character.template.name == 'Elephant Rat']
+        lane.characters_by_player[1] = [character for character in lane.characters_by_player[1] if not character.template.name == 'Elephant Rat']
 
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
