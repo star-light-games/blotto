@@ -80,7 +80,14 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     />
             )}
             </Box> : null}
-            <Box mt={2} style={{ maxHeight: '150px', overflowY: 'auto' }}>  {/* Apply max-height and overflow-y */}
+            <Box 
+                mt={2} 
+                style={{ 
+                    maxHeight: '125px', 
+                    overflowY: 'auto',
+                    paddingRight: '20px'  // Add some padding to the right
+                }}
+            >
                 <Typography variant="body2" color="textSecondary">
                     {card.creatureTypes.join(', ')}
                 </Typography>
@@ -91,7 +98,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                         ))}
                     </ul>
                 </Typography>
-            </Box>
+                </Box>
 
             <Box 
                 position="absolute" 
