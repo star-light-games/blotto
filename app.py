@@ -247,15 +247,20 @@ def join_game():
 def get_game(game_id):
     player_num = int(request.args.get('playerNum')) if request.args.get('playerNum') is not None else None
 
-    if player_num is not None and (hidden_game_info := rget_json(get_game_with_hidden_information_redis_key(game_id))) and hidden_game_info.get(player_num):
+    game_json = rget_json(get_game_redis_key(game_id))
+
+    if not game_json:
+        return jsonify({"error": "Game not found"}), 404   
+
+    game = Game.from_json(game_json)
+
+    first_turn = game.game_state is not None and game.game_state.turn == 1
+
+    if player_num is not None and not first_turn and (hidden_game_info := rget_json(get_game_with_hidden_information_redis_key(game_id))) and hidden_game_info.get(player_num):
         # Intentionally give a slightly stale game if one exists to the opponent who might have refreshed their page
         print('Returning the things ')
         return jsonify(hidden_game_info[player_num])
 
-    game_json = rget_json(get_game_redis_key(game_id))
-
-    if not game_json:
-        return jsonify({"error": "Game not found"}), 404    
     return recurse_to_json(game_json)
 
 
