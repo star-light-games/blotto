@@ -440,7 +440,7 @@ CARD_TEMPLATES = {
         name='Kuvira',
         abilities=['OnRevealShackle', 'OnShackleDrawCard'],
         cost=2,
-        attack=3,
+        attack=2,
         health=2,
         creature_types=['Earth'],
     ),
