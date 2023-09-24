@@ -490,7 +490,7 @@ CARD_TEMPLATES = {
         abilities=['Defender', 'OnFriendlyCharacterDeathHealFullyAndSwitchLanes'],
         cost=4,
         attack=2,
-        health=3,
+        health=4,
         creature_types=['Fire'],
     ),
     'Yangchen': CardTemplate(
