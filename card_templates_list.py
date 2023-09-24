@@ -482,7 +482,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', 'OnAttackDoubleAttack'],
         cost=3,
         attack=1,
-        health=6,
+        health=7,
         creature_types=['Earth'],
     ),
     'Uncle Iroh': CardTemplate(
