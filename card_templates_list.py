@@ -393,7 +393,7 @@ CARD_TEMPLATES = {
         abilities=['Defender', ('OnRevealDrawCards', 3)],
         cost=5,
         attack=3,
-        health=5,
+        health=6,
         creature_types=['Earth'],
     ),
     'La': CardTemplate(
