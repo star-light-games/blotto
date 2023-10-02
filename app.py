@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from bot import bot_take_mulligan, find_bot_move, get_bot_deck
 from card_templates_list import CARD_TEMPLATES
 from common_decks import create_common_decks
+from database import SessionLocal
 from deck import Deck
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
@@ -90,7 +91,16 @@ def api_endpoint(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try: 
-            return func(*args, **kwargs)
+            with SessionLocal() as sess:
+                kwargs['sess'] = sess
+                try:
+                    response = func(*args, **kwargs)
+                except Exception as e:
+                    sess.rollback()
+                    raise e
+                finally:
+                    sess.close()
+            return recurse_to_json(response)
         except Exception as e:
             print(traceback.print_exc())
             return jsonify({"error": "Unexpected error"}), 500
@@ -100,14 +110,14 @@ def api_endpoint(func):
 
 @app.route('/api/card_pool', methods=['GET'])
 @api_endpoint
-def get_card_pool():
+def get_card_pool(sess):
     print('Getting card pool')
     return recurse_to_json({'cards': CARD_TEMPLATES, 'laneRewards': LANE_REWARDS})
 
 
 @app.route('/api/decks', methods=['POST'])
 @api_endpoint
-def create_deck():
+def create_deck(sess):
     data = request.json
     if not data:
         return jsonify({"error": "Invalid data"}), 400
@@ -139,7 +149,7 @@ def create_deck():
 
 @app.route('/api/decks', methods=['GET'])
 @api_endpoint
-def get_decks():
+def get_decks(sess):
     decks_json = rget_json('decks') or {}
     decks = [Deck.from_json(deck_json) for deck_json in decks_json.values()]
     return recurse_to_json([deck for deck in decks if deck.username in [request.args.get('username'), COMMON_DECK_USERNAME]])
@@ -147,7 +157,7 @@ def get_decks():
 
 @app.route('/api/host_game', methods=['POST'])
 @api_endpoint
-def host_game():
+def host_game(sess):
     data = request.json
 
     if not data:
@@ -197,7 +207,7 @@ def host_game():
 
 @app.route('/api/join_game', methods=['POST'])
 @api_endpoint
-def join_game():
+def join_game(sess):
     data = request.json
 
     if not data:
@@ -244,7 +254,7 @@ def join_game():
 
 @app.route('/api/games/<game_id>', methods=['GET'])
 @api_endpoint
-def get_game(game_id):
+def get_game(sess, game_id):
     player_num = int(raw_player_num) if (raw_player_num := request.args.get('playerNum')) is not None else None
 
     game_json = rget_json(get_game_redis_key(game_id))
@@ -266,7 +276,7 @@ def get_game(game_id):
 
 @app.route('/api/games/<game_id>/take_turn', methods=['POST'])
 @api_endpoint
-def take_turn(game_id):
+def take_turn(sess, game_id):
     data = request.json
 
     if not data:
@@ -318,7 +328,7 @@ def take_turn(game_id):
 
 @app.route('/api/games/<game_id>/mulligan', methods=['POST'])
 @api_endpoint
-def mulligan(game_id):
+def mulligan(sess, game_id):
     data = request.json
 
     if not data:
