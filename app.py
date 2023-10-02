@@ -245,7 +245,7 @@ def join_game():
 @app.route('/api/games/<game_id>', methods=['GET'])
 @api_endpoint
 def get_game(game_id):
-    player_num = int(request.args.get('playerNum')) if request.args.get('playerNum') is not None else None
+    player_num = int(raw_player_num) if (raw_player_num := request.args.get('playerNum')) is not None else None
 
     game_json = rget_json(get_game_redis_key(game_id))
 
