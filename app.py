@@ -160,9 +160,13 @@ def create_deck(sess):
     return jsonify(Deck.from_db_deck(db_deck).to_json())
 
 
-@app.route('/api/decks/<deck_id>', methods=['DELETE'])
+@app.route('/api/decks', methods=['DELETE'])
 @api_endpoint
 def delete_deck(sess, deck_id):
+    deck_name = request.args.get('deckName')
+    username = request.args.get('username')
+    deck_id = request.args.get('deckId')
+
     db_deck = sess.query(DbDeck).get(deck_id)
     if not db_deck:
         return jsonify({"error": "Deck not found"}), 404
