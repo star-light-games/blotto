@@ -2,9 +2,12 @@
 
 from datetime import datetime, timedelta
 from bot import bot_take_mulligan, find_bot_move, get_bot_deck
+from card import Card
 from card_templates_list import CARD_TEMPLATES
 from common_decks import create_common_decks
 from database import SessionLocal
+from db_card import DbCard
+from db_deck import DbDeck, add_db_deck
 from deck import Deck
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
@@ -137,21 +140,48 @@ def create_deck(sess):
     lane_reward_name = data.get('laneRewardName') or None
 
     # Process the cards data as needed, e.g., save to a database or check game state
-    with rlock('decks'):
-        decks = rget_json('decks') or {}
-        deck = Deck(cards, username, deck_name, associated_lane_reward_name=lane_reward_name)
-        deck_id = deck.id
-        decks[deck_id] = deck.to_json()
-        rset_json('decks', decks)
+    
+    deck_with_same_name = (
+        sess.query(DbDeck)
+        .filter(DbDeck.username == username)
+        .filter(DbDeck.name == deck_name)
+        .first()
+    )
 
-    return jsonify(deck.to_json())
+    if deck_with_same_name:
+        for card in deck_with_same_name.cards:
+            sess.delete(card)
+        sess.commit()
+        sess.delete(deck_with_same_name)
+        sess.commit()
+    
+    db_deck = add_db_deck(sess, cards, username, deck_name, lane_reward_name)
+
+
+    return jsonify(Deck.from_db_deck(db_deck).to_json())
 
 
 @app.route('/api/decks', methods=['GET'])
 @api_endpoint
 def get_decks(sess):
-    decks_json = rget_json('decks') or {}
-    decks = [Deck.from_json(deck_json) for deck_json in decks_json.values()]
+    username = request.args.get('username')
+    common_decks = (
+        sess.query(DbDeck)
+        .filter(DbDeck.username == COMMON_DECK_USERNAME)
+        .order_by(DbDeck.name)
+        .all()
+    )
+
+    user_decks = (
+        sess.query(DbDeck)
+        .filter(DbDeck.username == username)
+        .order_by(DbDeck.name)
+        .all()
+    )
+
+    db_decks = [*common_decks, *user_decks]
+
+    decks = [Deck.from_db_deck(db_deck) for db_deck in db_decks]
     return recurse_to_json([deck for deck in decks if deck.username in [request.args.get('username'), COMMON_DECK_USERNAME]])
 
 
@@ -177,14 +207,13 @@ def host_game(sess):
 
     is_bot_game = bool(data.get('bot_game'))
     
-    decks = rget_json('decks') or {}
-    deck_json = decks.get(deck_id)
-    if not deck_json:
+    db_deck = sess.query(DbDeck).get(deck_id)
+    if not db_deck:
         return jsonify({"error": "Deck not found"}), 404
-    deck = Deck.from_json(deck_json)
+    deck = Deck.from_db_deck(db_deck)
 
     if is_bot_game:
-        bot_deck = get_bot_deck(deck.name) or deck
+        bot_deck = get_bot_deck(sess, deck.name) or deck
         game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
         game.is_bot_by_player[1] = True
         game.start()
@@ -235,11 +264,10 @@ def join_game(sess):
         
         game = Game.from_json(game_json)
 
-        decks = rget_json('decks') or {}
-        deck_json = decks.get(deck_id)
-        if not deck_json:
+        db_deck = sess.query(DbDeck).get(deck_id)
+        if not db_deck:
             return jsonify({"error": "Deck not found"}), 404
-        deck = Deck.from_json(deck_json)
+        deck = Deck.from_db_deck(db_deck)
 
         game.usernames_by_player[1] = username
         game.decks_by_player[1] = deck

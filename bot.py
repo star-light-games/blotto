@@ -2,11 +2,14 @@ import random
 from typing import Optional
 from card_templates_list import CARD_TEMPLATES
 from common_decks import BOT_DRAFT_DECKS, COMMON_DECKS
+from db_deck import DbDeck
 from deck import Deck
 from game import Game
 from game_state import GameState
 from redis_utils import rdel, rget_json, rlock, rset_json
+from settings import BOT_DECK_USERNAME, COMMON_DECK_USERNAME
 from utils import get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, sigmoid
+from sqlalchemy import func, not_
 
 
 RANDOM_CARDS_TO_PLAY = {
@@ -24,36 +27,17 @@ RANDOM_CARDS_TO_PLAY = {
     12: ['generic_4drop', 'generic_4drop', 'generic_4drop'],
 }
 
-def get_bot_deck(player_deck_name: str) -> Optional[Deck]:
+def get_bot_deck(sess, player_deck_name: str) -> Optional[Deck]:
     from common_decks import COMMON_DECKS, BOT_DRAFT_DECKS
     from deck import Deck
-    decks = rget_json('decks') or {}
     if player_deck_name == 'Learn to play':
-        for deck_json in decks.values():
-            deck = Deck.from_json(deck_json)
-            if deck.name == 'Learn to play':
-                return deck
+        return Deck.from_db_deck(db_deck) if (db_deck := sess.query(DbDeck).filter(DbDeck.name == 'Learn to play').filter(DbDeck.username == COMMON_DECK_USERNAME).first()) else None
     elif player_deck_name in [common_deck['name'] for common_deck in COMMON_DECKS]:
-        bot_deck_name = random.choice([common_deck['name'] for common_deck in COMMON_DECKS if common_deck['name'] not in [player_deck_name, 'Learn to play']])
-        for deck_json in decks.values():
-            deck = Deck.from_json(deck_json)
-            if deck.name == bot_deck_name:
-                return deck
+        return Deck.from_db_deck(db_deck) if (db_deck := sess.query(DbDeck).filter(not_(DbDeck.name.in_(['Learn to play', player_deck_name]))).filter(DbDeck.username == COMMON_DECK_USERNAME).order_by(func.random()).first()) else None
     elif 'Draft deck' in player_deck_name:
-        print('hi')
-        draft_deck_name = random.choice([bot_draft_deck['name'] for bot_draft_deck in BOT_DRAFT_DECKS])
-        print(draft_deck_name)
-        for deck_json in decks.values():
-            deck = Deck.from_json(deck_json)
-            if deck.name == draft_deck_name:
-                return deck
+        return Deck.from_db_deck(db_deck) if (db_deck := sess.query(DbDeck).filter(DbDeck.username == BOT_DECK_USERNAME).order_by(func.random()).first()) else None
     else:
-        bot_deck_name = random.choice([common_deck['name'] for common_deck in COMMON_DECKS if common_deck['name'] not in [player_deck_name, 'Learn to play']])
-        for deck_json in decks.values():
-            deck = Deck.from_json(deck_json)
-            if deck.name == bot_deck_name:
-                return deck        
-
+        return Deck.from_db_deck(db_deck) if (db_deck := sess.query(DbDeck).filter(DbDeck.name != 'Learn to play').filter(DbDeck.username == COMMON_DECK_USERNAME).order_by(func.random()).first()) else None
     return None
 
 

@@ -1,3 +1,6 @@
+from sqlalchemy import exists
+from database import SessionLocal
+from db_deck import DbDeck, add_db_deck
 from deck import Deck
 from redis_utils import rget_json, rlock, rset_json
 from settings import BOT_DECK_USERNAME, COMMON_DECK_USERNAME
@@ -292,19 +295,11 @@ BOT_DRAFT_DECKS = [
 
 
 def create_common_decks():
-    with rlock('decks'):
-        decks_json = rget_json('decks') or {}
-
+    with SessionLocal() as sess:
         for deck in COMMON_DECKS:
-            if deck['name'] not in [d['name'] for d in decks_json.values()]:
-                deck = Deck(deck['cards'], COMMON_DECK_USERNAME, deck['name'])
-                deck_id = deck.id
-                decks_json[deck_id] = deck.to_json()
+            if not sess.query(exists().where(DbDeck.name == deck['name']).where(DbDeck.username == COMMON_DECK_USERNAME)).scalar():
+                add_db_deck(sess, deck['cards'], COMMON_DECK_USERNAME, deck['name'], None)
 
         for deck in BOT_DRAFT_DECKS:
-            if deck['name'] not in [d['name'] for d in decks_json.values()]:
-                deck = Deck(deck['cards'], BOT_DECK_USERNAME, deck['name'])
-                deck_id = deck.id
-                decks_json[deck_id] = deck.to_json()
-
-        rset_json('decks', decks_json)                
+            if not sess.query(exists().where(DbDeck.name == deck['name']).where(DbDeck.username == BOT_DECK_USERNAME)).scalar():
+                add_db_deck(sess, deck['cards'], BOT_DECK_USERNAME, deck['name'], None)

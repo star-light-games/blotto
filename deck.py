@@ -1,5 +1,6 @@
 from typing import Optional
 from card_templates_list import CARD_TEMPLATES
+from db_deck import DbDeck
 from utils import generate_unique_id
 
 from card import Card
@@ -24,10 +25,16 @@ class Deck:
             "name": self.name,
             "associated_lane_reward_name": self.associated_lane_reward_name,
         }
-    
+
     @staticmethod
     def from_json(json):
         deck = Deck([CardTemplate.from_json(card_template).name for card_template in json['card_templates']], 
                     json['username'], json['name'], json.get('associated_lane_reward_name'))
         deck.id = json['id']
+        return deck
+    
+    @staticmethod
+    def from_db_deck(db_deck: DbDeck):
+        deck = Deck([card.name for card in db_deck.cards], db_deck.username, db_deck.name, db_deck.associated_lane_reward_name)  # type: ignore
+        deck.id = db_deck.id
         return deck
