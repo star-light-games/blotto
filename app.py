@@ -203,6 +203,7 @@ def rename_deck(sess):
     deck_id = data.get('deckId')
     deck_name = data.get('deckName')
     username = data.get('username')
+    new_deck_name = data.get('newDeckName')
     if not (deck_id or deck_name):
         return jsonify({"error": "Deck ID or deck name is required"}), 400
     
@@ -220,7 +221,7 @@ def rename_deck(sess):
         if not db_deck:
             return jsonify({"error": "Deck not found"}), 404
 
-    db_deck.name = deck_name
+    db_deck.name = new_deck_name
     sess.commit()
 
     return jsonify({"success": True})
