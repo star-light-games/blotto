@@ -167,14 +167,60 @@ def delete_deck(sess, deck_id):
     username = request.args.get('username')
     deck_id = request.args.get('deckId')
 
-    db_deck = sess.query(DbDeck).get(deck_id)
-    if not db_deck:
-        return jsonify({"error": "Deck not found"}), 404
+    if not (deck_name or deck_id):
+        return jsonify({"error": "Deck name or ID is required"}), 400
+    
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+    
+    if deck_id:
+        db_deck = sess.query(DbDeck).get(deck_id)
+        if not db_deck:
+            return jsonify({"error": "Deck not found"}), 404
+    
+    else:
+        assert deck_name
+        db_deck = sess.query(DbDeck).filter(DbDeck.username == username).filter(DbDeck.name == deck_name).first()
+        if not db_deck:
+            return jsonify({"error": "Deck not found"}), 404
 
     for card in db_deck.cards:
         sess.delete(card)
     sess.commit()
     sess.delete(db_deck)
+    sess.commit()
+
+    return jsonify({"success": True})
+
+
+@app.route('/api/decks/rename', methods=['POST'])
+@api_endpoint
+def rename_deck(sess):
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    deck_id = data.get('deckId')
+    deck_name = data.get('deckName')
+    username = data.get('username')
+    if not (deck_id or deck_name):
+        return jsonify({"error": "Deck ID or deck name is required"}), 400
+    
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+    
+    if deck_id:
+        db_deck = sess.query(DbDeck).get(deck_id)
+        if not db_deck:
+            return jsonify({"error": "Deck not found"}), 404
+        
+    else:
+        assert deck_name
+        db_deck = sess.query(DbDeck).filter(DbDeck.username == username).filter(DbDeck.name == deck_name).first()
+        if not db_deck:
+            return jsonify({"error": "Deck not found"}), 404
+
+    db_deck.name = deck_name
     sess.commit()
 
     return jsonify({"success": True})
