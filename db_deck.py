@@ -23,6 +23,9 @@ class DbDeck(Base):
         Index("db_decks_idx_username_name", username, name),
     )
 
+    def __repr__(self):
+        return f"<DbDeck: {self.name} by {self.username}>"
+
 
 def add_db_deck(sess, cards: list[str], username: str, deck_name: str, associated_lane_reward_name: Optional[str]) -> DbDeck:
     db_deck = DbDeck(
