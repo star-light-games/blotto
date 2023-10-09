@@ -17,7 +17,7 @@ class DbDeck(Base):
     name = Column(String)
     associated_lane_reward_name = Column(String)
 
-    cards: list[DbCard]
+    # cards: list['DbCard']
 
     __table_args__ = (
         Index("db_decks_idx_username_name", username, name),

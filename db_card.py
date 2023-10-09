@@ -10,7 +10,7 @@ class DbCard(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    deck_id = Column(Integer, ForeignKey("db_decks.id"))
+    deck_id = Column(String, ForeignKey("db_decks.id"))
     deck = relationship("DbDeck", backref="cards")
 
     __table_args__ = (
