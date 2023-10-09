@@ -162,7 +162,7 @@ def create_deck(sess):
 
 @app.route('/api/decks', methods=['DELETE'])
 @api_endpoint
-def delete_deck(sess, deck_id):
+def delete_deck(sess):
     deck_name = request.args.get('deckName')
     username = request.args.get('username')
     deck_id = request.args.get('deckId')
