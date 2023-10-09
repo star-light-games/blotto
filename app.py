@@ -126,7 +126,7 @@ def create_deck(sess):
         return jsonify({"error": "Invalid data"}), 400
 
     cards = data.get('cards')
-    if not cards:
+    if cards is None:
         return jsonify({"error": "Cards data is required"}), 400
 
     username = data.get('username')
