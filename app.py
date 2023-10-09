@@ -295,7 +295,7 @@ def join_game(sess):
             deck = Deck.from_db_deck(db_deck)
         else:
             assert deck_name
-            db_deck = sess.query(DbDeck).filter(DbDeck.in_([username, COMMON_DECK_USERNAME])).filter(DbDeck.name == deck_name).first()
+            db_deck = sess.query(DbDeck).filter(DbDeck.username.in_([username, COMMON_DECK_USERNAME])).filter(DbDeck.name == deck_name).first()
             if not db_deck:
                 return jsonify({"error": "Deck not found"}), 404
             deck = Deck.from_db_deck(db_deck)
