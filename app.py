@@ -157,7 +157,6 @@ def create_deck(sess):
     
     db_deck = add_db_deck(sess, cards, username, deck_name, lane_reward_name)
 
-
     return jsonify(Deck.from_db_deck(db_deck).to_json())
 
 
@@ -194,9 +193,10 @@ def host_game(sess):
         return jsonify({"error": "Invalid data"}), 400
     
     deck_id = data.get('deckId')
+    deck_name = data.get('deckName')
 
-    if not deck_id:
-        return jsonify({"error": "Deck ID is required"}), 400
+    if not (deck_id or deck_name):
+        return jsonify({"error": "Deck ID or name is required"}), 400
     
     username = data.get('username')
 
@@ -207,10 +207,17 @@ def host_game(sess):
 
     is_bot_game = bool(data.get('bot_game'))
     
-    db_deck = sess.query(DbDeck).get(deck_id)
-    if not db_deck:
-        return jsonify({"error": "Deck not found"}), 404
-    deck = Deck.from_db_deck(db_deck)
+    if deck_id:
+        db_deck = sess.query(DbDeck).get(deck_id)
+        if not db_deck:
+            return jsonify({"error": "Deck not found"}), 404
+        deck = Deck.from_db_deck(db_deck)
+    else:
+        assert deck_name
+        db_deck = sess.query(DbDeck).filter(DbDeck.username == username).filter(DbDeck.name == deck_name).first()
+        if not db_deck:
+            return jsonify({"error": "Deck not found"}), 404
+        deck = Deck.from_db_deck(db_deck)
 
     if is_bot_game:
         bot_deck = get_bot_deck(sess, deck.name) or deck
@@ -253,9 +260,10 @@ def join_game(sess):
         return jsonify({"error": "Username is required"}), 400
     
     deck_id = data.get('deckId')
+    deck_name = data.get('deckName')
 
-    if not deck_id:
-        return jsonify({"error": "Deck ID is required"}), 400
+    if not (deck_id or deck_name):
+        return jsonify({"error": "Deck ID or name is required"}), 400
 
     with rlock(get_game_lock_redis_key(game_id)):
         game_json = rget_json(get_game_redis_key(game_id))
@@ -264,10 +272,17 @@ def join_game(sess):
         
         game = Game.from_json(game_json)
 
-        db_deck = sess.query(DbDeck).get(deck_id)
-        if not db_deck:
-            return jsonify({"error": "Deck not found"}), 404
-        deck = Deck.from_db_deck(db_deck)
+        if deck_id:
+            db_deck = sess.query(DbDeck).get(deck_id)
+            if not db_deck:
+                return jsonify({"error": "Deck not found"}), 404
+            deck = Deck.from_db_deck(db_deck)
+        else:
+            assert deck_name
+            db_deck = sess.query(DbDeck).filter(DbDeck.username == username).filter(DbDeck.name == deck_name).first()
+            if not db_deck:
+                return jsonify({"error": "Deck not found"}), 404
+            deck = Deck.from_db_deck(db_deck)
 
         game.usernames_by_player[1] = username
         game.decks_by_player[1] = deck
