@@ -428,7 +428,8 @@ function LanesDisplay({
     setYourManaAmount,
     characterRefs,
     towerRefs,
-    displayArt
+    displayArt,
+    gameId,
 }) {
     if (!lanes) return null;
     return (
@@ -453,6 +454,7 @@ function LanesDisplay({
                     characterRefs={characterRefs}
                     towerRefs={towerRefs}
                     displayArt={displayArt}
+                    gameId={gameId}
                 />
             </Grid>))}
         </Grid>
@@ -568,7 +570,8 @@ function Lane({
     setYourManaAmount,
     characterRefs,
     towerRefs,
-    displayArt
+    displayArt,
+    gameId,
 }) {
 
     const laneNumber = laneData.lane_number;
@@ -588,6 +591,27 @@ function Lane({
             setCardsToLanes(newCardsToLanes);
 
             setSelectedCard(null);
+
+            const payload = {
+                cardId: selectedCard.id,
+                laneNumber: laneNumber,
+                playerNum: playerNum,
+            };
+                        
+            // Make the API call
+            fetch(`${URL}/api/games/${gameId}/play_card`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
+                })
+                .catch(error => {
+                    console.error("There was an error making the submit API call:", error);
+                });
         }
     };
 
@@ -1401,11 +1425,12 @@ export default function GamePage({ }) {
 
             const payload = {
                 username: game.usernames_by_player[playerNum],
-                cardsToLanes: cardsToLanes,
+                playerNum: playerNum,
+                // cardsToLanes: cardsToLanes,
             };
                         
             // Make the API call
-            fetch(`${URL}/api/games/${gameId}/take_turn`, {
+            fetch(`${URL}/api/games/${gameId}/submit_turn`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1549,6 +1574,7 @@ export default function GamePage({ }) {
                             characterRefs={characterRefs}
                             towerRefs={towerRefs}
                             displayArt={displayArt}
+                            gameId={gameId}
                         />
                     </Grid>
                 </Grid> 

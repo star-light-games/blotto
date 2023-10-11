@@ -36,6 +36,15 @@ def get_game_with_hidden_information_redis_key(game_id):
 def get_game_lock_redis_key(game_id):
     return f'game:{game_id}:lock'
 
+def get_staged_game_redis_key(game_id, player_num):
+    return f'game:{game_id}:{player_num}:staged'
+
+def get_staged_game_lock_redis_key(game_id, player_num):
+    return f'game:{game_id}:{player_num}:staged:lock'
+
+def get_staged_moves_redis_key(game_id, player_num):
+    return f'game:{game_id}:{player_num}:staged:moves'
+
 def get_deck_description_json_from_deck(deck):
     return {
         'name': deck['name'],

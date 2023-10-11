@@ -21,7 +21,7 @@ from lane_rewards import LANE_REWARDS
 
 from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import COMMON_DECK_USERNAME, LOCAL
-from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key
+from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, get_staged_game_lock_redis_key, get_staged_game_redis_key, get_staged_moves_redis_key
 
 
 app = Flask(__name__)
@@ -35,41 +35,62 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
     print('The bot has chosen the following move: ', bot_move)
     game_id = game.id
     with rlock(get_game_lock_redis_key(game_id)):
-        game_json = rget_json(get_game_redis_key(game_id))
+        game_json = rget_json(get_game_redis_key(game_id))    
+        if not game_json:
+            return
         game_from_json = Game.from_json(game_json)
 
         assert game_from_json.game_state
 
-        if not game.game_state.has_moved_by_player[1 - player_num]:
-            rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
+        # if not game.game_state.has_moved_by_player[1 - player_num]:
+        #     rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
 
-        try:
-            for card_id, lane_number in bot_move.items():
-                game_from_json.game_state.play_card(player_num, card_id, lane_number)
-        except Exception:
-            print(f'The bot tried to play an invalid move: {bot_move}.')
-            hidden_info_game = rget_json(get_game_with_hidden_information_redis_key(game.id))
-            if hidden_info_game is not None and hidden_info_game.get(player_num) is not None:
-                game_from_hidden_json = Game.from_json(hidden_info_game[player_num])
-                assert game_from_hidden_json.game_state
-                bot_move = find_bot_move(player_num, game_from_hidden_json.game_state)
-            else:
-                game_from_nonhidden_json = Game.from_json(game_json)
-                assert game_from_nonhidden_json.game_state
-                bot_move = find_bot_move(player_num, game_from_nonhidden_json.game_state)
+        # try:
+        #     for card_id, lane_number in bot_move.items():
+        #         staged_game_from_json.game_state.play_card(player_num, card_id, lane_number)
+        # except Exception:
+        #     print(f'The bot tried to play an invalid move: {bot_move}.')
+        #     hidden_info_game = rget_json(get_game_with_hidden_information_redis_key(game.id))
+        #     if hidden_info_game is not None and hidden_info_game.get(player_num) is not None:
+        #         game_from_hidden_json = Game.from_json(hidden_info_game[player_num])
+        #         assert game_from_hidden_json.game_state
+        #         bot_move = find_bot_move(player_num, game_from_hidden_json.game_state)
+        #     else:
+        #         game_from_nonhidden_json = Game.from_json(game_json)
+        #         assert game_from_nonhidden_json.game_state
+        #         bot_move = find_bot_move(player_num, game_from_nonhidden_json.game_state)
 
-            try:
-                for card_id, lane_number in bot_move.items():
-                    game_from_json.game_state.play_card(player_num, card_id, lane_number)
-            except Exception:
-                print(f'The bot tried to play an invalid move: {bot_move} again. Giving up.')
+        #     try:
+        #         for card_id, lane_number in bot_move.items():
+        #             game_from_json.game_state.play_card(player_num, card_id, lane_number)
+        #     except Exception:
+        #         print(f'The bot tried to play an invalid move: {bot_move} again. Giving up.')
 
         game_from_json.game_state.has_moved_by_player[player_num] = True        
 
         have_moved = game_from_json.game_state.all_players_have_moved()
         if have_moved:
+            for card_id, lane_number in bot_move.items():
+                try:
+                    game_from_json.game_state.play_card(player_num, card_id, lane_number)
+                except Exception:
+                    print(f'The bot tried to play an invalid move: {bot_move}.')
+                    continue
+
+            staged_moves_for_other_player = rget_json(get_staged_moves_redis_key(game_id, 1 - player_num)) or {}
+            for card_id, lane_number in staged_moves_for_other_player.items():
+                try:
+                    game_from_json.game_state.play_card(1 - player_num, card_id, lane_number)
+                except Exception:
+                    print(f'The player tried to play an invalid move: {bot_move}.')
+                    continue
+
             game_from_json.game_state.roll_turn()
             rdel(get_game_with_hidden_information_redis_key(game.id))
+            rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
+            rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
+            rdel(get_staged_game_redis_key(game_id, 0))
+            rdel(get_staged_game_redis_key(game_id, 1))
 
         rset_json(get_game_redis_key(game_id), game_from_json.to_json(), ex=24 * 60 * 60)
 
@@ -435,6 +456,149 @@ def take_turn(sess, game_id):
 
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
+
+
+@app.route('/api/games/<game_id>/play_card', methods=['POST'])
+@api_endpoint
+def play_card(sess, game_id):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    card_id = data.get('cardId')
+
+    if card_id is None:
+        return jsonify({"error": "Card ID is required"}), 400
+    
+    lane_number = data.get('laneNumber')
+
+    if lane_number is None:
+        return jsonify({"error": "Lane number is required"}), 400
+    
+    player_num = data.get('playerNum')
+
+    if player_num is None:
+        return jsonify({"error": "Player number is required"}), 400
+
+    with rlock(get_staged_game_lock_redis_key(game_id, player_num)):
+        game_json = rget_json(get_staged_game_redis_key(game_id, player_num))
+        if not game_json:
+            game_json = rget_json(get_game_redis_key(game_id))
+
+        staged_moves = rget_json(get_staged_moves_redis_key(game_id, player_num)) or {}
+
+        game = Game.from_json(game_json)
+
+        assert player_num is not None
+        assert game.game_state is not None
+
+        print([card.id for card in game.game_state.hands_by_player[player_num]])
+
+        game.game_state.play_card(player_num, card_id, lane_number)
+        staged_moves[card_id] = lane_number
+
+        rset_json(get_staged_moves_redis_key(game_id, player_num), staged_moves, ex=24 * 60 * 60)
+        rset_json(get_staged_game_redis_key(game_id, player_num), game.to_json(), ex=24 * 60 * 60)
+
+    return jsonify({"gameId": game.id,
+                    "game": game.to_json()})
+
+
+@app.route('/api/games/<game_id>/submit_turn', methods=['POST'])
+@api_endpoint
+def submit_turn(sess, game_id):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    player_num = data.get('playerNum')
+
+    if player_num is None:
+        return jsonify({"error": "Player number is required"}), 400
+
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
+        if not game_json:
+            return jsonify({"error": "Game not found"}), 404
+
+        game = Game.from_json(game_json)
+
+        assert player_num is not None
+        assert game.game_state is not None
+
+        game.game_state.has_moved_by_player[player_num] = True
+        have_moved = game.game_state.all_players_have_moved()
+        if have_moved:
+            for player_num in [0, 1]:
+                staged_moves = rget_json(get_staged_moves_redis_key(game_id, player_num)) or {}
+
+                for card_id, lane_number in staged_moves.items():
+                    try:
+                        game.game_state.play_card(player_num, card_id, lane_number)
+                    except Exception:
+                        print(f'Player {player_num} tried to play an invalid move: {card_id} -> {lane_number}.')
+                        continue
+
+            game.game_state.roll_turn()
+            rdel(get_game_with_hidden_information_redis_key(game.id))
+            rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
+            rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
+            rdel(get_staged_game_redis_key(game_id, 0))
+            rdel(get_staged_game_redis_key(game_id, 1))
+
+        print('Hello')
+        print(game.is_bot_by_player[1 - player_num])
+
+        if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
+            start_new_thread(bot_move_in_game, (game, 1 - player_num))
+
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+    
+    if have_moved:
+        socketio.emit('update', room=game.id)
+
+    return jsonify({"gameId": game.id,
+                    "game": game.to_json()})
+
+
+@app.route('/api/games/<game_id>/unsubmit_turn', methods=['POST'])
+@api_endpoint
+def unsubmit_turn(sess, game_id):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+    
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+
+    player_num = data.get('playerNum')
+
+    if player_num is None:
+        return jsonify({"error": "Player number is required"}), 400
+
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
+        if not game_json:
+            return jsonify({"error": "Game not found"}), 404
+
+        game = Game.from_json(game_json)
+
+        player_num = game.username_to_player_num(username)
+        assert player_num is not None
+        assert game.game_state is not None
+
+        game.game_state.has_moved_by_player[player_num] = False
+
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
+    return jsonify({"gameId": game.id,
+                    "game": game.to_json()})
+
 
 @app.route('/api/games/<game_id>/mulligan', methods=['POST'])
 @api_endpoint
