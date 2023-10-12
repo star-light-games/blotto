@@ -647,6 +647,10 @@ def mulligan(sess, game_id):
                     "game": game.to_json()})
 
 
+@app.route('/api/games/<game_id>/mulligan_all', methods=['POST'])
+@api_endpoint
+def mulligan_all(sess, game_id):
+
 @socketio.on('connect')
 def on_connect():
     print('Connected')

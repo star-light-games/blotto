@@ -60,6 +60,14 @@ class GameState:
                     character.current_health += character.number_2_of_ability('OnDrawCardPump')
                     character.max_health += character.number_2_of_ability('OnDrawCardPump')
 
+    def mulligan_all(self, player_num: int):
+        if self.has_mulliganed_by_player[player_num]:
+            return
+        self.has_mulliganed_by_player[player_num] = True
+        self.log.append(f"{self.usernames_by_player[player_num]} mulliganed their hand.")
+        cards_in_hand = self.hands_by_player[player_num][:]
+        for card in cards_in_hand:
+            self.mulligan_card(player_num, card.id)
 
     def mulligan_card(self, player_num: int, card_id: str):
         self.draw_piles_by_player[player_num].append([card for card in self.hands_by_player[player_num] if card.id == card_id][0])
