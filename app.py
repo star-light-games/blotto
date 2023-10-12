@@ -40,6 +40,9 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             return
         game_from_json = Game.from_json(game_json)
 
+        # Should be redundant, but I think there's some issue on the first turn where this sometimes isn't true
+        game_from_json.is_bot_by_player[player_num] = True 
+
         assert game_from_json.game_state
 
         # if not game.game_state.has_moved_by_player[1 - player_num]:
@@ -531,14 +534,14 @@ def submit_turn(sess, game_id):
         game.game_state.has_moved_by_player[player_num] = True
         have_moved = game.game_state.all_players_have_moved()
         if have_moved:
-            for player_num in [0, 1]:
-                staged_moves = rget_json(get_staged_moves_redis_key(game_id, player_num)) or {}
+            for player_num_to_make_moves_for in [0, 1]:
+                staged_moves = rget_json(get_staged_moves_redis_key(game_id, player_num_to_make_moves_for)) or {}
 
                 for card_id, lane_number in staged_moves.items():
                     try:
-                        game.game_state.play_card(player_num, card_id, lane_number)
+                        game.game_state.play_card(player_num_to_make_moves_for, card_id, lane_number)
                     except Exception:
-                        print(f'Player {player_num} tried to play an invalid move: {card_id} -> {lane_number}.')
+                        print(f'Player {player_num_to_make_moves_for} tried to play an invalid move: {card_id} -> {lane_number}.')
                         continue
 
             game.game_state.roll_turn()
@@ -547,9 +550,6 @@ def submit_turn(sess, game_id):
             rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
             rdel(get_staged_game_redis_key(game_id, 0))
             rdel(get_staged_game_redis_key(game_id, 1))
-
-        print('Hello')
-        print(game.is_bot_by_player[1 - player_num])
 
         if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
             start_new_thread(bot_move_in_game, (game, 1 - player_num))
