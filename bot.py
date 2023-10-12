@@ -138,9 +138,10 @@ def bot_take_mulligan(game_state: GameState, player_num: int) -> None:
     if all([card.template.cost > 2 for card in cards_in_hand]):
         # Mulligan everything if I have no one or two drops
         print('Pitching all cards; I have no one or two drops')
-        return game_state.mulligan_cards(player_num, [card.id for card in cards_in_hand])
+        # return game_state.mulligan_cards(player_num, [card.id for card in cards_in_hand])
+        return game_state.mulligan_all(player_num)
 
-    else:
-        # Mulligan all four and five drops
-        print('Pitching the following cards: ', [card.template.name for card in cards_in_hand if card.template.cost >= 4])
-        return game_state.mulligan_cards(player_num, [card.id for card in cards_in_hand if card.template.cost >= 4])
+    # else:
+    #     # Mulligan all four and five drops
+    #     print('Pitching the following cards: ', [card.template.name for card in cards_in_hand if card.template.cost >= 4])
+    #     return game_state.mulligan_cards(player_num, [card.id for card in cards_in_hand if card.template.cost >= 4])

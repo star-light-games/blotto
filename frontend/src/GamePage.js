@@ -307,12 +307,15 @@ function OldLanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelec
 }
 
 function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, yourManaAmount, cardsToMulligan, setCardsToMulligan, mulliganing }) {        
+    // const toggleMulliganingCard = (card) => {
+    //     if (cardsToMulligan.includes(card.id)) {
+    //         setCardsToMulligan(cardsToMulligan.filter(id => id !== card.id));
+    //     } else {
+    //         setCardsToMulligan([...cardsToMulligan, card.id]);
+    //     }
+    // };
+
     const toggleMulliganingCard = (card) => {
-        if (cardsToMulligan.includes(card.id)) {
-            setCardsToMulligan(cardsToMulligan.filter(id => id !== card.id));
-        } else {
-            setCardsToMulligan([...cardsToMulligan, card.id]);
-        }
     };
 
     return (
@@ -1397,58 +1400,56 @@ export default function GamePage({ }) {
     const mulliganing = !gameState.has_mulliganed_by_player[playerNum]
 
     const handleSubmit = () => {
-        if (mulliganing) {
-            const payload = {
-                username: game.usernames_by_player[playerNum],
-                cards: cardsToMulligan,
-            };
+        const payload = {
+            username: game.usernames_by_player[playerNum],
+            playerNum: playerNum,
+            // cardsToLanes: cardsToLanes,
+        };
+                    
+        // Make the API call
+        fetch(`${URL}/api/games/${gameId}/${submittedMove ? 'unsubmit_turn' : 'submit_turn'}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+                log(data);
+                if (submittedMove) {
+                    setSubmittedMove(false);
+                }
+                else {
+                    setSubmittedMove(true);
+                }
+                // Handle the response as required (e.g. update local state, or navigate elsewhere)
+            })
+            .catch(error => {
+                console.error("There was an error making the submit API call:", error);
+            });                
+        };
 
-            fetch(`${URL}/api/games/${gameId}/mulligan`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    setGame(data.game);
-                    setGameState(data.game.game_state);
-                    // Handle the response as required (e.g. update local state, or navigate elsewhere)
-                })
-            }
-        else {
+    const handleMulligan = (mulliganing) => {
+        const payload = {
+            username: game.usernames_by_player[playerNum],
+            mulliganing: mulliganing,
+        };
 
-            const payload = {
-                username: game.usernames_by_player[playerNum],
-                playerNum: playerNum,
-                // cardsToLanes: cardsToLanes,
-            };
-                        
-            // Make the API call
-            fetch(`${URL}/api/games/${gameId}/${submittedMove ? 'unsubmit_turn' : 'submit_turn'}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+        fetch(`${URL}/api/games/${gameId}/mulligan_all`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             })
-                .then(response => response.json())
-                .then(data => {
-                    log(data);
-                    if (submittedMove) {
-                        setSubmittedMove(false);
-                    }
-                    else {
-                        setSubmittedMove(true);
-                    }
-                    // Handle the response as required (e.g. update local state, or navigate elsewhere)
-                })
-                .catch(error => {
-                    console.error("There was an error making the submit API call:", error);
-                });                
-            }
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                setGame(data.game);
+                setGameState(data.game.game_state);
+                // Handle the response as required (e.g. update local state, or navigate elsewhere)
+            })
         };
 
     return (
@@ -1496,7 +1497,7 @@ export default function GamePage({ }) {
                     <Card variant="outlined">
                         <CardContent>
                             <Typography variant="h2" style={{ display: 'flex', justifyContent: 'center' }}>
-                                Pick which cards to mulligan
+                                Keep or mulligan?
                             </Typography>
                         </CardContent>
                     </Card>
@@ -1595,15 +1596,25 @@ export default function GamePage({ }) {
                             Rematch
                         </Typography>
                     </Button>}
-                    {!animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={replayAnimations}>
+                    {!animating && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={replayAnimations}>
                         <Typography variant="h6">
                             Replay animations
                         </Typography>
                     </Button>}
                     {!gameOver && !mulliganing && <ResetButton onReset={handleReset} disabled={animating || submittedMove || gameOver} />}
-                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleSubmit} disabled={animating || gameOver}>
+                    {!gameOver && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleSubmit} disabled={animating || gameOver}>
                         <Typography variant="h6">
-                            {mulliganing ? 'Submit mulligan' : submittedMove ? 'Unsubmit' : 'Submit'}
+                            {submittedMove ? 'Unsubmit' : 'Submit'}
+                        </Typography>
+                    </Button>}
+                    {mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={() => handleMulligan(false)}>
+                        <Typography variant="h6">
+                            Keep
+                        </Typography>
+                    </Button>}                    
+                    {mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={() => handleMulligan(true)}>
+                        <Typography variant="h6">
+                            Mulligan
                         </Typography>
                     </Button>}
                 </div>
