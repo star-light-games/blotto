@@ -537,6 +537,9 @@ def submit_turn(sess, game_id):
             for player_num_to_make_moves_for in [0, 1]:
                 staged_moves = rget_json(get_staged_moves_redis_key(game_id, player_num_to_make_moves_for)) or {}
 
+                print('Making moves for player ', player_num_to_make_moves_for)
+                print(staged_moves)
+
                 for card_id, lane_number in staged_moves.items():
                     try:
                         game.game_state.play_card(player_num_to_make_moves_for, card_id, lane_number)
@@ -660,6 +663,8 @@ def mulligan_all(sess, game_id):
     if not username:
         return jsonify({"error": "Username is required"}), 400
     
+    mulliganing = data.get('mulliganing')
+
     with rlock(get_game_lock_redis_key(game_id)):
         game_json = rget_json(get_game_redis_key(game_id))
         if not game_json:
@@ -671,7 +676,8 @@ def mulligan_all(sess, game_id):
         assert player_num is not None
         assert game.game_state is not None
 
-        game.game_state.mulligan_all(player_num)
+        if mulliganing:
+            game.game_state.mulligan_all(player_num)
 
         game.game_state.has_mulliganed_by_player[player_num] = True
 
