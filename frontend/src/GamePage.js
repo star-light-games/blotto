@@ -811,7 +811,7 @@ export default function GamePage({ }) {
     const [handData, setHandData] = useState(null);
     const [hoveredCard, setHoveredCard] = useState(null);
     const [cardsToLanes, setCardsToLanes] = useState({});
-    const [dialogOpen, setDialogOpen] = useState(false);
+    // const [dialogOpen, setDialogOpen] = useState(false);
     const [cardsToMulligan, setCardsToMulligan] = useState([]);
 
     const [submittedMove, setSubmittedMove] = useState(false);
@@ -827,22 +827,22 @@ export default function GamePage({ }) {
         return storedValue ? parseInt(storedValue, 10) : BASE_ANIMATION_DELAY;
     });
 
-    useEffect(() => {
-        const f = (event) => {
-            if (dialogOpen) {
-                if (event.key == 'Enter') {
-                    event.preventDefault();
-                    handleSubmit();
-                } else if (event.key == 'Escape') {
-                    event.preventDefault();
-                    handleCloseDialog();
-                }
-            }             
-        }
+    // useEffect(() => {
+    //     const f = (event) => {
+    //         if (dialogOpen) {
+    //             if (event.key == 'Enter') {
+    //                 event.preventDefault();
+    //                 handleSubmit();
+    //             } else if (event.key == 'Escape') {
+    //                 event.preventDefault();
+    //                 handleCloseDialog();
+    //             }
+    //         }             
+    //     }
 
-        window.addEventListener('keydown', f);
-        return () => window.removeEventListener('keydown', f);
-    }, [dialogOpen]);
+    //     window.addEventListener('keydown', f);
+    //     return () => window.removeEventListener('keydown', f);
+    // }, [dialogOpen]);
 
     const navigate = useNavigate();
 
@@ -1386,20 +1386,17 @@ export default function GamePage({ }) {
         )
     }
 
-    const handleOpenDialog = () => {
-        setDialogOpen(true);
-    };
+    // const handleOpenDialog = () => {
+    //     setDialogOpen(true);
+    // };
 
-    const handleCloseDialog = () => {
-        setDialogOpen(false);
-    };
+    // const handleCloseDialog = () => {
+    //     setDialogOpen(false);
+    // };
 
     const mulliganing = !gameState.has_mulliganed_by_player[playerNum]
 
     const handleSubmit = () => {
-        // Close the dialog first
-        handleCloseDialog();
-
         if (mulliganing) {
             const payload = {
                 username: game.usernames_by_player[playerNum],
@@ -1430,7 +1427,7 @@ export default function GamePage({ }) {
             };
                         
             // Make the API call
-            fetch(`${URL}/api/games/${gameId}/submit_turn`, {
+            fetch(`${URL}/api/games/${gameId}/${submittedMove ? 'unsubmit_turn' : 'submit_turn'}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1440,7 +1437,12 @@ export default function GamePage({ }) {
                 .then(response => response.json())
                 .then(data => {
                     log(data);
-                    setSubmittedMove(true);
+                    if (submittedMove) {
+                        setSubmittedMove(false);
+                    }
+                    else {
+                        setSubmittedMove(true);
+                    }
                     // Handle the response as required (e.g. update local state, or navigate elsewhere)
                 })
                 .catch(error => {
@@ -1599,13 +1601,13 @@ export default function GamePage({ }) {
                         </Typography>
                     </Button>}
                     {!gameOver && !mulliganing && <ResetButton onReset={handleReset} disabled={animating || submittedMove || gameOver} />}
-                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={mulliganing ? handleSubmit : handleOpenDialog} disabled={animating || submittedMove || gameOver}>
+                    {!gameOver && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleSubmit} disabled={animating || gameOver}>
                         <Typography variant="h6">
-                            {mulliganing ? 'Submit mulligan' : 'Submit'}
+                            {mulliganing ? 'Submit mulligan' : submittedMove ? 'Unsubmit' : 'Submit'}
                         </Typography>
                     </Button>}
                 </div>
-                <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+                {/* <Dialog open={dialogOpen} onClose={handleCloseDialog}>
                     <DialogTitle>Confirm Action</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
@@ -1620,7 +1622,7 @@ export default function GamePage({ }) {
                             Confirm
                         </Button>
                     </DialogActions>
-                </Dialog>
+                </Dialog> */}
             </div>
         </div>
     );
