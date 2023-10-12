@@ -650,6 +650,40 @@ def mulligan(sess, game_id):
 @app.route('/api/games/<game_id>/mulligan_all', methods=['POST'])
 @api_endpoint
 def mulligan_all(sess, game_id):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+    
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+    
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
+        if not game_json:
+            return jsonify({"error": "Game not found"}), 404
+
+        game = Game.from_json(game_json)
+
+        player_num = game.username_to_player_num(username)
+        assert player_num is not None
+        assert game.game_state is not None
+
+        game.game_state.mulligan_all(player_num)
+
+        game.game_state.has_mulliganed_by_player[player_num] = True
+
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+    
+    # Silly kludge to prevent leakage of hidden info because I didn't want to bother using the hidden_game_info logic
+    for lane in game.game_state.lanes:
+        lane.characters_by_player[0] = [character for character in lane.characters_by_player[0] if not character.template.name == 'Elephant Rat']
+        lane.characters_by_player[1] = [character for character in lane.characters_by_player[1] if not character.template.name == 'Elephant Rat']
+
+    return jsonify({"gameId": game.id,
+                    "game": game.to_json()})
 
 @socketio.on('connect')
 def on_connect():
