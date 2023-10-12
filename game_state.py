@@ -26,6 +26,7 @@ class GameState:
         self.animations: list = []
         self.mana_by_player = {0: 0, 1: 0}
         self.decks_by_player = decks_by_player
+        self.winner = None
         self.roll_turn()
 
     def draw_initial_hand(self, deck: Deck):
@@ -107,6 +108,31 @@ class GameState:
             self.log.append("The moon rises.")
             self.mana_by_player = {0: 0, 1: 0}
 
+        if self.turn == 10:
+            self.log.append("The moon is full.")
+            
+            lane_winners = [lane.compute_winner() for lane in self.lanes]
+
+            num_lanes_won_by_player = {player_num: sum([1 for lane_winner in lane_winners if lane_winner == player_num]) for player_num in [0, 1]}
+
+            if num_lanes_won_by_player[0] > num_lanes_won_by_player[1]:
+                self.log.append(f"{self.usernames_by_player[0]} won the game!")
+                self.winner = 0
+
+            if num_lanes_won_by_player[1] > num_lanes_won_by_player[0]:
+                self.log.append(f"{self.usernames_by_player[1]} won the game!")
+                self.winner = 1
+
+            if num_lanes_won_by_player[0] == num_lanes_won_by_player[1]:
+                total_damage_by_player = {player_num: sum([lane.damage_by_player[player_num] for lane in self.lanes]) for player_num in [0, 1]}
+                if total_damage_by_player[0] > total_damage_by_player[1]:
+                    self.log.append(f"{self.usernames_by_player[0]} won the game!")
+                    self.winner = 0
+                
+                if total_damage_by_player[1] > total_damage_by_player[0]:
+                    self.log.append(f"{self.usernames_by_player[1]} won the game!")
+                    self.winner = 1
+
     def play_card(self, player_num: int, card_id: str, lane_number: int):
         card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
@@ -159,7 +185,8 @@ class GameState:
             "usernames_by_player": self.usernames_by_player,
             "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()} if not exclude_animations else {0: Deck([], '', '').to_json(), 1: Deck([], '', '').to_json()},
             **({"animations": self.animations} if not exclude_animations else {}),
-            "has_mulliganed_by_player": self.has_mulliganed_by_player
+            "has_mulliganed_by_player": self.has_mulliganed_by_player,
+            "winner": self.winner,
         }
     
     @staticmethod
@@ -176,6 +203,7 @@ class GameState:
         if json.get('animations'):
             game_state.animations = json['animations']
         game_state.has_mulliganed_by_player = json['has_mulliganed_by_player']
+        game_state.winner = json.get('winner')
 
         return game_state
     

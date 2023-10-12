@@ -167,6 +167,15 @@ class Lane:
         return random.choice(characters_available) if len(characters_available) > 0 else None
 
 
+    def compute_winner(self) -> Optional[int]:
+        if self.damage_by_player[0] > self.damage_by_player[1]:
+            return 0
+        elif self.damage_by_player[1] > self.damage_by_player[0]:
+            return 1
+        else:
+            return None
+
+
     def to_json(self):
         return {
             "damage_by_player": self.damage_by_player.copy(),
