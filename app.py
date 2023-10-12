@@ -95,6 +95,9 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             rdel(get_staged_game_redis_key(game_id, 0))
             rdel(get_staged_game_redis_key(game_id, 1))
 
+        else:
+            rset_json(get_staged_moves_redis_key(game_id, player_num), bot_move, ex=24 * 60 * 60)
+
         rset_json(get_game_redis_key(game_id), game_from_json.to_json(), ex=24 * 60 * 60)
 
         if have_moved:
