@@ -394,21 +394,18 @@ def join_game(sess):
 def get_game(sess, game_id):
     player_num = int(raw_player_num) if (raw_player_num := request.args.get('playerNum')) is not None else None
 
-    game_json = rget_json(get_game_redis_key(game_id))
+    staged_game_json = rget_json(get_staged_game_redis_key(game_id, player_num))
 
-    if not game_json:
-        return jsonify({"error": "Game not found"}), 404   
+    if staged_game_json:
+        return recurse_to_json(staged_game_json)
+    
+    else:
+        game_json = rget_json(get_game_redis_key(game_id))
 
-    game = Game.from_json(game_json)
+        if not game_json:
+            return jsonify({"error": "Game not found"}), 404   
 
-    first_turn = game.game_state is not None and game.game_state.turn == 1
-
-    if player_num is not None and not first_turn and (hidden_game_info := rget_json(get_game_with_hidden_information_redis_key(game_id))) and hidden_game_info.get(player_num):
-        # Intentionally give a slightly stale game if one exists to the opponent who might have refreshed their page
-        print('Returning the things ')
-        return jsonify(hidden_game_info[player_num])
-
-    return recurse_to_json(game_json)
+        return recurse_to_json(game_json)
 
 
 @app.route('/api/games/<game_id>/take_turn', methods=['POST'])

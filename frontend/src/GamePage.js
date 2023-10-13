@@ -1272,7 +1272,7 @@ export default function GamePage({ }) {
     }, [animating])
 
 
-    const handleReset = () => {
+    const handleReset = (callEndpoint) => {
         setLaneData(null);
         setSelectedCard(null);
         setHandData(null);
@@ -1280,23 +1280,25 @@ export default function GamePage({ }) {
         setYourManaAmount(gameState?.mana_by_player?.[playerNum] || 1);
         // If you also want to reset hand data or any other state, do it here.
 
-        const payload = {
-            playerNum: playerNum,
-        }
+        if (callEndpoint) {
+            const payload = {
+                playerNum: playerNum,
+            }
 
-        fetch(`${URL}/api/games/${gameId}/reset_turn`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        })
+            fetch(`${URL}/api/games/${gameId}/reset_turn`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
             .then(response => response.json())
             .then(data => {
             })
             .catch(error => {
                 console.error("There was an error making the submit API call:", error);
             });
+        }
     };
 
     const pollApiForGameUpdates = async (playAnimations) => {
@@ -1319,7 +1321,7 @@ export default function GamePage({ }) {
                     triggerAnimations(data?.game_state, data?.game_state?.animations || []);
                 }
 
-                handleReset();
+                handleReset(false);
                 setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
             }
             else {
@@ -1334,7 +1336,7 @@ export default function GamePage({ }) {
     const replayAnimations = () => {
         if (animating) return;
         if (gameState?.animations?.length > 0) {
-            handleReset();
+            handleReset(false);
             setGameState(gameState?.animations[0][1]);
             setAnimating(true);
             triggerAnimations(gameState, gameState?.animations || []);
@@ -1619,7 +1621,7 @@ export default function GamePage({ }) {
                             Replay animations
                         </Typography>
                     </Button>}
-                    {!gameOver && !mulliganing && <ResetButton onReset={handleReset} disabled={animating || submittedMove || gameOver} />}
+                    {!gameOver && !mulliganing && <ResetButton onReset={() => handleReset(true)} disabled={animating || submittedMove || gameOver} />}
                     {!gameOver && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleSubmit} disabled={animating || gameOver}>
                         <Typography variant="h6">
                             {submittedMove ? 'Unsubmit' : 'Submit'}
