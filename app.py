@@ -620,7 +620,7 @@ def reset_turn(sess, game_id):
         return jsonify({"error": "Player number is required"}), 400
 
     with rlock(get_staged_game_lock_redis_key(game_id, player_num)):
-        rdel(get_staged_game_lock_redis_key(game_id, player_num))
+        rdel(get_staged_game_redis_key(game_id, player_num))
         rdel(get_staged_moves_redis_key(game_id, player_num))
 
     return jsonify({"gameId": game_id})
