@@ -1336,7 +1336,7 @@ export default function GamePage({ }) {
     const replayAnimations = () => {
         if (animating) return;
         if (gameState?.animations?.length > 0) {
-            handleReset(false);
+            handleReset(true);
             setGameState(gameState?.animations[0][1]);
             setAnimating(true);
             triggerAnimations(gameState, gameState?.animations || []);
