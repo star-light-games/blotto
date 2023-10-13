@@ -606,6 +606,26 @@ def unsubmit_turn(sess, game_id):
                     "game": game.to_json()})
 
 
+@app.route('/api/games/<game_id>/reset_turn', methods=['POST'])
+@api_endpoint
+def reset_turn(sess, game_id):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    player_num = data.get('playerNum')
+
+    if player_num is None:
+        return jsonify({"error": "Player number is required"}), 400
+
+    with rlock(get_staged_game_lock_redis_key(game_id, player_num)):
+        rdel(get_staged_game_lock_redis_key(game_id, player_num))
+        rdel(get_staged_moves_redis_key(game_id, player_num))
+
+    return jsonify({"gameId": game_id})
+
+
 @app.route('/api/games/<game_id>/mulligan', methods=['POST'])
 @api_endpoint
 def mulligan(sess, game_id):

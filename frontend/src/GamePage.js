@@ -1279,6 +1279,24 @@ export default function GamePage({ }) {
         setCardsToLanes({});
         setYourManaAmount(gameState?.mana_by_player?.[playerNum] || 1);
         // If you also want to reset hand data or any other state, do it here.
+
+        const payload = {
+            player_num: playerNum,
+        }
+
+        fetch(`${URL}/api/games/${gameId}/reset_turn`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+            })
+            .catch(error => {
+                console.error("There was an error making the submit API call:", error);
+            });
     };
 
     const pollApiForGameUpdates = async (playAnimations) => {
