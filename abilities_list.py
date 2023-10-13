@@ -14,7 +14,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealShackle': Ability(
         name='OnRevealShackle',
-        description='On reveal: shackle a random enemy character in this lane.',
+        description='On reveal: shackle a random enemy character.',
     ),
     'OnSurviveDamagePump': lambda x, y: Ability(
         name='OnSurviveDamagePump',
@@ -40,24 +40,24 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealPumpFriends': lambda x, y: Ability(
         name='OnRevealPumpFriends',
-        description=f'On reveal: give +{x}/+{y} to all friendly characters in this lane (including myself).',
+        description=f'On reveal: give +{x}/+{y} to other friendly characters.',
         number=x,
         number_2=y,
     ),
     'OnTowerAttackDealMassDamage': lambda x: Ability(
         name='OnTowerAttackDealMassDamage',
-        description=f'When I attack the enemy tower, I deal {x} damage to all enemy characters in this lane.',
+        description=f'When I attack the enemy tower, I deal {x} damage to enemy characters.',
         number=x,
     ),
     'OnRevealPumpAttackers': lambda x, y: Ability(
         name='OnRevealPumpAttackers',
-        description=f'On reveal: give +{x}/+{y} to all friendly attackers in this lane (including myself).',
+        description=f'On reveal: give +{x}/+{y} to other friendly attackers.',
         number=x,
         number_2=y,
     ),
     'PumpCharactersPlayedHere': lambda x, y: Ability(
         name='PumpCharactersPlayedHere',
-        description=f'Whenever you play a character in this lane (including myself), it gets +{x}/+{y}.',
+        description=f'Other characters played here get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
@@ -67,7 +67,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'ShacklesLastExtraTurn': Ability(
         name='ShacklesLastExtraTurn',
-        description='Shackles on enemy characters last an additional turn in this lane.',
+        description='Shackles on enemy characters last an additional turn.',
     ),
     'OnRevealGainMana': lambda x: Ability(
         name='OnRevealGainMana',
@@ -76,16 +76,16 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealShackleAllEnemies': Ability(
         name='OnRevealShackleAllEnemies',
-        description='On reveal: shackle all enemy characters in this lane.',
+        description='On reveal: shackle the enemy characters here.',
     ),
     'ShacklesDealDamage': lambda x: Ability(
         name='ShacklesDealDamage',
-        description=f'When you shackle an enemy character in this lane, deal {x} damage to it.',
+        description=f'When you shackle an enemy character, deal {x} damage to it.',
         number=x,
     ),
     'DealMoreDamageWhenLosing': lambda x: Ability(
         name='DealMoreDamageWhenLosing',
-        description=f'I deal {x} more damage when my team is losing this lane.',
+        description=f'I deal {x} more damage when my team is losing my lane.',
         number=x,
     ),
     'SwitchLanesAfterAttacking': Ability(
@@ -103,13 +103,13 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'CharacterMovesHerePumps': lambda x, y: Ability(
         name='CharacterMovesHerePumps',
-        description=f'Whenever a friendly character switches into this lane, I get +{x}/+{y}.',
+        description=f'Whenever another friendly character switches into this lane, I get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
     'OnRevealHealAllFriendliesAndTowers': lambda x: Ability(
         name='OnRevealHealAllFriendliesAndTowers',
-        description=f'On reveal: fully heal ALL friendly characters and ALL friendly towers for {x}.',
+        description=f'On reveal: fully heal friendly characters in ALL lanes and ALL friendly towers for {x}.',
         number=x,
     ),
     'OnRevealBonusAttack': lambda x: Ability(
@@ -127,7 +127,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'PumpOnFriendlyHeal': lambda x, y: Ability(
         name='PumpOnFriendlyHeal',
-        description=f'Whenever a friendly character in this lane is healed, that character gets +{x}/+{y}.',
+        description=f'Whenever another friendly character is healed, that character gets +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
@@ -143,22 +143,22 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'CharacterMovesHereThatCharacterPumps': lambda x, y: Ability(
         name='CharacterMovesHereThatCharacterPumps',
-        description=f'Whenever a friendly character switches into this lane, it gets +{x}/+{y}.',
+        description=f'Whenever another friendly character switches into this lane, it gets +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
     'OnRevealDamageToAll': lambda x: Ability(
         name='OnRevealDamageToAll',
-        description=f'On reveal: deal {x} damage to ALL characters in this lane (including your own).',
+        description=f'On reveal: deal {x} damage to all characters here (including your own).',
         number=x,
     ),
     'EndOfTurnFullHealForAllFriendlies': Ability(
         name='EndOfTurnFullHealForAllFriendlies',
-        description='At the end of each turn, fully heal all friendly characters in this lane.',
+        description='At the end of each turn, fully heal other friendly characters.',
     ),
     'OnFriendlyHealPumpMyself': lambda x, y: Ability(
         name='OnFriendlyHealPumpMyself',
-        description=f'Whenever a friendly character in this lane is healed, I get +{x}/+{y}.',
+        description=f'Whenever another friendly character is healed, I get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
@@ -180,13 +180,13 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnDamageTowerPumpTeam': lambda x, y: Ability(
         name='OnDamageTowerPumpTeam',
-        description=f'When I damage the enemy tower, all friendly characters in this lane get +{x}/+{y}.',
+        description=f'When I damage the enemy tower, other friendly characters get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
     'OnFriendlySlayPump': lambda x, y: Ability(
         name='OnFriendlySlayPump',
-        description=f'Whenever a friendly character kills an enemy character, I get +{x}/+{y}.',
+        description=f'Whenever another friendly character kills an enemy character, I get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
@@ -201,26 +201,26 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'ShackleOnFriendlyEarth': Ability(
         name='ShackleOnFriendlyEarth',
-        description='When a friendly Earth (green) character is played (including me), shackle a random enemy character in this lane.',
+        description='When another friendly Earth (green) character is played here, shackle a random enemy character.',
     ),
     'OnShackleDrawCard': Ability(
         name='OnShackleDrawCard',
-        description='When you shackle an enemy character in this lane, draw a random card.',
+        description='When you shackle an enemy character, draw a random card.',
     ),
     'OnRevealPumpFriendlyCharactersOfElement': lambda x, y, z: Ability(
         name='OnRevealPumpFriendlyCharactersOfElement',
-        description=f'On reveal: give +{x}/+{y} to all friendly {z} ({element_to_color(z)}) characters in this lane (including myself).',
+        description=f'On reveal: give +{x}/+{y} to other friendly {z} ({element_to_color(z)}) characters.',
         number=x,
         number_2=y,
         creature_type=z,
     ),
     'OnCharacterMoveHereMakeSpirit': Ability(
         name='OnCharacterMoveHereMakeSpirit',
-        description='Whenever a friendly character moves into this lane, make a 3/3 Spirit in another lane.',
+        description='Whenever another friendly character moves into this lane, make a 4/2 Spirit in another lane.',
     ),
     'PumpFriendlyCharactersOfElementPlayedHere': lambda x, y, z: Ability(
         name='PumpFriendlyCharactersOfElementPlayedHere',
-        description=f'Whenever you play a {z} ({element_to_color(z)}) character in this lane (including myself), it gets +{x}/+{y}.',
+        description=f'Whenever you play another {z} ({element_to_color(z)}) character in this lane, it gets +{x}/+{y}.',
         number=x,
         number_2=y,
         creature_type=z,
@@ -235,7 +235,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnCharacterMoveHereShackle': Ability(
         name='OnCharacterMoveHereShackle',
-        description='Whenever a friendly character moves into this lane, shackle a random enemy character in this lane.',
+        description='Whenever a friendly character moves into this lane, shackle a random enemy character.',
     ),
     'SwitchLanesAtEndOfTurn': Ability(
         name='SwitchLanesAtEndOfTurn',
@@ -251,10 +251,10 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealDiscardRandomCardAndDealDamageEqualToCost': Ability(
         name='OnRevealDiscardRandomCardAndDealDamageEqualToCost',
-        description='On reveal: discard a random card and deal damage to a random enemy in this lane equal to its cost.',
+        description='On reveal: discard a random card and deal damage to a random enemy equal to its cost.',
     ),
     'OnRevealAllAttackersMakeBonusAttack': Ability(
         name='OnRevealAllAttackersMakeBonusAttack',
-        description='On reveal: ALL your friendly attackers (including me and across all lanes) make a bonus attack.',
+        description='On reveal: your other friendly attackers in ALL lanes make a bonus attack.',
     ),
 }

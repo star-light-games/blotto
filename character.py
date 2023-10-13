@@ -70,10 +70,11 @@ class Character:
             log.append(f"{self.owner_username}'s {self.template.name} drew a random card.")
         if self.has_ability('OnDamageTowerPumpTeam'):
             for character in self.lane.characters_by_player[self.owner_number]:
-                character.current_attack += self.number_of_ability('OnDamageTowerPumpTeam')
-                character.current_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
-                character.max_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
-                log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
+                if character.id != self.id:
+                    character.current_attack += self.number_of_ability('OnDamageTowerPumpTeam')
+                    character.current_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
+                    character.max_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
+                    log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
 
         if self.has_ability('OnTowerDamageGainMana'):
             game_state.mana_by_player[self.owner_number] += 1
@@ -229,23 +230,23 @@ class Character:
 
         # pump friendly characters with CharacterMovesHerePumps ability
         for character in target_lane.characters_by_player[self.owner_number]:
-            if character.has_ability('CharacterMovesHerePumps'):
+            if character.has_ability('CharacterMovesHerePumps') and character.id != self.id:
                 character.current_attack += character.number_of_ability('CharacterMovesHerePumps')
                 character.current_health += character.number_2_of_ability('CharacterMovesHerePumps')
                 character.max_health += character.number_2_of_ability('CharacterMovesHerePumps')
 
-            if character.has_ability('CharacterMovesHereThatCharacterPumps'):
+            if character.has_ability('CharacterMovesHereThatCharacterPumps') and character.id != self.id:
                 self.current_attack += character.number_of_ability('CharacterMovesHereThatCharacterPumps')
                 self.current_health += character.number_2_of_ability('CharacterMovesHereThatCharacterPumps')
                 self.max_health += character.number_2_of_ability('CharacterMovesHereThatCharacterPumps')
 
-            if character.has_ability('OnCharacterMoveHereMakeSpirit'):
+            if character.has_ability('OnCharacterMoveHereMakeSpirit') and character.id != self.id:
                 lane_to_spawn_in = game_state.find_random_empty_slot_in_other_lane(self.lane.lane_number, self.owner_number)
                 if lane_to_spawn_in is not None:
                     character = Character(CARD_TEMPLATES['Spirit'], lane_to_spawn_in, self.owner_number, game_state.usernames_by_player[self.owner_number])
                     lane_to_spawn_in.characters_by_player[self.owner_number].append(character)
                 
-            if character.has_ability('OnCharacterMoveHereShackle'):
+            if character.has_ability('OnCharacterMoveHereShackle') and character.id != self.id:
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
                 if random_enemy_character is not None:
                     random_enemy_character.shackle(character, log, animations, game_state)
@@ -261,14 +262,16 @@ class Character:
         # pump friendly characters with the PumpOnFriendlyHeal ability
         for character in self.lane.characters_by_player[self.owner_number]:
             if character.has_ability('PumpOnFriendlyHeal'):
-                self.current_attack += character.number_of_ability('PumpOnFriendlyHeal')
-                self.current_health += character.number_2_of_ability('PumpOnFriendlyHeal')
-                self.max_health += character.number_2_of_ability('PumpOnFriendlyHeal')
+                if character.id != self.id:
+                    self.current_attack += character.number_of_ability('PumpOnFriendlyHeal')
+                    self.current_health += character.number_2_of_ability('PumpOnFriendlyHeal')
+                    self.max_health += character.number_2_of_ability('PumpOnFriendlyHeal')
 
             if character.has_ability('OnFriendlyHealPumpMyself'):
-                character.current_attack += character.number_of_ability('OnFriendlyHealPumpMyself')
-                character.current_health += character.number_2_of_ability('OnFriendlyHealPumpMyself')
-                character.max_health += character.number_2_of_ability('OnFriendlyHealPumpMyself')
+                if character.id != self.id:
+                    character.current_attack += character.number_of_ability('OnFriendlyHealPumpMyself')
+                    character.current_health += character.number_2_of_ability('OnFriendlyHealPumpMyself')
+                    character.max_health += character.number_2_of_ability('OnFriendlyHealPumpMyself')
 
 
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState'):
@@ -302,7 +305,7 @@ class Character:
                         }, game_state.to_json()])
         
         for character in self.lane.characters_by_player[self.owner_number]:
-            if character.has_ability('EndOfTurnFullHealForAllFriendlies'):
+            if character.has_ability('EndOfTurnFullHealForAllFriendlies') and character.id != self.id:
                 self.fully_heal()
                 log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
         
@@ -368,10 +371,11 @@ class Character:
 
             if self.has_ability('OnRevealPumpFriends'):
                 for character in self.lane.characters_by_player[self.owner_number]:
-                    character.current_attack += self.number_of_ability('OnRevealPumpFriends')
-                    character.current_health += self.number_2_of_ability('OnRevealPumpFriends')
-                    character.max_health += self.number_2_of_ability('OnRevealPumpFriends')
-                    log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
+                    if character.id != self.id:
+                        character.current_attack += self.number_of_ability('OnRevealPumpFriends')
+                        character.current_health += self.number_2_of_ability('OnRevealPumpFriends')
+                        character.max_health += self.number_2_of_ability('OnRevealPumpFriends')
+                        log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
                 animations.append([
                     {
                         "event_type": "on_reveal",
@@ -385,7 +389,7 @@ class Character:
 
             if self.has_ability('OnRevealPumpAttackers'):
                 for character in self.lane.characters_by_player[self.owner_number]:
-                    if character.is_attacker():
+                    if character.is_attacker() and character.id != self.id:
                         character.current_attack += self.number_of_ability('OnRevealPumpAttackers')
                         character.current_health += self.number_2_of_ability('OnRevealPumpAttackers')
                         character.max_health += self.number_2_of_ability('OnRevealPumpAttackers')
@@ -406,12 +410,12 @@ class Character:
                 game_state.mana_by_player[self.owner_number] += number
                 log.append(f"{self.owner_username}'s {self.template.name} gained {number} mana.")
 
-            attack_buffs = [character.number_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
-            defense_buffs = [character.number_2_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere')]
+            attack_buffs = [character.number_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere') and character.id != self.id]
+            defense_buffs = [character.number_2_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere') and character.id != self.id]
             element_specific_attack_buffs = [character.number_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
-                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)]
+                                                if (character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)) and character.id != self.id]
             element_specific_defense_buffs = [character.number_2_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
-                                                if character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)]
+                                                if (character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)) and character.id != self.id]
             
             lane_attack_buff = self.lane.lane_reward.effect[1] if self.lane.lane_reward is not None and self.lane.lane_reward.effect[0] == 'pumpAllCharactersPlayedHere' else 0
             lane_defense_buff = self.lane.lane_reward.effect[2] if self.lane.lane_reward is not None and self.lane.lane_reward.effect[0] == 'pumpAllCharactersPlayedHere' else 0
@@ -523,14 +527,14 @@ class Character:
 
             if 'Earth' in self.template.creature_types or 'Avatar' in self.template.creature_types:
                 for character in self.lane.characters_by_player[self.owner_number]:
-                    if character.has_ability('ShackleOnFriendlyEarth'):
+                    if character.has_ability('ShackleOnFriendlyEarth') and character.id != self.id:
                         random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
                         if random_enemy_character is not None:
                             random_enemy_character.shackle(character, log, animations, game_state)
             
             if self.has_ability('OnRevealPumpFriendlyCharactersOfElement'):
                 for character in self.lane.characters_by_player[self.owner_number]:
-                    if self.creature_type_of_ability('OnRevealPumpFriendlyCharactersOfElement') in character.template.creature_types or 'Avatar' in character.template.creature_types:
+                    if (self.creature_type_of_ability('OnRevealPumpFriendlyCharactersOfElement') in character.template.creature_types or 'Avatar' in character.template.creature_types) and character.id != self.id:
                         character.current_attack += self.number_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.current_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.max_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
@@ -575,7 +579,7 @@ class Character:
             if self.has_ability('OnRevealAllAttackersMakeBonusAttack'):
                 for lane in game_state.lanes:
                     for character in lane.characters_by_player[self.owner_number]:
-                        if character.is_attacker():
+                        if character.is_attacker() and character.id != self.id:
                             defending_characters = [character for character in lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
                             character.attack(self.owner_number, lane.damage_by_player, defending_characters, lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                
                     lane.process_dying_characters(log, animations, game_state)
