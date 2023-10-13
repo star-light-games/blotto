@@ -274,7 +274,6 @@ class Character:
 
 
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState'):
-        self.has_attacked = False
         self.new = False
 
         if self.shackled_turns > 0:
@@ -315,6 +314,7 @@ class Character:
         if self.has_ability('SwitchLanesAtEndOfTurn'):
             self.switch_lanes(log, animations, game_state)
 
+        self.has_attacked = False
         self.did_end_of_turn = True
 
 
