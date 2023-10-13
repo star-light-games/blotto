@@ -474,7 +474,8 @@ class Character:
                 friendlies = self.lane.characters_by_player[self.owner_number][:]
                 random.shuffle(friendlies)
                 for character in friendlies:
-                    character.switch_lanes(log, animations, game_state)
+                    if not character.id == self.id:
+                        character.switch_lanes(log, animations, game_state)
 
                 animations.append([
                     {

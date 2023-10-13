@@ -321,15 +321,15 @@ CARD_TEMPLATES = {
         abilities=['OnRevealFriendliesSwitchLanes'],
         cost=3,
         attack=4,
-        health=4,
+        health=5,
         creature_types=['Air'],
     ),
     'Monk Gyatso': CardTemplate(
         name='Monk Gyatso',
-        abilities=[('CharacterMovesHereThatCharacterPumps', 1, 2)],
+        abilities=[('CharacterMovesHereThatCharacterPumps', 2, 0)],
         cost=1,
         attack=2,
-        health=3,
+        health=2,
         creature_types=['Air'],
     ),
     'Ghazan': CardTemplate(

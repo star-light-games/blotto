@@ -139,7 +139,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealFriendliesSwitchLanes': Ability(
         name='OnRevealFriendliesSwitchLanes',
-        description='On reveal: all friendly characters in this lane switch lanes.',
+        description='On reveal: other friendly characters here switch lanes.',
     ),
     'CharacterMovesHereThatCharacterPumps': lambda x, y: Ability(
         name='CharacterMovesHereThatCharacterPumps',
