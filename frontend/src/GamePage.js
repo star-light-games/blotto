@@ -1281,7 +1281,7 @@ export default function GamePage({ }) {
         // If you also want to reset hand data or any other state, do it here.
 
         const payload = {
-            player_num: playerNum,
+            playerNum: playerNum,
         }
 
         fetch(`${URL}/api/games/${gameId}/reset_turn`, {
