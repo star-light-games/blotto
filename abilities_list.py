@@ -99,7 +99,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'SwitchLanesInsteadOfDying': Ability(
         name='SwitchLanesInsteadOfDying',
-        description='When I would die for the first time each turn, I heal fully and switch lanes instead.',
+        description='When I would die, I heal fully and switch lanes instead.',
     ),
     'CharacterMovesHerePumps': lambda x, y: Ability(
         name='CharacterMovesHerePumps',

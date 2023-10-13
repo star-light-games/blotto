@@ -130,7 +130,7 @@ class Lane:
                             was_saved = True
                         
 
-            if dying_character.has_ability('SwitchLanesInsteadOfDying') and not dying_character.escaped_death and not was_saved:
+            if dying_character.has_ability('SwitchLanesInsteadOfDying') and not was_saved:
                 if dying_character.switch_lanes(log, animations, game_state, and_fully_heal_if_switching=True):
                     dying_character.escaped_death = True      
             

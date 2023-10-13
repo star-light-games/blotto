@@ -214,7 +214,6 @@ class Character:
 
         target_lane.characters_by_player[self.owner_number].append(self)
         self.lane = target_lane
-        self.has_attacked = False
 
         animations.append([
             {
