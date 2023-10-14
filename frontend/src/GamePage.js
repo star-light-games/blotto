@@ -129,7 +129,9 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
     if (character.shackled_turns > 0) {
         filterStyle += 'brightness(0.5)'; // darken image if shackled_turns is greater than zero
     }
-
+    if (character.silenced) {
+        filterStyle += 'brightness(1.5)'; // brighten image if shackled_turns is greater than zero
+    }
 
     return (
         <Grid container style={{
@@ -1027,6 +1029,9 @@ export default function GamePage({ }) {
         if (arrowType === 'shackle') {
             attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.shackling_character_array_index]?.current?.getBoundingClientRect();
         }
+        else if (arrowType === 'silence') {
+            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.silencing_character_array_index]?.current?.getBoundingClientRect();
+        }
         else if (arrowType === 'heal') {
             attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healing_character_array_index]?.current?.getBoundingClientRect();
         }
@@ -1038,6 +1043,9 @@ export default function GamePage({ }) {
         }
         if (arrowType === 'shackle') {
             defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.player]?.[event.shackled_character_array_index]?.current?.getBoundingClientRect();
+        }
+        else if (arrowType === 'silence') {
+            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.player]?.[event.silenced_character_array_index]?.current?.getBoundingClientRect();
         }
         else if (arrowType === 'heal') {
             defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healed_character_array_index]?.current?.getBoundingClientRect();
@@ -1083,12 +1091,15 @@ export default function GamePage({ }) {
             arrow.classList.add("shackled");
         } else if (arrowType === 'heal') {
             arrow.classList.add("healed");
+        } else if (arrowType === 'silence') {
+            arrow.classList.add("silenced");
         } else if (arrowType === 'switchLanes') {
             arrow.classList.add("switchLanes");
         }
         else {
             arrow.classList.remove("shackled");
             arrow.classList.remove("healed");
+            arrow.classList.remove("silenced");
         }
 
         document.body.appendChild(arrow);
@@ -1231,6 +1242,12 @@ export default function GamePage({ }) {
                     log('shackling character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     showArrowFromCharacterToCharacter(event, 'shackle');
+                    setGameState(newState);
+                    break;
+                case "character_silence":
+                    log('silencing character');
+                    await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                    showArrowFromCharacterToCharacter(event, 'silence');
                     setGameState(newState);
                     break;
                 case "character_heal":

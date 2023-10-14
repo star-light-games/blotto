@@ -24,15 +24,16 @@ class Character:
         self.escaped_death = False
         self.did_on_reveal = False
         self.did_end_of_turn = False
+        self.silenced = False
 
     def is_defender(self):
-        return any([ability.name == 'Defender' for ability in self.template.abilities])
+        return self.has_ability('Defender')
     
     def is_attacker(self):
-        return any([ability.name == 'Attacker' for ability in self.template.abilities]) or self.lane.lane_reward.effect[0] == 'charactersHereFightAsAttackers'
+        return self.has_ability('Attacker') or self.lane.lane_reward.effect[0] == 'charactersHereFightAsAttackers'
     
     def has_ability(self, ability_name):
-        return any([ability_name == ability.name for ability in self.template.abilities])
+        return any([ability_name == ability.name for ability in self.template.abilities]) and not self.silenced
 
     def number_of_ability(self, ability_name) -> int:
         ability = [ability for ability in self.template.abilities if ability.name == ability_name][0]
@@ -108,8 +109,9 @@ class Character:
                do_not_set_has_attacked: bool = False):
         if not do_not_set_has_attacked:
             self.has_attacked = True
+        is_attacker = self.is_attacker()
         defenders = [character for character in defending_characters if character.is_defender() and character.can_fight()]
-        if len(defenders) == 0 and not self.is_attacker():
+        if len(defenders) == 0 and not is_attacker:
             self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
         else:
             if len(defenders) == 0:
@@ -121,7 +123,7 @@ class Character:
                 target_character = random.choice(defenders)
             if target_character is not None:
                 self.fight(target_character, lane_number, log, animations, game_state)
-            if self.is_attacker():
+            if is_attacker:
                 self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
         
         if self.has_ability('SwitchLanesAfterAttacking'):
@@ -142,6 +144,9 @@ class Character:
             defending_character.current_health -= damage_to_deal
             log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_to_deal} damage to the enemy {defending_character.template.name} in Lane {lane_number + 1}. "
                         f"{defending_character.template.name}'s health is now {defending_character.current_health}.")
+
+            if damage_to_deal > 0 and self.has_ability('OnDamageCharacterSilenceIt'):
+                defending_character.silence(self, log, animations, game_state, do_not_animate=True)
 
 
         if defending_character.current_health <= 0 and self.has_ability('OnKillBuffHealth'):
@@ -318,6 +323,24 @@ class Character:
         self.did_end_of_turn = True
 
 
+    def silence(self, silencing_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
+        self.silenced = True
+        self.current_attack = self.template.attack
+        self.current_health = min(self.template.health, self.current_health)
+
+        log.append(f"{silencing_character.owner_username}'s {silencing_character.template.name} silenced {self.owner_username}'s {self.template.name}.")
+        if not do_not_animate:
+            animations.append([{
+                "event_type": "character_silence",
+                "silencing_character_id": silencing_character.id,
+                "silenced_character_id": self.id,
+                "player": 1 - self.owner_number,
+                "lane_number": self.lane.lane_number,
+                "silencing_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(silencing_character.id),
+                "silenced_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+            }, game_state.to_json()])
+
+
     def shackle(self, shackling_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
         num_enemy_characters_that_increase_shackled_turns = len([character for character in self.lane.characters_by_player[1 - self.owner_number] if character.has_ability('ShacklesLastExtraTurn')])
         total_damage_from_shackles = sum([character.number_of_ability('ShacklesDealDamage') for character in self.lane.characters_by_player[1 - self.owner_number] if character.has_ability('ShacklesDealDamage')])
@@ -342,6 +365,53 @@ class Character:
                 "shackled_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
             }, game_state.to_json()])
 
+
+    def do_very_early_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
+        if self.did_on_reveal:
+            return
+
+        attack_buffs = [character.number_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere') and character.id != self.id]
+        defense_buffs = [character.number_2_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere') and character.id != self.id]
+        element_specific_attack_buffs = [character.number_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
+                                            if (character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)) and character.id != self.id]
+        element_specific_defense_buffs = [character.number_2_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
+                                            if (character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)) and character.id != self.id]
+        
+        lane_attack_buff = self.lane.lane_reward.effect[1] if self.lane.lane_reward is not None and self.lane.lane_reward.effect[0] == 'pumpAllCharactersPlayedHere' else 0
+        lane_defense_buff = self.lane.lane_reward.effect[2] if self.lane.lane_reward is not None and self.lane.lane_reward.effect[0] == 'pumpAllCharactersPlayedHere' else 0
+
+        self.current_attack += sum(attack_buffs) + sum(element_specific_attack_buffs) + lane_attack_buff  # type: ignore
+        self.current_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
+        self.max_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
+
+        if self.current_attack < 0:
+            self.current_attack = 0
+
+
+    def do_early_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
+        if self.did_on_reveal:
+            return
+
+        if self.new:
+            if self.has_ability('OnRevealSilenceRandomEnemy'):
+                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.silenced)
+                if random_enemy_character is not None:
+                    random_enemy_character.silence(self, log, animations, game_state)
+
+            if self.has_ability('OnRevealSilenceAllCharacters'):
+                for character in [*self.lane.characters_by_player[1 - self.owner_number], *self.lane.characters_by_player[self.owner_number]]:
+                    if character.id != self.id:
+                        character.silence(self, log, animations, game_state, do_not_animate=True)
+                animations.append([
+                    {
+                        "event_type": "on_reveal",
+                        "revealing_character_id": self.id,
+                        "player": self.owner_number,
+                        "lane_number": self.lane.lane_number,
+                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    },
+                    game_state.to_json(),
+                ])
 
 
     def do_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
@@ -408,23 +478,6 @@ class Character:
                 number = self.number_of_ability('OnRevealGainMana')
                 game_state.mana_by_player[self.owner_number] += number
                 log.append(f"{self.owner_username}'s {self.template.name} gained {number} mana.")
-
-            attack_buffs = [character.number_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere') and character.id != self.id]
-            defense_buffs = [character.number_2_of_ability('PumpCharactersPlayedHere') for character in self.lane.characters_by_player[self.owner_number] if character.has_ability('PumpCharactersPlayedHere') and character.id != self.id]
-            element_specific_attack_buffs = [character.number_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
-                                                if (character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)) and character.id != self.id]
-            element_specific_defense_buffs = [character.number_2_of_ability('PumpFriendlyCharactersOfElementPlayedHere') for character in self.lane.characters_by_player[self.owner_number] 
-                                                if (character.has_ability('PumpFriendlyCharactersOfElementPlayedHere') and (character.creature_type_of_ability('PumpFriendlyCharactersOfElementPlayedHere') in self.template.creature_types or 'Avatar' in self.template.creature_types)) and character.id != self.id]
-            
-            lane_attack_buff = self.lane.lane_reward.effect[1] if self.lane.lane_reward is not None and self.lane.lane_reward.effect[0] == 'pumpAllCharactersPlayedHere' else 0
-            lane_defense_buff = self.lane.lane_reward.effect[2] if self.lane.lane_reward is not None and self.lane.lane_reward.effect[0] == 'pumpAllCharactersPlayedHere' else 0
-
-            self.current_attack += sum(attack_buffs) + sum(element_specific_attack_buffs) + lane_attack_buff  # type: ignore
-            self.current_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
-            self.max_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
-
-            if self.current_attack < 0:
-                self.current_attack = 0
 
             if self.has_ability('HealFriendlyCharacterAndTower'):
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
@@ -611,6 +664,7 @@ class Character:
             "escaped_death": self.escaped_death,         
             "did_on_reveal": self.did_on_reveal,
             "did_end_of_turn": self.did_end_of_turn,
+            "silenced": self.silenced,
             # Can't put lane in here because of infinite recursion
         }
 
@@ -633,4 +687,5 @@ class Character:
         character.escaped_death = json['escaped_death']
         character.did_on_reveal = json['did_on_reveal']
         character.did_end_of_turn = json['did_end_of_turn']
+        character.silenced = json['silenced']
         return character

@@ -596,4 +596,28 @@ CARD_TEMPLATES = {
         health=9,
         creature_types=['Avatar'],
     ),
+    'Ty Lee': CardTemplate(
+        name='Ty Lee',
+        abilities=['OnRevealSilenceRandomEnemy'],
+        cost=3,
+        attack=4,
+        health=4,
+        creature_types=['Fire'],
+    ),
+    'Amon': CardTemplate(
+        name='Amon',
+        abilities=['Attacker', 'OnRevealSilenceAllCharacters'],
+        cost=5,
+        attack=3,
+        health=7,
+        creature_types=['Water'],
+    ),
+    'Thod': CardTemplate(
+        name='Thod',
+        abilities=['Attacker', 'InvincibilityWhileAttacking', 'OnDamageCharacterSilenceIt'],
+        cost=3,
+        attack=1,
+        health=1,
+        creature_types=['Earth'],
+    ),
 }

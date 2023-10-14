@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 import random
 from typing import Optional
 from card_templates_list import CARD_TEMPLATES
@@ -69,8 +69,15 @@ class Lane:
                 character.escaped_death = False
                 character.did_end_of_turn = False
 
-        characters_to_do_on_reveal = [*self.characters_by_player[0], *self.characters_by_player[1]]
+        characters_to_do_on_reveal = [*[character for character in self.characters_by_player[0] if not character.did_on_reveal], 
+                                      *[character for character in self.characters_by_player[1] if not character.did_on_reveal]]
         random.shuffle(characters_to_do_on_reveal)
+
+        for character in characters_to_do_on_reveal:
+            character.do_very_early_on_reveal(log, animations, game_state)
+
+        for character in characters_to_do_on_reveal:
+            character.do_early_on_reveal(log, animations, game_state)
 
         for character in characters_to_do_on_reveal:
             character.do_on_reveal(log, animations, game_state)
@@ -164,8 +171,8 @@ class Lane:
         self.process_dying_characters(log, animations, game_state)
 
 
-    def get_random_enemy_character(self, player_num: int) -> Optional[Character]:
-        characters_available = [character for character in self.characters_by_player[1 - player_num] if character.can_fight()]
+    def get_random_enemy_character(self, player_num: int, exclude_characters: Optional[Callable] = None) -> Optional[Character]:
+        characters_available = [character for character in self.characters_by_player[1 - player_num] if character.can_fight() and (exclude_characters is None or not exclude_characters(character))]
         return random.choice(characters_available) if len(characters_available) > 0 else None
 
 

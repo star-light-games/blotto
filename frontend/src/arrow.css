@@ -23,6 +23,14 @@
   
   .arrow.shackled:after {
     border-left-color: yellow;
+  }
+
+  .arrow.silenced {
+    background-color: white;
+  }
+
+  .arrow.silenced:after {
+    border-left-color: white;
   }  
 
   .arrow.healed {
