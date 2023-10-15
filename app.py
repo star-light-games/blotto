@@ -448,6 +448,11 @@ def take_turn(sess, game_id):
         if have_moved:
             game.game_state.roll_turn()
             rdel(get_game_with_hidden_information_redis_key(game.id))
+            rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
+            rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
+            rdel(get_staged_game_redis_key(game_id, 0))
+            rdel(get_staged_game_redis_key(game_id, 1))
+
 
         if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
             start_new_thread(bot_move_in_game, (game, 1 - player_num))
