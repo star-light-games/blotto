@@ -15,6 +15,17 @@ def main():
         "sess": sess, 
         "DbCard": DbCard,
         "DbDeck": DbDeck,
+        "rget_json": rget_json,
+        "rset_json": rset_json,
+        "rlock": rlock,
+        "rdel": rdel,
+        "get_game_redis_key": get_game_redis_key,
+        "get_game_lock_redis_key": get_game_lock_redis_key,
+        "get_game_with_hidden_information_redis_key": get_game_with_hidden_information_redis_key,
+        "get_staged_game_redis_key": get_staged_game_redis_key,
+        "get_staged_game_lock_redis_key": get_staged_game_lock_redis_key,
+        "get_staged_moves_redis_key": get_staged_moves_redis_key,
+        "get_deck_description_json_from_deck": get_deck_description_json_from_deck,
     }
 
     embed(user_ns=user_ns)
