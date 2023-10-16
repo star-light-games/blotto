@@ -41,16 +41,22 @@ class GameState:
             lane.do_start_of_game(self.log, self.animations, self)
 
     def draw_card(self, player_num: int):
-        if len(self.draw_piles_by_player[player_num]) > 0:
-            self.hands_by_player[player_num].append(self.draw_piles_by_player[player_num][0])
-            self.draw_piles_by_player[player_num] = self.draw_piles_by_player[player_num][1:]
+        if len(self.hands_by_player[player_num]) < 7:
+            if len(self.draw_piles_by_player[player_num]) > 0:
+                self.hands_by_player[player_num].append(self.draw_piles_by_player[player_num][0])
+                self.draw_piles_by_player[player_num] = self.draw_piles_by_player[player_num][1:]
+            else:
+                self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
         else:
-            self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
+            self.log.append(f"{self.usernames_by_player[player_num]} has a full hand.")
         self.run_card_draw_triggers(player_num)
 
     def draw_random_card(self, player_num: int):
-        random_template = random.choice([card_template for card_template in CARD_TEMPLATES.values() if not card_template.not_in_card_pool])
-        self.hands_by_player[player_num].append(Card(random_template))
+        if len(self.hands_by_player[player_num]) < 7:
+            random_template = random.choice([card_template for card_template in CARD_TEMPLATES.values() if not card_template.not_in_card_pool])
+            self.hands_by_player[player_num].append(Card(random_template))
+        else:
+            self.log.append(f"{self.usernames_by_player[player_num]} has a full hand.")
         self.run_card_draw_triggers(player_num)
 
     def run_card_draw_triggers(self, player_num: int):
