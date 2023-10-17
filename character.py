@@ -283,13 +283,6 @@ class Character:
 
         if self.shackled_turns > 0:
             log.append(f"{self.owner_username}'s {self.template.name} is shackled for {self.shackled_turns} more turns.")
-            animations.append([{
-                            "event_type": "character_shackled",
-                            "character_id": self.id,
-                            "character_shackled_turns": self.shackled_turns,
-                            "player": self.owner_number,
-                            "lane_number": self.lane.lane_number,
-                        }, game_state.to_json()])
             self.shackled_turns -= 1
 
 
