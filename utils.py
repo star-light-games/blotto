@@ -55,7 +55,7 @@ def get_deck_description_json_from_deck(deck):
         'cards': [card['name'] for card in deck['card_templates']],
     }
 
-def on_reveal_animation(lane_number: int, acting_player: int, from_character_index: int, game_state: 'GameState'):
+def on_reveal_animation(lane_number: int, acting_player: int, from_character_index: int, game_state: 'GameState') -> dict:
     return {
         "event_type": "OnReveal",
         "data": {
@@ -64,4 +64,4 @@ def on_reveal_animation(lane_number: int, acting_player: int, from_character_ind
             "from_character_index": from_character_index,
         },
         "game_state": game_state.to_json(),
-    },    
+    }
