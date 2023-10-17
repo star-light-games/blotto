@@ -8,6 +8,7 @@ from common_decks import create_common_decks
 from database import SessionLocal
 from db_card import DbCard
 from db_deck import DbDeck, add_db_deck
+from db_game import DbGame
 from deck import Deck
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
@@ -314,11 +315,17 @@ def host_game(sess):
         deck = Deck.from_db_deck(db_deck)
 
     if is_bot_game:
+        player_0_username = username
+        player_1_username = 'RUFUS_THE_ROBOT'
+
         bot_deck = get_bot_deck(sess, deck.name) or deck
         game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
         game.is_bot_by_player[1] = True
         game.start()
         
+        player_0_deck = deck
+        player_1_deck = bot_deck
+
         socketio.emit('update', room=game.id)      
 
         assert game.game_state
@@ -327,7 +334,18 @@ def host_game(sess):
         start_new_thread(bot_move_in_game, (game, 1))
 
     else:
-        game = Game({0: username, 1: None}, {0: deck, 1: None}, id=host_game_id)
+        player_0_username = username
+        player_1_username = None
+        player_0_deck = deck
+        player_1_deck = None
+
+    game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id)
+    sess.add(DbGame(
+        id=game.id,
+        player_0_username=player_0_username,
+        player_1_username=player_1_username,
+    ))
+    sess.commit()
 
     with rlock(get_game_lock_redis_key(game.id)):
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
@@ -385,8 +403,26 @@ def join_game(sess):
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
         socketio.emit('update', room=game.id)
+
+    db_game = sess.query(DbGame).get(game.id)
+    db_game.player_1_username = username
+
+    sess.commit()
     
     return jsonify({"gameId": game.id})
+
+
+@app.route('/api/open_games', methods = ['GET'])
+@api_endpoint
+def get_available_games(sess):
+    game_ids_with_no_player_1 = (
+        sess.query(DbGame)
+        .filter(DbGame.player_1_username.is_(None))
+        .filter(DbGame.created_at > datetime.now() - timedelta(hours=2))
+        .all()
+    )
+
+    return recurse_to_json({'games': game_ids_with_no_player_1})
 
 
 @app.route('/api/games/<game_id>', methods=['GET'])

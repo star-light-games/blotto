@@ -110,6 +110,7 @@ function DeckBuilder({ cards, laneRewards }) {
   const [joinGameId, setJoinGameId] = useState(''); // For entering gameId
   const [drafting, setDrafting] = useState(false);
   const [currentLaneReward, setCurrentLaneReward] = useState(null);
+  const [openGames, setOpenGames] = useState([]);
 
   console.log(laneRewards);
   console.log(currentLaneReward);
@@ -153,11 +154,15 @@ function DeckBuilder({ cards, laneRewards }) {
     });
   };
 
-  const joinGame = () => {
+  const joinGame = (submittedGameId) => {
+    const gameIdToJoin = submittedGameId || joinGameId;
+
+    console.log(`Joining ${gameIdToJoin}`)
+
     const data = {
       deckId: selectedDeck.id,
       username: userName,
-      gameId: joinGameId,
+      gameId: gameIdToJoin,
       rand: Math.random(), // To prevent caching
     };
 
@@ -177,7 +182,7 @@ function DeckBuilder({ cards, laneRewards }) {
       // Handle successful join, if necessary
     })
     .then(() => {
-      navigate(`/game/${joinGameId}?playerNum=1`); // Redirect to the game page
+      navigate(`/game/${gameIdToJoin}?playerNum=1`); // Redirect to the game page
       window.location.reload();
     })
     .catch(error => {
@@ -204,6 +209,18 @@ function DeckBuilder({ cards, laneRewards }) {
   }
 
   useEffect(fetchDecks, [userName]);
+
+  useEffect(() => {
+    fetch(`${URL}/api/open_games?username=${userName}`)
+        .then(response => response.json())
+        .then((data) => {
+            console.log(data);
+            setOpenGames(data?.games || []);
+        })
+        .catch((error) => {
+            console.error('Error fetching open games:', error);
+        });
+}, []);
 
   const addToDeck = (cardName) => {
     setCurrentDeck([...currentDeck, cardName]);
@@ -267,64 +284,89 @@ function DeckBuilder({ cards, laneRewards }) {
         </Card>
 
   <br></br>
-  <Card>
-    <CardContent>
-    <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Decks:</Typography>
-      {decks.map((deck, index) => (
-        <Box 
-          key={index}
-          component="button"
-          display="block"
-          border={deck === selectedDeck ? "2px solid #3f51b5" : "none"} // Highlight if selected
-          borderRadius="4px"
-          padding="10px"
-          margin="5px 0"
-          textAlign="left"
-          onClick={() => setSelectedDeck(deck)}
-        >
-          {deck.name}
-        </Box>
-      ))}
-      {/* Host and Join game actions */}
-      <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
-        <Grid item>
-          <Button variant="contained" color="primary" onClick={() => hostGame(false)} disabled={!selectedDeck}>
-            {selectedDeck ? 'Host Game' : 'Select Deck'}
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button variant="contained" color="primary" onClick={() => hostGame(true)} disabled={!selectedDeck}>
-            {selectedDeck ? 'Play against bot' : 'Select Deck'}
-          </Button>
-        </Grid>
-        <Grid item>
-          {/* Display Game ID when hosting a game */}
-          {hostGameId && (
-            <Typography variant="h6" style={{ marginTop: '20px' }}>
-              Game ID: <Link to={`/game/${hostGameId}?playerNum=0`}>{hostGameId}</Link>
-            </Typography>
-          )}
-        </Grid>
-        </Grid>
+  <Grid container spacing={3}>
+    <Grid item xs={8}>
+      <Card>
+        <CardContent>
+        <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Decks:</Typography>
+          {decks.map((deck, index) => (
+            <Box 
+              key={index}
+              component="button"
+              display="block"
+              border={deck === selectedDeck ? "2px solid #3f51b5" : "none"} // Highlight if selected
+              borderRadius="4px"
+              padding="10px"
+              margin="5px 0"
+              textAlign="left"
+              onClick={() => setSelectedDeck(deck)}
+            >
+              {deck.name}
+            </Box>
+          ))}
+          {/* Host and Join game actions */}
+          <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
+            <Grid item>
+              <Button variant="contained" color="primary" onClick={() => hostGame(false)} disabled={!selectedDeck}>
+                {selectedDeck ? 'Host Game' : 'Select Deck'}
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button variant="contained" color="primary" onClick={() => hostGame(true)} disabled={!selectedDeck}>
+                {selectedDeck ? 'Play against bot' : 'Select Deck'}
+              </Button>
+            </Grid>
+            <Grid item>
+              {/* Display Game ID when hosting a game */}
+              {hostGameId && (
+                <Typography variant="h6" style={{ marginTop: '20px' }}>
+                  Game ID: <Link to={`/game/${hostGameId}?playerNum=0`}>{hostGameId}</Link>
+                </Typography>
+              )}
+            </Grid>
+            </Grid>
 
-      <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
-        <Grid item>
-          <TextField 
-            variant="outlined"
-            label="Game ID"
-            value={joinGameId}
-            onChange={(e) => setJoinGameId(e.target.value)}
-          />
-        </Grid>
-        <Grid item>
-          <Button variant="contained" color="secondary" onClick={joinGame} disabled={!selectedDeck}>
-            {selectedDeck ? 'Join Game' : 'Select Deck'}
-          </Button>
-        </Grid>
+          <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
+            <Grid item>
+              <TextField 
+                variant="outlined"
+                label="Game ID"
+                value={joinGameId}
+                onChange={(e) => setJoinGameId(e.target.value)}
+              />
+            </Grid>
+            <Grid item>
+              <Button variant="contained" color="secondary" onClick={joinGame} disabled={!selectedDeck}>
+                {selectedDeck ? 'Join Game' : 'Select Deck'}
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Grid>
+    <Grid item xs={4}>
+    <Card>
+              <CardContent>
+                  {selectedDeck ? <Typography variant="h6">Open Games:</Typography> : <Typography variant="h6">Select a deck</Typography>}
+                  {openGames.map((game, index) => (
+                      <Box 
+                          key={index}
+                          display="block"
+                          borderRadius="4px"
+                          padding="10px"
+                          margin="5px 0"
+                          textAlign="left"
+                      >
+                        <Button onClick={() => joinGame(game.id)} disabled={!selectedDeck} variant="contained">
+                          {`${game.player_0_username}'s game`}
+                        </Button>
+                      </Box>
+                  ))}
+              </CardContent>
+          </Card>
       </Grid>
-    </CardContent>
-  </Card>
-  
+  </Grid>      
+
   {/*space between the two cards*/}
   <br></br>
 
