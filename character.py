@@ -1,7 +1,7 @@
 import random
 from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
-from utils import generate_unique_id
+from utils import generate_unique_id, on_reveal_animation
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from lane import Lane
@@ -87,14 +87,14 @@ class Character:
             print('Attacking character not found')
             attacking_character_array_index = None
 
-        animations.append([{
-                        "event_type": "tower_damage",
-                        "attacking_character_id": self.id,
-                        "lane_number": lane_number,
-                        "lane_damage_post_attack": damage_by_player[self.owner_number],
-                        "attacking_player": self.owner_number,
-                        "attacking_character_array_index": attacking_character_array_index,
-                    }, game_state.to_json()])
+        animations.append({
+                    "event_type": "TowerDamage",
+                    'data': {
+                        "lane": lane_number,
+                        "acting_player": self.owner_number,
+                        "from_character_index": attacking_character_array_index,
+                    }, 
+                    'game_state': game_state.to_json()})
 
         self.lane.maybe_give_lane_reward(attacking_player, game_state, log, animations)
 
@@ -158,16 +158,7 @@ class Character:
             defending_character.current_attack += defending_character.number_of_ability('OnSurviveDamagePump')
             defending_character.current_health += defending_character.number_2_of_ability('OnSurviveDamagePump')
             defending_character.max_health += defending_character.number_2_of_ability('OnSurviveDamagePump')
-            log.append(f"{defending_character.owner_username}'s {defending_character.template.name} got +1/+1 for surviving damage.")
-            animations.append([{
-                            "event_type": "character_pump",
-                            "defending_character_id": defending_character.id,
-                            "defending_character_health_post_pump": defending_character.current_health,
-                            "defending_character_attack_post_pump": defending_character.current_attack,
-                            "lane_number": lane_number,
-                            "attacking_player": self.owner_number,
-                            "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                        }, game_state.to_json()])
+            log.append(f"{defending_character.owner_username}'s {defending_character.template.name} got +{defending_character.number_of_ability('OnSurviveDamagePump')}/+{defending_character.number_2_of_ability('OnSurviveDamagePump')} for surviving damage.")
 
     def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState'):
         defender_starting_current_attack = defending_character.current_health if defending_character.has_ability('DealDamageEqualToCurrentHealth') else defending_character.current_attack
@@ -175,16 +166,16 @@ class Character:
         if not self.has_ability('InvincibilityWhileAttacking'):
             defending_character.punch(self, lane_number, log, animations, game_state, starting_current_attack=defender_starting_current_attack)
 
-        animations.append([{
-                        "event_type": "character_attack",
-                        "attacking_character_id": self.id,
-                        "defending_character_id": defending_character.id,
-                        "defending_character_health_post_attack": defending_character.current_health,
-                        "lane_number": lane_number,
-                        "attacking_player": self.owner_number,
-                        "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                        "defending_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),
-                    }, game_state.to_json()])
+        animations.append({
+                        "event_type": "CharacterAttack",
+                        "data": {
+                            "lane": lane_number,
+                            "acting_player": self.owner_number,
+                            "from_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                            "to_character_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),                            
+                        },
+                        "game_state": game_state.to_json(),
+                    })
 
         if defending_character.current_health <= 0 and self.has_ability('OnKillSwitchLanes'):
             self.switch_lanes(log, animations, game_state)
@@ -220,17 +211,19 @@ class Character:
         target_lane.characters_by_player[self.owner_number].append(self)
         self.lane = target_lane
 
-        animations.append([
+        animations.append(
             {
-                "event_type": "character_switch_lanes",
-                "player": self.owner_number,
-                "original_spot_array_index": original_spot_array_index,
-                "original_lane_number": original_lane_number,
-                "new_spot_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                "new_lane_number": self.lane.lane_number,
-            },
-            game_state.to_json()
-        ])
+                "event_type": "CharacterSwitchLanes",
+                "data": {
+                    "acting_player": self.owner_number,
+                    "from_character_index": original_spot_array_index,
+                    "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                    "lane": original_lane_number,
+                    "to_lane": self.lane.lane_number,
+                },
+                "game_state": game_state.to_json(),
+            }
+        )
 
         # pump friendly characters with CharacterMovesHerePumps ability
         for character in target_lane.characters_by_player[self.owner_number]:
@@ -292,13 +285,6 @@ class Character:
         if self.has_ability('EndOfTurnFullHeal'):
             self.fully_heal()
             log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
-            animations.append([{
-                            "event_type": "character_heal",
-                            "character_id": self.id,
-                            "character_health_post_heal": self.current_health,
-                            "player": self.owner_number,
-                            "lane_number": self.lane.lane_number,
-                        }, game_state.to_json()])
         
         for character in self.lane.characters_by_player[self.owner_number]:
             if character.has_ability('EndOfTurnFullHealForAllFriendlies') and character.id != self.id:
@@ -323,15 +309,16 @@ class Character:
 
         log.append(f"{silencing_character.owner_username}'s {silencing_character.template.name} silenced {self.owner_username}'s {self.template.name}.")
         if not do_not_animate:
-            animations.append([{
-                "event_type": "character_silence",
-                "silencing_character_id": silencing_character.id,
-                "silenced_character_id": self.id,
-                "player": 1 - self.owner_number,
-                "lane_number": self.lane.lane_number,
-                "silencing_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(silencing_character.id),
-                "silenced_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-            }, game_state.to_json()])
+            animations.append({
+                "event_type": "CharacterSilence",
+                "data": {
+                    "lane": self.lane.lane_number,
+                    "acting_player": 1 - self.owner_number,
+                    "from_character_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(silencing_character.id),
+                    "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                },
+                "game_state": game_state.to_json(),
+            })
 
 
     def shackle(self, shackling_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
@@ -347,16 +334,16 @@ class Character:
 
         log.append(f"{shackling_character.owner_username}'s {shackling_character.template.name} shackled {self.owner_username}'s {self.template.name}.")
         if not do_not_animate:
-            animations.append([{
-                "event_type": "character_shackle",
-                "shackling_character_id": shackling_character.id,
-                "shackled_character_id": self.id,
-                "character_shackled_turns": self.shackled_turns,
-                "player": 1 - self.owner_number,
-                "lane_number": self.lane.lane_number,
-                "shackling_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(shackling_character.id),
-                "shackled_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-            }, game_state.to_json()])
+            animations.append({
+                "event_type": "CharacterShackle",
+                "data": {
+                    "lane": self.lane.lane_number,
+                    "acting_player": 1 - self.owner_number,
+                    "from_character_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(shackling_character.id),
+                    "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                },
+                "game_state": game_state.to_json(),                
+            })
 
 
     def do_very_early_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
@@ -395,16 +382,9 @@ class Character:
                 for character in [*self.lane.characters_by_player[1 - self.owner_number], *self.lane.characters_by_player[self.owner_number]]:
                     if character.id != self.id:
                         character.silence(self, log, animations, game_state, do_not_animate=True)
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
 
 
     def do_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
@@ -419,16 +399,9 @@ class Character:
             if self.has_ability('OnRevealShackleAllEnemies'):
                 for character in self.lane.characters_by_player[1 - self.owner_number]:
                     character.shackle(self, log, animations, game_state, do_not_animate=True)
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
 
 
             if self.has_ability('OnRevealPumpFriends'):
@@ -438,16 +411,9 @@ class Character:
                         character.current_health += self.number_2_of_ability('OnRevealPumpFriends')
                         character.max_health += self.number_2_of_ability('OnRevealPumpFriends')
                         log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
 
             if self.has_ability('OnRevealPumpAttackers'):
                 for character in self.lane.characters_by_player[self.owner_number]:
@@ -456,16 +422,9 @@ class Character:
                         character.current_health += self.number_2_of_ability('OnRevealPumpAttackers')
                         character.max_health += self.number_2_of_ability('OnRevealPumpAttackers')
                         log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
 
             if self.has_ability('OnRevealGainMana'):
                 number = self.number_of_ability('OnRevealGainMana')
@@ -476,18 +435,18 @@ class Character:
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
                 if random_friendly_damaged_character is not None:
                     random_friendly_damaged_character.fully_heal()
-                    animations.append([
+                    animations.append(
                         {
-                            "event_type": "character_heal",
-                            "character_id": random_friendly_damaged_character.id,
-                            "character_health_post_heal": random_friendly_damaged_character.current_health,
-                            "player": self.owner_number,
-                            "lane_number": self.lane.lane_number,
-                            "healed_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(random_friendly_damaged_character.id),
-                            "healing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                            "event_type": "CharacterHeal",
+                            "data": {
+                                "acting_player": self.owner_number,
+                                "lane": self.lane.lane_number,
+                                "from_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                                "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(random_friendly_damaged_character.id),
+                            },
+                            "game_state": game_state.to_json(),
                         },
-                        game_state.to_json(),
-                    ])
+                    )
                 self.lane.damage_by_player[1 - self.owner_number] = max(0, self.lane.damage_by_player[1 - self.owner_number] - self.number_of_ability('HealFriendlyCharacterAndTower'))
 
             if self.has_ability('OnRevealHealAllFriendliesAndTowers'):
@@ -495,16 +454,9 @@ class Character:
                     for character in lane.characters_by_player[self.owner_number]:
                         character.fully_heal()
                     lane.damage_by_player[1 - self.owner_number] = max(0, lane.damage_by_player[1 - self.owner_number] - self.number_of_ability('OnRevealHealAllFriendliesAndTowers'))
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
 
             if self.has_ability('OnRevealBonusAttack'):
                 for _ in range(self.number_of_ability('OnRevealBonusAttack')):
@@ -518,20 +470,13 @@ class Character:
             if self.has_ability('OnRevealFriendliesSwitchLanes'):
                 friendlies = self.lane.characters_by_player[self.owner_number][:]
                 random.shuffle(friendlies)
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )                
                 for character in friendlies:
                     if not character.id == self.id:
                         character.switch_lanes(log, animations, game_state)
 
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
 
             if self.has_ability('OnRevealDamageToAll'):
                 damage_amount = self.number_of_ability('OnRevealDamageToAll')
@@ -539,16 +484,9 @@ class Character:
                     character.current_health -= damage_amount
                     log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_amount} damage to {character.owner_username}'s {character.template.name} in Lane {self.lane.lane_number + 1}. "
                                 f"{character.template.name}'s health is now {character.current_health}.")
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
                 self.lane.process_dying_characters(log, animations, game_state)
 
             if self.has_ability('OnRevealDrawCards'):
@@ -560,16 +498,9 @@ class Character:
                 damage_amount = self.number_of_ability('OnRevealDamageSelf')
                 self.current_health -= damage_amount
                 log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_amount} damage to itself.")
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
 
             if 'Earth' in self.template.creature_types or 'Avatar' in self.template.creature_types:
                 for character in self.lane.characters_by_player[self.owner_number]:
@@ -584,16 +515,9 @@ class Character:
                         character.current_attack += self.number_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.current_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
                         character.max_health += self.number_2_of_ability('OnRevealPumpFriendlyCharactersOfElement')
-                animations.append([
-                    {
-                        "event_type": "on_reveal",
-                        "revealing_character_id": self.id,
-                        "player": self.owner_number,
-                        "lane_number": self.lane.lane_number,
-                        "revealing_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                    },
-                    game_state.to_json(),
-                ])
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
 
             if self.has_ability('OnRevealFillEnemyLaneWithCabbages'):
                 while len(self.lane.characters_by_player[1 - self.owner_number]) < 4:
@@ -609,16 +533,16 @@ class Character:
                     if defending_character is not None:
                         defending_character.current_health -= damage_to_deal
 
-                        animations.append([{
-                            "event_type": "character_attack",
-                            "attacking_character_id": self.id,
-                            "defending_character_id": defending_character.id,
-                            "defending_character_health_post_attack": defending_character.current_health,
-                            "lane_number": self.lane.lane_number,
-                            "attacking_player": self.owner_number,
-                            "attacking_character_array_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                            "defending_character_array_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),
-                        }, game_state.to_json()])
+                        animations.append({
+                            "event_type": "CharacterAttack",
+                            "data": {
+                                "lane": self.lane.lane_number,
+                                "acting_player": self.owner_number,
+                                "from_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                                "to_character_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),                            
+                            },
+                            "game_state": game_state.to_json(),
+                        })
 
                         self.lane.process_dying_characters(log, animations, game_state) 
 

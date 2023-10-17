@@ -2,6 +2,10 @@ import secrets
 import random
 import math
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from game_state import GameState
+
 
 def generate_unique_id():
     return secrets.token_hex(10)
@@ -50,3 +54,14 @@ def get_deck_description_json_from_deck(deck):
         'name': deck['name'],
         'cards': [card['name'] for card in deck['card_templates']],
     }
+
+def on_reveal_animation(lane_number: int, acting_player: int, from_character_index: int, game_state: 'GameState'):
+    return {
+        "event_type": "OnReveal",
+        "data": {
+            "lane": lane_number,
+            "acting_player": acting_player,
+            "from_character_index": from_character_index,
+        },
+        "game_state": game_state.to_json(),
+    },    

@@ -123,14 +123,6 @@ class Lane:
         dying_characters = [character for character in self.characters_by_player[0] + self.characters_by_player[1] if character.current_health <= 0]
 
         for dying_character in dying_characters:
-            animations.append([{
-                "event": "character_dies", 
-                "dying_character_id": dying_character.id,
-                "dying_character_lane_number": self.lane_number,
-                "dying_character_player": dying_character.owner_number,
-                "dying_character_index": [c.id for c in self.characters_by_player[dying_character.owner_number]].index(dying_character.id),
-            }, game_state.to_json()])
-
             was_saved = False
             for lane in shuffled([lane for lane in game_state.lanes if not lane.lane_number == self.lane_number]):
                 for character in lane.characters_by_player[dying_character.owner_number]:

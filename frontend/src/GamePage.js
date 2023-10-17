@@ -45,7 +45,7 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
     const opponentHandSize = (gameState && gameState.hands_by_player)
         ? gameState.hands_by_player[opponentNum].length
         : 0;
-    const turnNumber = game?.game_state?.turn || 0;
+    const turnNumber = game?.game_info?.game_state?.turn || 0;
 
     return (
         <Card variant="outlined">
@@ -1026,35 +1026,15 @@ export default function GamePage({ }) {
         let attackingCharacterPos;
         let defendingCharacterPos;
 
-        if (arrowType === 'shackle') {
-            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.shackling_character_array_index]?.current?.getBoundingClientRect();
-        }
-        else if (arrowType === 'silence') {
-            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.silencing_character_array_index]?.current?.getBoundingClientRect();
-        }
-        else if (arrowType === 'heal') {
-            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healing_character_array_index]?.current?.getBoundingClientRect();
+        attackingCharacterPos = characterRefs?.current?.[event.lane]?.[event.acting_player]?.[event.from_character_index]?.current?.getBoundingClientRect();
+        if (arrowType === 'heal') {
+            defendingCharacterPos = characterRefs?.current?.[event.lane]?.[event.acting_player]?.[event.to_character_index]?.current?.getBoundingClientRect();
         }
         else if (arrowType === 'switchLanes') {
-            attackingCharacterPos = characterRefs?.current?.[event.original_lane_number]?.[event.player]?.[event.original_spot_array_index]?.current?.getBoundingClientRect();
+            defendingCharacterPos = characterRefs?.current?.[event.to_lane]?.[event.acting_player]?.[event.to_character_index]?.current?.getBoundingClientRect();
         }
         else {
-            attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
-        }
-        if (arrowType === 'shackle') {
-            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.player]?.[event.shackled_character_array_index]?.current?.getBoundingClientRect();
-        }
-        else if (arrowType === 'silence') {
-            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.player]?.[event.silenced_character_array_index]?.current?.getBoundingClientRect();
-        }
-        else if (arrowType === 'heal') {
-            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.healed_character_array_index]?.current?.getBoundingClientRect();
-        }
-        else if (arrowType === 'switchLanes') {
-            defendingCharacterPos = characterRefs?.current?.[event.new_lane_number]?.[event.player]?.[event.new_spot_array_index]?.current?.getBoundingClientRect();
-        }
-        else {
-            defendingCharacterPos = characterRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.[event.defending_character_array_index]?.current?.getBoundingClientRect();
+            defendingCharacterPos = characterRefs?.current?.[event.lane]?.[1 - event.acting_player]?.[event.to_character_index]?.current?.getBoundingClientRect();
         }
 
 
@@ -1100,6 +1080,7 @@ export default function GamePage({ }) {
             arrow.classList.remove("shackled");
             arrow.classList.remove("healed");
             arrow.classList.remove("silenced");
+            arrow.classList.remove("switchLanes");
         }
 
         document.body.appendChild(arrow);
@@ -1119,8 +1100,8 @@ export default function GamePage({ }) {
         log(towerRefs);
         log(event);
 
-        const attackingCharacterPos = characterRefs?.current?.[event.lane_number]?.[event.attacking_player]?.[event.attacking_character_array_index]?.current?.getBoundingClientRect();
-        const defendingTowerPos = towerRefs?.current?.[event.lane_number]?.[1 - event.attacking_player]?.current?.getBoundingClientRect();
+        const attackingCharacterPos = characterRefs?.current?.[event.lane]?.[event.acting_player]?.[event.from_character_index]?.current?.getBoundingClientRect();
+        const defendingTowerPos = towerRefs?.current?.[event.lane]?.[1 - event.acting_player]?.current?.getBoundingClientRect();
 
         if (!attackingCharacterPos) {
             log('Attacking character position not found!')
@@ -1165,7 +1146,7 @@ export default function GamePage({ }) {
     }
 
     const highlightRevealingCharacter = (event) => {
-        const characterElement = characterRefs?.current?.[event.lane_number]?.[event.player]?.[event.revealing_character_array_index]?.current;
+        const characterElement = characterRefs?.current?.[event.lane]?.[event.acting_player]?.[event.from_character_index]?.current;
 
         if (characterElement) {
             // Add the highlighting class
@@ -1181,13 +1162,13 @@ export default function GamePage({ }) {
     const opponentManaAmount = gameState?.mana_by_player?.[opponentNum] || 1;
 
     const gameOver = gameState?.turn > 9;
-    const lane1winner = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
-    const lane2winner = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
-    const lane3winner = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
+    const lane1winner = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_info?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
+    const lane2winner = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_info?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
+    const lane3winner = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_info?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
 
-    const lane1tied = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] === game?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
-    const lane2tied = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] === game?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
-    const lane3tied = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] === game?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
+    const lane1tied = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] === game?.game_info?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
+    const lane2tied = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] === game?.game_info?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
+    const lane3tied = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] === game?.game_info?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
 
     const totalFriendlyDamage = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] + gameState?.lanes?.[1]?.damage_by_player?.[playerNum] + gameState?.lanes?.[2]?.damage_by_player?.[playerNum];
     const totalEnemyDamage = gameState?.lanes?.[0]?.damage_by_player?.[opponentNum] + gameState?.lanes?.[1]?.damage_by_player?.[opponentNum] + gameState?.lanes?.[2]?.damage_by_player?.[opponentNum];
@@ -1215,60 +1196,61 @@ export default function GamePage({ }) {
         log('Triggering animations!');
         log(animationQueue);
 
-        for (let [event, newState] of animationQueue) {
+        for (let event of animationQueue) {
             // Trigger the animation based on the event
+            const newState = event.game_state;
             log(event.event_type)
             console.log(gameState);
             console.log(game);
             console.log(newState);
             switch (event.event_type) {
-                case "start_of_roll":
+                case "StartOfRoll":
                     setGameState(newState);
                     break;
-                case "character_attack":
+                case "CharacterAttack":
                     // Run your animation function, e.g., showArrowToTower(event);
                     log('attacking character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                    showArrowFromCharacterToCharacter(event, null);
+                    showArrowFromCharacterToCharacter(event.data, null);
                     setGameState(newState);
                     break;
-                case "tower_damage":
+                case "TowerDamage":
                     log('attacking tower');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                    showArrowFromCharacterToTower(event);
+                    showArrowFromCharacterToTower(event.data);
                     setGameState(newState);
                     break;
-                case "character_shackle":
+                case "CharacterShackle":
                     log('shackling character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                    showArrowFromCharacterToCharacter(event, 'shackle');
+                    showArrowFromCharacterToCharacter(event.data, 'shackle');
                     setGameState(newState);
                     break;
-                case "character_silence":
+                case "CharacterSilence":
                     log('silencing character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                    showArrowFromCharacterToCharacter(event, 'silence');
+                    showArrowFromCharacterToCharacter(event.data, 'silence');
                     setGameState(newState);
                     break;
-                case "character_heal":
+                case "CharacterHeal":
                     log('healing character');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                    showArrowFromCharacterToCharacter(event, 'heal');
+                    showArrowFromCharacterToCharacter(event.data, 'heal');
                     setGameState(newState);
                     break;
-                case "on_reveal":
+                case "OnReveal":
                     log('revealing card');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                    highlightRevealingCharacter(event);
+                    highlightRevealingCharacter(event.data);
                     setGameState(newState);
                     break;
-                case "character_switch_lanes":
+                case "CharacterSwitchLanes":
                     log('switching lanes');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
-                    showArrowFromCharacterToCharacter(event, 'switchLanes');
+                    showArrowFromCharacterToCharacter(event.data, 'switchLanes');
                     setGameState(newState);
                     break;
-                case "end_of_roll":
+                case "EndOfRoll":
                     setGameState(newState);
                     break;
             }
@@ -1324,25 +1306,25 @@ export default function GamePage({ }) {
             const data = await response.json();
 
             // Check the data for the conditions you want. For example:
-            if (!data.game_state.has_moved_by_player[playerNum]) {
+            if (!data.game_info.game_state.has_moved_by_player[playerNum]) {
                 setSubmittedMove(false);
                 setGame(data);
-                if (data?.game_state?.animations?.length > 0 && playAnimations) {
-                    setGameState(data?.game_state?.animations[0][1]);
+                if (data?.game_info?.animations?.length > 0 && playAnimations) {
+                    setGameState(data?.game_info?.animations[0]?.game_state);
                 }
                 else {
-                    setGameState(data?.game_state);
+                    setGameState(data?.game_info?.game_state);
                 }
-                if (!animating && playAnimations && data?.game_state?.animations?.length > 0) {
+                if (!animating && playAnimations && data?.game_info?.animations?.length > 0) {
                     setAnimating(true);
-                    triggerAnimations(data?.game_state, data?.game_state?.animations || []);
+                    triggerAnimations(data?.game_info?.game_state, data?.game_info?.animations || []);
                 }
 
                 handleReset(false);
-                setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
+                setYourManaAmount(data?.game_info?.game_state?.mana_by_player?.[playerNum] || 1);
             }
             else {
-                setGameState(data?.game_state);
+                setGameState(data?.game_info?.game_state);
             }
         } catch (error) {
             console.error("Error while polling:", error);
@@ -1352,9 +1334,9 @@ export default function GamePage({ }) {
     
     const replayAnimations = () => {
         if (animating) return;
-        if (gameState?.animations?.length > 0) {
+        if (game?.game_info?.animations?.length > 0) {
             handleReset(true);
-            setGameState(gameState?.animations[0][1]);
+            setGameState(game?.game_info?.animations[0]?.game_state);
             setAnimating(true);
             triggerAnimations(gameState, gameState?.animations || []);
         }
@@ -1396,11 +1378,11 @@ export default function GamePage({ }) {
             .then(res => res.json())
             .then(data => {
                 setGame(data);
-                setGameState(data?.game_state);
+                setGameState(data?.game_info?.game_state);
                 setLoading(false);
-                setLaneData(data.game_state.lanes);
-                setYourManaAmount(data?.game_state.mana_by_player?.[playerNum] || 1);
-                if (data.game_state.has_moved_by_player[playerNum]) {
+                setLaneData(data?.game_info?.game_state?.lanes);
+                setYourManaAmount(data?.game_info?.game_state.mana_by_player?.[playerNum] || 1);
+                if (data.game_info.game_state.has_moved_by_player[playerNum]) {
                     setSubmittedMove(true);
                 }
             })
@@ -1484,7 +1466,7 @@ export default function GamePage({ }) {
             .then(data => {
                 console.log(data);
                 setGame(data.game);
-                setGameState(data.game.game_state);
+                setGameState(data.game?.game_info?.game_state);
                 // Handle the response as required (e.g. update local state, or navigate elsewhere)
             })
         };

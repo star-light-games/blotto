@@ -31,8 +31,8 @@ CORS(app)
 
 
 def bot_move_in_game(game: Game, player_num: int) -> None:
-    assert game.game_state 
-    bot_move = find_bot_move(player_num, game.game_state)
+    assert game.game_info 
+    bot_move = find_bot_move(player_num, game.game_info.game_state)
     print('The bot has chosen the following move: ', bot_move)
     game_id = game.id
     with rlock(get_game_lock_redis_key(game_id)):
@@ -44,7 +44,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         # Should be redundant, but I think there's some issue on the first turn where this sometimes isn't true
         game_from_json.is_bot_by_player[player_num] = True 
 
-        assert game_from_json.game_state
+        assert game_from_json.game_info
 
         # if not game.game_state.has_moved_by_player[1 - player_num]:
         #     rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
@@ -70,13 +70,13 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         #     except Exception:
         #         print(f'The bot tried to play an invalid move: {bot_move} again. Giving up.')
 
-        game_from_json.game_state.has_moved_by_player[player_num] = True        
+        game_from_json.game_info.game_state.has_moved_by_player[player_num] = True        
 
-        have_moved = game_from_json.game_state.all_players_have_moved()
+        have_moved = game_from_json.game_info.game_state.all_players_have_moved()
         if have_moved:
             for card_id, lane_number in bot_move.items():
                 try:
-                    game_from_json.game_state.play_card(player_num, card_id, lane_number)
+                    game_from_json.game_info.game_state.play_card(player_num, card_id, lane_number)
                 except Exception:
                     print(f'The bot tried to play an invalid move: {bot_move}.')
                     continue
@@ -84,12 +84,12 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             staged_moves_for_other_player = rget_json(get_staged_moves_redis_key(game_id, 1 - player_num)) or {}
             for card_id, lane_number in staged_moves_for_other_player.items():
                 try:
-                    game_from_json.game_state.play_card(1 - player_num, card_id, lane_number)
+                    game_from_json.game_info.game_state.play_card(1 - player_num, card_id, lane_number)
                 except Exception:
                     print(f'The player tried to play an invalid move: {bot_move}.')
                     continue
 
-            game_from_json.game_state.roll_turn()
+            game_from_json.game_info.roll_turn()
             rdel(get_game_with_hidden_information_redis_key(game.id))
             rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
             rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
@@ -315,21 +315,24 @@ def host_game(sess):
         deck = Deck.from_db_deck(db_deck)
 
     if is_bot_game:
+
+        print('hello we are starting a bot game')
         player_0_username = username
         player_1_username = 'RUFUS_THE_ROBOT'
 
         bot_deck = get_bot_deck(sess, deck.name) or deck
-        game = Game({0: username, 1: 'RUFUS_THE_ROBOT'}, {0: deck, 1: bot_deck}, id=host_game_id)
-        game.is_bot_by_player[1] = True
-        game.start()
         
         player_0_deck = deck
         player_1_deck = bot_deck
 
+        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id)
+        game.is_bot_by_player[1] = True
+        game.start()
+
         socketio.emit('update', room=game.id)      
 
-        assert game.game_state
-        bot_take_mulligan(game.game_state, 1)
+        assert game.game_info
+        bot_take_mulligan(game.game_info.game_state, 1)
 
         start_new_thread(bot_move_in_game, (game, 1))
 
@@ -339,13 +342,17 @@ def host_game(sess):
         player_0_deck = deck
         player_1_deck = None
 
-    game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id)
+        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id)
+
     sess.add(DbGame(
         id=game.id,
         player_0_username=player_0_username,
         player_1_username=player_1_username,
     ))
     sess.commit()
+
+    print(game.game_info)
+    print(game.rematch_game_id)
 
     with rlock(get_game_lock_redis_key(game.id)):
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
@@ -471,18 +478,18 @@ def take_turn(sess, game_id):
 
         player_num = game.username_to_player_num(username)
         assert player_num is not None
-        assert game.game_state is not None
+        assert game.game_info is not None
 
-        if not game.game_state.has_moved_by_player[1 - player_num]:
+        if not game.game_info.game_state.has_moved_by_player[1 - player_num]:
             rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
 
         for card_id, lane_number in cards_to_lanes.items():
-            game.game_state.play_card(player_num, card_id, lane_number)
+            game.game_info.game_state.play_card(player_num, card_id, lane_number)
 
-        game.game_state.has_moved_by_player[player_num] = True
-        have_moved = game.game_state.all_players_have_moved()
+        game.game_info.game_state.has_moved_by_player[player_num] = True
+        have_moved = game.game_info.game_state.all_players_have_moved()
         if have_moved:
-            game.game_state.roll_turn()
+            game.game_info.roll_turn()
             rdel(get_game_with_hidden_information_redis_key(game.id))
             rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
             rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
@@ -490,7 +497,7 @@ def take_turn(sess, game_id):
             rdel(get_staged_game_redis_key(game_id, 1))
 
 
-        if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
+        if game.is_bot_by_player[1 - player_num] and not game.game_info.game_state.has_moved_by_player[1 - player_num]:
             start_new_thread(bot_move_in_game, (game, 1 - player_num))
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
@@ -535,11 +542,11 @@ def play_card(sess, game_id):
         game = Game.from_json(game_json)
 
         assert player_num is not None
-        assert game.game_state is not None
+        assert game.game_info is not None
 
-        print([card.id for card in game.game_state.hands_by_player[player_num]])
+        print([card.id for card in game.game_info.game_state.hands_by_player[player_num]])
 
-        game.game_state.play_card(player_num, card_id, lane_number)
+        game.game_info.game_state.play_card(player_num, card_id, lane_number)
         staged_moves[card_id] = lane_number
 
         rset_json(get_staged_moves_redis_key(game_id, player_num), staged_moves, ex=24 * 60 * 60)
@@ -570,10 +577,10 @@ def submit_turn(sess, game_id):
         game = Game.from_json(game_json)
 
         assert player_num is not None
-        assert game.game_state is not None
+        assert game.game_info is not None
 
-        game.game_state.has_moved_by_player[player_num] = True
-        have_moved = game.game_state.all_players_have_moved()
+        game.game_info.game_state.has_moved_by_player[player_num] = True
+        have_moved = game.game_info.game_state.all_players_have_moved()
         if have_moved:
             for player_num_to_make_moves_for in [0, 1]:
                 staged_moves = rget_json(get_staged_moves_redis_key(game_id, player_num_to_make_moves_for)) or {}
@@ -583,19 +590,19 @@ def submit_turn(sess, game_id):
 
                 for card_id, lane_number in staged_moves.items():
                     try:
-                        game.game_state.play_card(player_num_to_make_moves_for, card_id, lane_number)
+                        game.game_info.game_state.play_card(player_num_to_make_moves_for, card_id, lane_number)
                     except Exception:
                         print(f'Player {player_num_to_make_moves_for} tried to play an invalid move: {card_id} -> {lane_number}.')
                         continue
 
-            game.game_state.roll_turn()
+            game.game_info.roll_turn()
             rdel(get_game_with_hidden_information_redis_key(game.id))
             rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
             rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
             rdel(get_staged_game_redis_key(game_id, 0))
             rdel(get_staged_game_redis_key(game_id, 1))
 
-        if game.is_bot_by_player[1 - player_num] and not game.game_state.has_moved_by_player[1 - player_num]:
+        if game.is_bot_by_player[1 - player_num] and not game.game_info.game_state.has_moved_by_player[1 - player_num]:
             start_new_thread(bot_move_in_game, (game, 1 - player_num))
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
@@ -634,9 +641,9 @@ def unsubmit_turn(sess, game_id):
 
         player_num = game.username_to_player_num(username)
         assert player_num is not None
-        assert game.game_state is not None
+        assert game.game_info is not None
 
-        game.game_state.has_moved_by_player[player_num] = False
+        game.game_info.game_state.has_moved_by_player[player_num] = False
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
@@ -691,14 +698,14 @@ def mulligan(sess, game_id):
 
         player_num = game.username_to_player_num(username)
         assert player_num is not None
-        assert game.game_state is not None
+        assert game.game_info is not None
 
         random.shuffle(cards_to_mulligan)
 
         for card_id in cards_to_mulligan:
-            game.game_state.mulligan_card(player_num, card_id)
+            game.game_info.game_state.mulligan_card(player_num, card_id)
 
-        game.game_state.has_mulliganed_by_player[player_num] = True
+        game.game_info.game_state.has_mulliganed_by_player[player_num] = True
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
@@ -730,17 +737,18 @@ def mulligan_all(sess, game_id):
 
         player_num = game.username_to_player_num(username)
         assert player_num is not None
-        assert game.game_state is not None
+        assert game.game_info is not None
 
         if mulliganing:
-            game.game_state.mulligan_all(player_num)
+            print('The player has chosen to mulligan all')
+            game.game_info.game_state.mulligan_all(player_num)
 
-        game.game_state.has_mulliganed_by_player[player_num] = True
+        game.game_info.game_state.has_mulliganed_by_player[player_num] = True
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
     
     # Silly kludge to prevent leakage of hidden info because I didn't want to bother using the hidden_game_info logic
-    for lane in game.game_state.lanes:
+    for lane in game.game_info.game_state.lanes:
         lane.characters_by_player[0] = [character for character in lane.characters_by_player[0] if not character.template.name == 'Elephant Rat']
         lane.characters_by_player[1] = [character for character in lane.characters_by_player[1] if not character.template.name == 'Elephant Rat']
 

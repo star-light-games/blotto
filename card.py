@@ -28,3 +28,7 @@ class Card:
     @staticmethod
     def from_template(template: 'CardTemplate'):
         return Card(template)
+
+
+    def __repr__(self):
+        return f"Card {self.id}: {self.template.name}"

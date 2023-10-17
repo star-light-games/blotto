@@ -14,7 +14,7 @@ class GameState:
     def __init__(self, usernames_by_player: dict[int, str], decks_by_player: dict[int, Deck], lane_rewards: list[str]):
         self.lane_reward_names = lane_rewards
         self.lanes = [Lane(lane_number, lane_reward_str) for (lane_number, lane_reward_str) in zip(list(range(3)), lane_rewards)]
-        self.turn = 0        
+        self.turn = 0
         self.usernames_by_player = usernames_by_player
         self.player_0_hand, self.player_0_draw_pile = self.draw_initial_hand(decks_by_player[0])
         self.player_1_hand, self.player_1_draw_pile = self.draw_initial_hand(decks_by_player[1])
@@ -23,11 +23,10 @@ class GameState:
         self.has_moved_by_player = {0: False, 1: False}
         self.has_mulliganed_by_player = {0: False, 1: False}
         self.log: list[str] = []
-        self.animations: list = []
         self.mana_by_player = {0: 0, 1: 0}
         self.decks_by_player = decks_by_player
         self.winner = None
-        self.roll_turn()
+        self.roll_turn([])
 
     def draw_initial_hand(self, deck: Deck):
         draw_pile = deck.to_draw_pile()
@@ -36,9 +35,9 @@ class GameState:
         draw_pile = draw_pile[3:]
         return hand, draw_pile
 
-    def do_start_of_game(self):
+    def do_start_of_game(self, animations: list):
         for lane in self.lanes:
-            lane.do_start_of_game(self.log, self.animations, self)
+            lane.do_start_of_game(self.log, animations, self)
 
     def draw_card(self, player_num: int):
         if len(self.hands_by_player[player_num]) < 7:
@@ -68,6 +67,8 @@ class GameState:
                     character.max_health += character.number_2_of_ability('OnDrawCardPump')
 
     def mulligan_all(self, player_num: int):
+        print(player_num)
+        print(self.has_mulliganed_by_player)
         if self.has_mulliganed_by_player[player_num]:
             return
         self.has_mulliganed_by_player[player_num] = True
@@ -77,10 +78,15 @@ class GameState:
             self.mulligan_card(player_num, card.id)
 
     def mulligan_card(self, player_num: int, card_id: str):
+        print(player_num)
+        print(card_id)
         self.draw_piles_by_player[player_num].append([card for card in self.hands_by_player[player_num] if card.id == card_id][0])
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
         self.log.append(f"{self.usernames_by_player[player_num]} mulliganed a card.")
         self.draw_card(player_num)
+
+        print(self.hands_by_player[0])
+        print(self.draw_piles_by_player[0])
 
     def mulligan_cards(self, player_num: int, cards: list[str]):
         if self.has_mulliganed_by_player[player_num]:
@@ -91,20 +97,27 @@ class GameState:
             self.mulligan_card(player_num, card_id)
         self.has_mulliganed_by_player[player_num] = True
 
-    def roll_turn(self):
+    def roll_turn(self, animations: list):
         self.turn += 1
-        self.animations = [[{"event": "start_of_roll"}, self.to_json()]]
+        animations.clear()
+        animations.append({
+            'event_type': 'StartOfRoll',
+            'data': {},
+            'game_state': self.to_json(),
+        })
         for player_num in [0, 1]:
             self.mana_by_player[player_num] = self.turn        
         for lane in self.lanes:
-            lane.do_start_of_turn(self.log, self.animations, self)
+            lane.do_start_of_turn(self.log, animations, self)
         for lane in sorted(self.lanes, key=lambda lane: lane.lane_number + lane.additional_combat_priority):
-            lane.roll_turn(self.log, self.animations, self)
+            lane.roll_turn(self.log, animations, self)
         for lane in self.lanes:
-            lane.do_end_of_turn(self.log, self.animations, self)
-        self.animations.append([{
-                        "event_type": "end_of_roll",
-                    }, self.to_json()])
+            lane.do_end_of_turn(self.log, animations, self)
+        animations.append({
+                        "event_type": "EndOfRoll",
+                        'data': {},
+                        'game_state': self.to_json(),
+                    })
                     
         for player_num in [0, 1]:
             self.draw_card(player_num)
@@ -178,19 +191,18 @@ class GameState:
             return None
         return random.choice(lanes_with_empty_slots)    
 
-    def to_json(self, exclude_animations: bool = True):
+    def to_json(self):
         return {
             "lane_reward_names": self.lane_reward_names,
             "lanes": [lane.to_json() for lane in self.lanes],
             "turn": self.turn,
             "hands_by_player": {player_num: [card.to_json() for card in self.hands_by_player[player_num]] for player_num in self.hands_by_player},
-            "draw_piles_by_player": {player_num: [card.to_json() for card in self.draw_piles_by_player[player_num]] for player_num in self.draw_piles_by_player} if not exclude_animations else {0: [], 1: []},
-            "log": self.log if not exclude_animations else [],
+            "draw_piles_by_player": {player_num: [card.to_json() for card in self.draw_piles_by_player[player_num]] for player_num in self.draw_piles_by_player},
+            "log": self.log,
             "mana_by_player": self.mana_by_player,
             "has_moved_by_player": self.has_moved_by_player,
             "usernames_by_player": self.usernames_by_player,
-            "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()} if not exclude_animations else {0: Deck([], '', '').to_json(), 1: Deck([], '', '').to_json()},
-            **({"animations": self.animations} if not exclude_animations else {}),
+            "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()},
             "has_mulliganed_by_player": self.has_mulliganed_by_player,
             "winner": self.winner,
         }
@@ -206,8 +218,6 @@ class GameState:
         game_state.log = json.get('log') or []
         game_state.mana_by_player = json['mana_by_player']
         game_state.has_moved_by_player = json['has_moved_by_player']
-        if json.get('animations'):
-            game_state.animations = json['animations']
         game_state.has_mulliganed_by_player = json['has_mulliganed_by_player']
         game_state.winner = json.get('winner')
 

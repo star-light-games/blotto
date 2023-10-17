@@ -62,7 +62,7 @@ def randomly_play_forward_game_state_with_mana_amounts(mana_amounts_by_player: d
                 if lane_number is not None:
                     game_state.play_card_from_template(player_num, CARD_TEMPLATES[card_name], lane_number)
 
-        game_state.roll_turn()
+        game_state.roll_turn([])
 
     return game_state
 
