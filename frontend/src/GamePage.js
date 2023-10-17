@@ -1338,7 +1338,7 @@ export default function GamePage({ }) {
             handleReset(true);
             setGameState(game?.game_info?.animations[0]?.game_state);
             setAnimating(true);
-            triggerAnimations(gameState, gameState?.animations || []);
+            triggerAnimations(gameState, game?.game_info?.animations || []);
         }
     }
 
