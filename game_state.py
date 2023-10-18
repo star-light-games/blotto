@@ -123,11 +123,11 @@ class GameState:
             self.draw_card(player_num)
         self.log.append(f"Turn {self.turn}")
         self.has_moved_by_player = {0: False, 1: False}
-        if self.turn == 9:
-            self.log.append("The moon rises.")
-            self.mana_by_player = {0: 0, 1: 0}
+        # if self.turn == 9:
+        #     self.log.append("The moon rises.")
+        #     self.mana_by_player = {0: 0, 1: 0}
 
-        if self.turn == 10:
+        if self.turn == 9:
             self.log.append("The moon is full.")
             
             lane_winners = [lane.compute_winner() for lane in self.lanes]
