@@ -1,3 +1,4 @@
+from datetime import datetime
 import random
 from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
@@ -26,6 +27,7 @@ class GameState:
         self.mana_by_player = {0: 0, 1: 0}
         self.decks_by_player = decks_by_player
         self.winner = None
+        self.last_roll_time = None
         self.roll_turn([])
 
     def draw_initial_hand(self, deck: Deck):
@@ -35,7 +37,7 @@ class GameState:
         draw_pile = draw_pile[3:]
         return hand, draw_pile
 
-    def do_start_of_game(self, animations: list):
+    def do_start_of_game(self, animations: list, seconds_per_turn: Optional[int] = None):
         for lane in self.lanes:
             lane.do_start_of_game(self.log, animations, self)
 
@@ -152,6 +154,8 @@ class GameState:
                     self.log.append(f"{self.usernames_by_player[1]} won the game!")
                     self.winner = 1
 
+        self.last_roll_time = datetime.now().timestamp()
+
     def play_card(self, player_num: int, card_id: str, lane_number: int):
         card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
@@ -205,6 +209,7 @@ class GameState:
             "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()},
             "has_mulliganed_by_player": self.has_mulliganed_by_player,
             "winner": self.winner,
+            "last_roll_time": self.last_roll_time,
         }
     
     @staticmethod
@@ -220,6 +225,7 @@ class GameState:
         game_state.has_moved_by_player = json['has_moved_by_player']
         game_state.has_mulliganed_by_player = json['has_mulliganed_by_player']
         game_state.winner = json.get('winner')
+        game_state.last_roll_time = json.get('last_roll_time')
 
         return game_state
     

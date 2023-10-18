@@ -23,6 +23,7 @@ import { dark } from '@mui/material/styles/createPalette';
 import { useSocket } from './SocketContext';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
+import Timer from './Timer';
 
 
 function log(...args) {
@@ -67,6 +68,9 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
                         <Typography>Username: {opponentUsername}</Typography>
                         <Typography>Hand size: {opponentHandSize}</Typography>
                         <Typography>Mana: {opponentManaAmount}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                        <Timer lastRollTime={game.game_info.game_state.last_roll_time} secondsPerTurn={game.seconds_per_turn} />
                     </Grid>
                 </Grid>
             </CardContent>

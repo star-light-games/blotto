@@ -15,6 +15,9 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  MenuItem,
+  Select,
+  Menu,
 } from '@mui/material';
 import TcgCard from './TcgCard';
 
@@ -111,6 +114,7 @@ function DeckBuilder({ cards, laneRewards }) {
   const [drafting, setDrafting] = useState(false);
   const [currentLaneReward, setCurrentLaneReward] = useState(null);
   const [openGames, setOpenGames] = useState([]);
+  const [timeControl, setTimeControl] = useState(-1); // You can set a default value, for instance, 5 seconds for Hyperbullet
 
   console.log(laneRewards);
   console.log(currentLaneReward);
@@ -126,6 +130,7 @@ function DeckBuilder({ cards, laneRewards }) {
       deckId: selectedDeck.id, // Assuming each deck object has an 'id' property
       username: userName,
       bot_game: botGame,
+      secondsPerTurn: timeControl === -1 ? null : timeControl,
     };
 
     fetch(`${URL}/api/host_game`, {
@@ -305,6 +310,29 @@ function DeckBuilder({ cards, laneRewards }) {
             </Box>
           ))}
           {/* Host and Join game actions */}
+          <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
+            <Grid item>
+              <Typography variant="body1">Time control for hosted game:</Typography>
+            </Grid>
+            <Grid item>
+              <Select
+                value={timeControl}
+                onChange={(e) => setTimeControl(e.target.value)}
+                variant="outlined"
+                style={{ minWidth: '150px' }} // set a minimum width to accommodate longer names
+              >
+                <MenuItem value={-1}>None</MenuItem>
+                <MenuItem value={5}>Hyperbullet</MenuItem>
+                <MenuItem value={10}>Bullet</MenuItem>
+                <MenuItem value={20}>Blitz</MenuItem>
+                <MenuItem value={30}>Rapid</MenuItem>
+                <MenuItem value={45}>Standard</MenuItem>
+                <MenuItem value={60}>Slow</MenuItem>
+                <MenuItem value={90}>Classical</MenuItem>
+              </Select>
+            </Grid>
+          </Grid>
+
           <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
             <Grid item>
               <Button variant="contained" color="primary" onClick={() => hostGame(false)} disabled={!selectedDeck}>

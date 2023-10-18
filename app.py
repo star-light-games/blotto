@@ -19,6 +19,7 @@ from functools import wraps
 import random
 from _thread import start_new_thread
 from lane_rewards import LANE_REWARDS
+from threading import Timer
 
 from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import COMMON_DECK_USERNAME, LOCAL
@@ -96,6 +97,9 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             rdel(get_staged_game_redis_key(game_id, 0))
             rdel(get_staged_game_redis_key(game_id, 1))
 
+            if game.seconds_per_turn is not None:
+                Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
+
         else:
             rset_json(get_staged_moves_redis_key(game_id, player_num), bot_move, ex=24 * 60 * 60)
 
@@ -104,6 +108,43 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         if have_moved:
             socketio.emit('update', room=game_id)
 
+
+def roll_turn_in_game(game: Game) -> None:
+    assert game.game_info
+
+    for player_num_to_make_moves_for in [0, 1]:
+        staged_moves = rget_json(get_staged_moves_redis_key(game.id, player_num_to_make_moves_for)) or {}
+
+        print('Making moves for player ', player_num_to_make_moves_for)
+        print(staged_moves)
+
+        for card_id, lane_number in staged_moves.items():
+            try:
+                game.game_info.game_state.play_card(player_num_to_make_moves_for, card_id, lane_number)
+            except Exception:
+                print(f'Player {player_num_to_make_moves_for} tried to play an invalid move: {card_id} -> {lane_number}.')
+                continue
+
+        game.game_info.game_state.has_mulliganed_by_player[player_num_to_make_moves_for] = True
+
+    game.game_info.roll_turn()
+    rdel(get_game_with_hidden_information_redis_key(game.id))
+    rset_json(get_staged_moves_redis_key(game.id, 0), {}, ex=24 * 60 * 60)
+    rset_json(get_staged_moves_redis_key(game.id, 1), {}, ex=24 * 60 * 60)
+    rdel(get_staged_game_redis_key(game.id, 0))
+    rdel(get_staged_game_redis_key(game.id, 1))
+
+    rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
+    socketio.emit('update', room=game.id)
+
+    if not game.game_info.game_state.turn > 8:
+        for player_num in [0, 1]:
+            if game.is_bot_by_player[player_num]:
+                    start_new_thread(bot_move_in_game, (game, player_num))
+
+        if game.seconds_per_turn is not None:
+            Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
 
 
 def recurse_to_json(obj):
@@ -302,6 +343,8 @@ def host_game(sess):
 
     is_bot_game = bool(data.get('bot_game'))
     
+    seconds_per_turn = data.get('secondsPerTurn')
+
     if deck_id:
         db_deck = sess.query(DbDeck).get(deck_id)
         if not db_deck:
@@ -325,9 +368,12 @@ def host_game(sess):
         player_0_deck = deck
         player_1_deck = bot_deck
 
-        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id)
+        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id, seconds_per_turn=seconds_per_turn)
         game.is_bot_by_player[1] = True
         game.start()
+
+        if game.seconds_per_turn is not None:
+            Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
 
         socketio.emit('update', room=game.id)      
 
@@ -345,7 +391,7 @@ def host_game(sess):
         player_0_deck = deck
         player_1_deck = None
 
-        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id)
+        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id, seconds_per_turn=seconds_per_turn)
 
     sess.add(DbGame(
         id=game.id,
@@ -412,6 +458,9 @@ def join_game(sess):
         game.decks_by_player[1] = deck
         game.start()
         
+        if game.seconds_per_turn is not None:
+            Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
+
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
         socketio.emit('update', room=game.id)
@@ -587,30 +636,9 @@ def submit_turn(sess, game_id):
         game.game_info.game_state.has_moved_by_player[player_num] = True
         have_moved = game.game_info.game_state.all_players_have_moved()
         if have_moved:
-            for player_num_to_make_moves_for in [0, 1]:
-                staged_moves = rget_json(get_staged_moves_redis_key(game_id, player_num_to_make_moves_for)) or {}
-
-                print('Making moves for player ', player_num_to_make_moves_for)
-                print(staged_moves)
-
-                for card_id, lane_number in staged_moves.items():
-                    try:
-                        game.game_info.game_state.play_card(player_num_to_make_moves_for, card_id, lane_number)
-                    except Exception:
-                        print(f'Player {player_num_to_make_moves_for} tried to play an invalid move: {card_id} -> {lane_number}.')
-                        continue
-
-            game.game_info.roll_turn()
-            rdel(get_game_with_hidden_information_redis_key(game.id))
-            rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
-            rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
-            rdel(get_staged_game_redis_key(game_id, 0))
-            rdel(get_staged_game_redis_key(game_id, 1))
-
-        if game.is_bot_by_player[1 - player_num] and not game.game_info.game_state.has_moved_by_player[1 - player_num]:
-            start_new_thread(bot_move_in_game, (game, 1 - player_num))
-
-        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+            roll_turn_in_game(game)
+        else:
+            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
     
     if have_moved:
         socketio.emit('update', room=game.id)

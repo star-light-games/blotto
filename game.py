@@ -10,7 +10,11 @@ from game_info import GameInfo
 
 
 class Game:
-    def __init__(self, usernames_by_player: dict[int, Optional[str]], decks_by_player: dict[int, Optional[Deck]], id: Optional[str] = None):
+    def __init__(self, 
+                 usernames_by_player: dict[int, Optional[str]], 
+                 decks_by_player: dict[int, Optional[Deck]], 
+                 seconds_per_turn: Optional[int] = None, 
+                 id: Optional[str] = None):
         self.id = id if id is not None else generate_unique_id()
         self.usernames_by_player = usernames_by_player
         self.decks_by_player = decks_by_player
@@ -18,6 +22,7 @@ class Game:
         self.created_at = datetime.now().timestamp()
         self.rematch_game_id = None
         self.is_bot_by_player = {0: False, 1: False}
+        self.seconds_per_turn = seconds_per_turn
 
 
     def start(self):
@@ -53,13 +58,15 @@ class Game:
             "created_at": self.created_at,
             "rematch_game_id": self.rematch_game_id,
             "is_bot_by_player": self.is_bot_by_player,
+            "seconds_per_turn": self.seconds_per_turn,
         }
     
 
     @staticmethod
     def from_json(json):
         game = Game(json['usernames_by_player'], 
-                    {k: Deck.from_json(v) if v is not None else None for k, v in json['decks_by_player'].items()})
+                    {k: Deck.from_json(v) if v is not None else None for k, v in json['decks_by_player'].items()},
+                    json.get('seconds_per_turn'),)
         game.id = json['id']
         game.game_info = GameInfo.from_json(json['game_info']) if json['game_info'] is not None else None
         game.created_at = json['created_at']
