@@ -334,6 +334,9 @@ def host_game(sess):
         assert game.game_info
         bot_take_mulligan(game.game_info.game_state, 1)
 
+        with rlock(get_game_lock_redis_key(game.id)):
+            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
         start_new_thread(bot_move_in_game, (game, 1))
 
     else:
@@ -354,8 +357,10 @@ def host_game(sess):
     print(game.game_info)
     print(game.rematch_game_id)
 
-    with rlock(get_game_lock_redis_key(game.id)):
-        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
+    if not is_bot_game:
+        with rlock(get_game_lock_redis_key(game.id)):
+            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
     return jsonify({"gameId": game.id})
 
