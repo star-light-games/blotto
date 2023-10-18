@@ -1161,7 +1161,7 @@ export default function GamePage({ }) {
 
     const opponentManaAmount = gameState?.mana_by_player?.[opponentNum] || 1;
 
-    const gameOver = gameState?.turn > 9;
+    const gameOver = gameState?.turn > 8;
     const lane1winner = gameState?.lanes?.[0]?.damage_by_player?.[playerNum] > game?.game_info?.game_state?.lanes?.[0]?.damage_by_player?.[opponentNum];
     const lane2winner = gameState?.lanes?.[1]?.damage_by_player?.[playerNum] > game?.game_info?.game_state?.lanes?.[1]?.damage_by_player?.[opponentNum];
     const lane3winner = gameState?.lanes?.[2]?.damage_by_player?.[playerNum] > game?.game_info?.game_state?.lanes?.[2]?.damage_by_player?.[opponentNum];
@@ -1264,11 +1264,11 @@ export default function GamePage({ }) {
         setAnimating(false);
     };
 
-    useEffect(() => {
-        if (!animating && gameState?.turn === 9) {
-            handleSubmit();
-        }
-    }, [animating])
+    // useEffect(() => {
+    //     if (!animating && gameState?.turn === 9) {
+    //         handleSubmit();
+    //     }
+    // }, [animating])
 
 
     const handleReset = (callEndpoint) => {
