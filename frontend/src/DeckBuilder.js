@@ -336,7 +336,7 @@ function DeckBuilder({ cards, laneRewards }) {
               />
             </Grid>
             <Grid item>
-              <Button variant="contained" color="secondary" onClick={joinGame} disabled={!selectedDeck}>
+              <Button variant="contained" color="secondary" onClick={() => joinGame()} disabled={!selectedDeck}>
                 {selectedDeck ? 'Join Game' : 'Select Deck'}
               </Button>
             </Grid>
