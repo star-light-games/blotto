@@ -84,7 +84,7 @@ def assess_final_position(player_num: int, game_state: GameState) -> float:
 
 
 def assess_intermediate_position(player_num: int, mana_amounts_by_player: dict[int, int], game_state: GameState) -> float:
-    NUM_RANDOM_GAMES = 20
+    NUM_RANDOM_GAMES = 10
     total_probability = 0.0
     for _ in range(NUM_RANDOM_GAMES):
         total_probability += assess_final_position(player_num, randomly_play_forward_game_state_with_mana_amounts(mana_amounts_by_player, game_state))
