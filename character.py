@@ -458,12 +458,6 @@ class Character:
                     on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
                 )
 
-            if self.has_ability('OnRevealBonusAttack'):
-                for _ in range(self.number_of_ability('OnRevealBonusAttack')):
-                    defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
-                    self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)
-                self.lane.process_dying_characters(log, animations, game_state)
-
             if self.has_ability('OnRevealLaneFightsFirst'):
                 self.lane.additional_combat_priority -= 3
 
@@ -476,18 +470,6 @@ class Character:
                 for character in friendlies:
                     if not character.id == self.id:
                         character.switch_lanes(log, animations, game_state)
-
-
-            if self.has_ability('OnRevealDamageToAll'):
-                damage_amount = self.number_of_ability('OnRevealDamageToAll')
-                for character in [*self.lane.characters_by_player[self.owner_number], *self.lane.characters_by_player[1 - self.owner_number]]:
-                    character.current_health -= damage_amount
-                    log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_amount} damage to {character.owner_username}'s {character.template.name} in Lane {self.lane.lane_number + 1}. "
-                                f"{character.template.name}'s health is now {character.current_health}.")
-                animations.append(
-                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
-                )
-                self.lane.process_dying_characters(log, animations, game_state)
 
             if self.has_ability('OnRevealDrawCards'):
                 cards_to_draw = self.number_of_ability('OnRevealDrawCards')
@@ -524,35 +506,56 @@ class Character:
                     cabbage_character = Character(CARD_TEMPLATES['Cabbage'], self.lane, 1 - self.owner_number, game_state.usernames_by_player[1 - self.owner_number])
                     self.lane.characters_by_player[1 - self.owner_number].append(cabbage_character)
 
-            if self.has_ability('OnRevealDiscardRandomCardAndDealDamageEqualToCost'):
-                if len(game_state.hands_by_player[self.owner_number]) > 0:
-                    random_card = random.choice(game_state.hands_by_player[self.owner_number])
-                    game_state.hands_by_player[self.owner_number] = [card for card in game_state.hands_by_player[self.owner_number] if card.id != random_card.id]
-                    damage_to_deal = random_card.template.cost
-                    defending_character = self.lane.get_random_enemy_character(self.owner_number)
-                    if defending_character is not None:
-                        defending_character.current_health -= damage_to_deal
+    def do_late_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
+        if self.did_on_reveal:
+            return        
 
-                        animations.append({
-                            "event_type": "CharacterAttack",
-                            "data": {
-                                "lane": self.lane.lane_number,
-                                "acting_player": self.owner_number,
-                                "from_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                                "to_character_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),                            
-                            },
-                            "game_state": game_state.to_json(),
-                        })
+        if self.has_ability('OnRevealDiscardRandomCardAndDealDamageEqualToCost'):
+            if len(game_state.hands_by_player[self.owner_number]) > 0:
+                random_card = random.choice(game_state.hands_by_player[self.owner_number])
+                game_state.hands_by_player[self.owner_number] = [card for card in game_state.hands_by_player[self.owner_number] if card.id != random_card.id]
+                damage_to_deal = random_card.template.cost
+                defending_character = self.lane.get_random_enemy_character(self.owner_number)
+                if defending_character is not None:
+                    defending_character.current_health -= damage_to_deal
 
-                        self.lane.process_dying_characters(log, animations, game_state) 
+                    animations.append({
+                        "event_type": "CharacterAttack",
+                        "data": {
+                            "lane": self.lane.lane_number,
+                            "acting_player": self.owner_number,
+                            "from_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
+                            "to_character_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),                            
+                        },
+                        "game_state": game_state.to_json(),
+                    })
 
-            if self.has_ability('OnRevealAllAttackersMakeBonusAttack'):
-                for lane in game_state.lanes:
-                    for character in lane.characters_by_player[self.owner_number]:
-                        if character.is_attacker() and character.id != self.id:
-                            defending_characters = [character for character in lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
-                            character.attack(self.owner_number, lane.damage_by_player, defending_characters, lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                
-                    lane.process_dying_characters(log, animations, game_state)
+                    self.lane.process_dying_characters(log, animations, game_state) 
+
+        if self.has_ability('OnRevealDamageToAll'):
+            damage_amount = self.number_of_ability('OnRevealDamageToAll')
+            for character in [*self.lane.characters_by_player[self.owner_number], *self.lane.characters_by_player[1 - self.owner_number]]:
+                character.current_health -= damage_amount
+                log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_amount} damage to {character.owner_username}'s {character.template.name} in Lane {self.lane.lane_number + 1}. "
+                            f"{character.template.name}'s health is now {character.current_health}.")
+            animations.append(
+                on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+            )
+            self.lane.process_dying_characters(log, animations, game_state)
+
+        if self.has_ability('OnRevealBonusAttack'):
+            for _ in range(self.number_of_ability('OnRevealBonusAttack')):
+                defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
+                self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)
+            self.lane.process_dying_characters(log, animations, game_state)
+
+        if self.has_ability('OnRevealAllAttackersMakeBonusAttack'):
+            for lane in game_state.lanes:
+                for character in lane.characters_by_player[self.owner_number]:
+                    if character.is_attacker() and character.id != self.id:
+                        defending_characters = [character for character in lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
+                        character.attack(self.owner_number, lane.damage_by_player, defending_characters, lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                
+                lane.process_dying_characters(log, animations, game_state)
 
 
         self.did_on_reveal = True

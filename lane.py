@@ -82,6 +82,9 @@ class Lane:
         for character in characters_to_do_on_reveal:
             character.do_on_reveal(log, animations, game_state)
 
+        for character in characters_to_do_on_reveal:
+            character.do_late_on_reveal(log, animations, game_state)
+
 
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
         done_attacking_by_player = {0: False, 1: False}
