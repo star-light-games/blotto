@@ -23,7 +23,7 @@ from lane_rewards import LANE_REWARDS
 from threading import Timer
 
 from redis_utils import rdel, rget_json, rlock, rset_json
-from settings import COMMON_DECK_USERNAME, EXTRA_TIME_ON_FIRST_TURN, LOCAL
+from settings import COMMON_DECK_USERNAME, COYOTE_TIME, EXTRA_TIME_ON_FIRST_TURN, LOCAL
 from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, get_staged_game_lock_redis_key, get_staged_game_redis_key, get_staged_moves_redis_key
 
 
@@ -110,7 +110,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
 def maybe_schedule_forced_turn_roll(game: Game, extra_time: int = 0) -> None:
     if game.seconds_per_turn is not None:
         assert game.game_info
-        Timer(game.seconds_per_turn + extra_time, load_and_roll_turn_in_game, [game.id, game.game_info.game_state.turn]).start()
+        Timer(game.seconds_per_turn + extra_time + COYOTE_TIME, load_and_roll_turn_in_game, [game.id, game.game_info.game_state.turn]).start()
 
 
 def load_and_roll_turn_in_game(game_id: str, only_if_turn: int) -> None:
