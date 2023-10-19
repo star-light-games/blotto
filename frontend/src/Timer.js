@@ -28,7 +28,7 @@ function Timer({ lastTimerStart, secondsPerTurn, secondsElapsed, setSecondsElaps
   if (!secondsPerTurn || !lastTimerStart || secondsElapsed === null) return null;
 
   return (
-    <Typography variant="h5">
+    <Typography variant="h2">
       {formatTime(secondsElapsed)}
     </Typography>
   );

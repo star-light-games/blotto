@@ -56,20 +56,20 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
                 </Typography>
                 <Grid container spacing={1}>
                     {/* Your Info Column */}
-                    <Grid item xs={6}>
+                    <Grid item xs={4}>
                         <Typography variant="h6">You</Typography>
                         <Typography>Username: {game.usernames_by_player[playerNum]}</Typography>
                         <Typography>Mana: {yourManaAmount}</Typography>
                     </Grid>
 
                     {/* Opponent Info Column */}
-                    <Grid item xs={6}>
+                    <Grid item xs={4}>
                         <Typography variant="h6">Opponent</Typography>
                         <Typography>Username: {opponentUsername}</Typography>
                         <Typography>Hand size: {opponentHandSize}</Typography>
                         <Typography>Mana: {opponentManaAmount}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={4}>
                         <Timer 
                             lastTimerStart={game.game_info.game_state.last_timer_start} 
                             secondsPerTurn={game.seconds_per_turn} 
