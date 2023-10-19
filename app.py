@@ -98,8 +98,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             rdel(get_staged_game_redis_key(game_id, 0))
             rdel(get_staged_game_redis_key(game_id, 1))
 
-            if game.seconds_per_turn is not None:
-                Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
+            maybe_schedule_forced_turn_roll(game)
 
         else:
             rset_json(get_staged_moves_redis_key(game_id, player_num), bot_move, ex=24 * 60 * 60)
@@ -110,11 +109,28 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             socketio.emit('update', room=game_id)
 
 
-def roll_turn_in_game(game: Game, only_if_turn: Optional[int] = None) -> None:
-    assert game.game_info
+def maybe_schedule_forced_turn_roll(game: Game) -> None:
+    if game.seconds_per_turn is not None:
+        assert game.game_info
+        Timer(game.seconds_per_turn, load_and_roll_turn_in_game, [game.id, game.game_info.game_state.turn]).start()
 
-    if only_if_turn is not None and game.game_info.game_state.turn != only_if_turn:
-        return
+
+def load_and_roll_turn_in_game(game_id: str, only_if_turn: int) -> None:
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
+        if not game_json:
+            return
+        game = Game.from_json(game_json)
+
+        assert game.game_info
+        print(game.game_info.game_state.turn, only_if_turn)
+
+        if game.game_info.game_state.turn == only_if_turn:
+            roll_turn_in_game(game)
+
+
+def roll_turn_in_game(game: Game) -> None:
+    assert game.game_info
 
     for player_num_to_make_moves_for in [0, 1]:
         staged_moves = rget_json(get_staged_moves_redis_key(game.id, player_num_to_make_moves_for)) or {}
@@ -147,8 +163,7 @@ def roll_turn_in_game(game: Game, only_if_turn: Optional[int] = None) -> None:
             if game.is_bot_by_player[player_num]:
                 start_new_thread(bot_move_in_game, (game, player_num))
 
-        if game.seconds_per_turn is not None:
-            Timer(game.seconds_per_turn, roll_turn_in_game, [game, game.game_info.game_state.turn + 1]).start()
+        maybe_schedule_forced_turn_roll(game)
 
 
 def recurse_to_json(obj):
@@ -362,8 +377,6 @@ def host_game(sess):
         deck = Deck.from_db_deck(db_deck)
 
     if is_bot_game:
-
-        print('hello we are starting a bot game')
         player_0_username = username
         player_1_username = 'RUFUS_THE_ROBOT'
 
@@ -376,8 +389,7 @@ def host_game(sess):
         game.is_bot_by_player[1] = True
         game.start()
 
-        if game.seconds_per_turn is not None:
-            Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
+        maybe_schedule_forced_turn_roll(game)
 
         socketio.emit('update', room=game.id)      
 
@@ -462,8 +474,7 @@ def join_game(sess):
         game.decks_by_player[1] = deck
         game.start()
         
-        if game.seconds_per_turn is not None:
-            Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
+        maybe_schedule_forced_turn_roll(game)
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
