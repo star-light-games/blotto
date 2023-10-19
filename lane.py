@@ -111,7 +111,10 @@ class Lane:
                        game_state: 'GameState',
                        attacking_player: Optional[int] = None) -> None:
         if attacking_player is None:
-            attacking_player = random.randint(0, 1)
+            # The player with more characters attacks first
+            attacking_player = (0 if len(self.characters_by_player[0]) > len(self.characters_by_player[1]) 
+                                else 1 if len(self.characters_by_player[1]) > len(self.characters_by_player[0]) 
+                                else random.randint(0, 1))
         self.player_single_attack(attacking_player, done_attacking_by_player, log, animations, game_state)
         if done_attacking_by_player[1 - attacking_player]:
             if done_attacking_by_player[attacking_player]:
