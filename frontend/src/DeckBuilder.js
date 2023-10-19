@@ -25,6 +25,7 @@ import { URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { objectToArray } from './utils';
+import { useSocket } from './SocketContext';
 
 
 const calculateManaCurve = (deck, cards) => {
@@ -124,6 +125,7 @@ function DeckBuilder({ cards, laneRewards }) {
   const navigate = useNavigate();
 
   const manaCurve = calculateManaCurve(currentDeck, cards);
+  const socket = useSocket();
 
   const hostGame = (botGame) => {
     const data = {
@@ -221,16 +223,24 @@ function DeckBuilder({ cards, laneRewards }) {
 
   useEffect(fetchDecks, [userName]);
 
-  useEffect(() => {
+  const fetchAvailableGames = () => {
     fetch(`${URL}/api/open_games?username=${userName}`)
-        .then(response => response.json())
-        .then((data) => {
-            console.log(data);
-            setOpenGames(data?.games || []);
-        })
-        .catch((error) => {
-            console.error('Error fetching open games:', error);
-        });
+      .then(response => response.json())
+      .then((data) => {
+          console.log(data);
+          setOpenGames(data?.games || []);
+      })
+      .catch((error) => {
+          console.error('Error fetching open games:', error);
+      });
+  }
+
+  useEffect(() => {
+    fetchAvailableGames();
+    socket.on('updateGames', () => {
+      console.log('update games received')
+      fetchAvailableGames();
+  })
 }, []);
 
   const addToDeck = (cardName) => {

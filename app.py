@@ -415,9 +415,7 @@ def host_game(sess):
     ))
     sess.commit()
 
-    print(game.game_info)
-    print(game.rematch_game_id)
-
+    socketio.emit('updateGames')
 
     if not is_bot_game:
         with rlock(get_game_lock_redis_key(game.id)):
@@ -486,6 +484,8 @@ def join_game(sess):
     db_game.player_1_username = username
 
     sess.commit()
+
+    socketio.emit('updateGames')
     
     return jsonify({"gameId": game.id})
 
