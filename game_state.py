@@ -23,11 +23,12 @@ class GameState:
         self.draw_piles_by_player = {0: self.player_0_draw_pile, 1: self.player_1_draw_pile}
         self.has_moved_by_player = {0: False, 1: False}
         self.has_mulliganed_by_player = {0: False, 1: False}
+        self.done_with_animations_by_player = {0: False, 1: False}
         self.log: list[str] = []
         self.mana_by_player = {0: 0, 1: 0}
         self.decks_by_player = decks_by_player
         self.winner = None
-        self.last_roll_time = None
+        self.last_timer_start: Optional[float] = None
         self.roll_turn([])
 
     def draw_initial_hand(self, deck: Deck):
@@ -125,6 +126,8 @@ class GameState:
             self.draw_card(player_num)
         self.log.append(f"Turn {self.turn}")
         self.has_moved_by_player = {0: False, 1: False}
+        self.done_with_animations_by_player = {0: False, 1: False}
+        self.last_timer_start = None
         # if self.turn == 9:
         #     self.log.append("The moon rises.")
         #     self.mana_by_player = {0: 0, 1: 0}
@@ -153,8 +156,6 @@ class GameState:
                 if total_damage_by_player[1] > total_damage_by_player[0]:
                     self.log.append(f"{self.usernames_by_player[1]} won the game!")
                     self.winner = 1
-
-        self.last_roll_time = datetime.now().timestamp()
 
     def play_card(self, player_num: int, card_id: str, lane_number: int):
         card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
@@ -208,8 +209,9 @@ class GameState:
             "usernames_by_player": self.usernames_by_player,
             "decks_by_player": {k: v.to_json() for k, v in self.decks_by_player.items()},
             "has_mulliganed_by_player": self.has_mulliganed_by_player,
+            "done_with_animations_by_player": self.done_with_animations_by_player,
             "winner": self.winner,
-            "last_roll_time": self.last_roll_time,
+            "last_timer_start": self.last_timer_start,
         }
     
     @staticmethod
@@ -223,9 +225,10 @@ class GameState:
         game_state.log = json.get('log') or []
         game_state.mana_by_player = json['mana_by_player']
         game_state.has_moved_by_player = json['has_moved_by_player']
+        game_state.done_with_animations_by_player = json['done_with_animations_by_player']
         game_state.has_mulliganed_by_player = json['has_mulliganed_by_player']
         game_state.winner = json.get('winner')
-        game_state.last_roll_time = json.get('last_roll_time')
+        game_state.last_timer_start = json.get('last_timer_start')
 
         return game_state
     

@@ -48,6 +48,8 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
         : 0;
     const turnNumber = game?.game_info?.game_state?.turn || 0;
 
+    console.log(game.game_info.game_state.last_timer_start);
+
     return (
         <Card variant="outlined">
             <CardContent>
@@ -70,7 +72,7 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
                         <Typography>Mana: {opponentManaAmount}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Timer lastRollTime={game.game_info.game_state.last_roll_time} secondsPerTurn={game.seconds_per_turn} />
+                        <Timer lastTimerStart={game.game_info.game_state.last_timer_start} secondsPerTurn={game.seconds_per_turn} />
                     </Grid>
                 </Grid>
             </CardContent>
@@ -1196,7 +1198,7 @@ export default function GamePage({ }) {
         }
     }
 
-    const triggerAnimations = async (finalGameState, animationQueue) => {
+    const triggerAnimations = async (finalGameState, animationQueue, doNotNotifyBackendOnCompletion) => {
         log('Triggering animations!');
         log(animationQueue);
 
@@ -1266,6 +1268,26 @@ export default function GamePage({ }) {
         await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
         setGameState(finalGameState);
         setAnimating(false);
+
+        if (!doNotNotifyBackendOnCompletion) {
+            const payload = {
+                playerNum: playerNum,
+            }
+
+            fetch(`${URL}/api/games/${gameId}/done_with_animations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
+                })
+                .catch(error => {
+                    console.error("There was an error making the submit API call:", error);
+                });
+        }
     };
 
     // useEffect(() => {
@@ -1367,6 +1389,10 @@ export default function GamePage({ }) {
         socket.on('update', () => {
             console.log('update received')
             pollApiForGameUpdates(true);
+        })
+        socket.on('updateWithoutAnimating', () => {
+            console.log('update received without animating')
+            pollApiForGameUpdates(false);
         })
         if (!gameState) {
             console.log('initial poll')

@@ -23,7 +23,7 @@ from lane_rewards import LANE_REWARDS
 from threading import Timer
 
 from redis_utils import rdel, rget_json, rlock, rset_json
-from settings import COMMON_DECK_USERNAME, LOCAL
+from settings import COMMON_DECK_USERNAME, EXTRA_TIME_ON_FIRST_TURN, LOCAL
 from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, get_staged_game_lock_redis_key, get_staged_game_redis_key, get_staged_moves_redis_key
 
 
@@ -98,8 +98,6 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             rdel(get_staged_game_redis_key(game_id, 0))
             rdel(get_staged_game_redis_key(game_id, 1))
 
-            maybe_schedule_forced_turn_roll(game)
-
         else:
             rset_json(get_staged_moves_redis_key(game_id, player_num), bot_move, ex=24 * 60 * 60)
 
@@ -109,10 +107,10 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             socketio.emit('update', room=game_id)
 
 
-def maybe_schedule_forced_turn_roll(game: Game) -> None:
+def maybe_schedule_forced_turn_roll(game: Game, extra_time: int = 0) -> None:
     if game.seconds_per_turn is not None:
         assert game.game_info
-        Timer(game.seconds_per_turn, load_and_roll_turn_in_game, [game.id, game.game_info.game_state.turn]).start()
+        Timer(game.seconds_per_turn + extra_time, load_and_roll_turn_in_game, [game.id, game.game_info.game_state.turn]).start()
 
 
 def load_and_roll_turn_in_game(game_id: str, only_if_turn: int) -> None:
@@ -162,8 +160,6 @@ def roll_turn_in_game(game: Game) -> None:
         for player_num in [0, 1]:
             if game.is_bot_by_player[player_num]:
                 start_new_thread(bot_move_in_game, (game, player_num))
-
-        maybe_schedule_forced_turn_roll(game)
 
 
 def recurse_to_json(obj):
@@ -389,7 +385,10 @@ def host_game(sess):
         game.is_bot_by_player[1] = True
         game.start()
 
-        maybe_schedule_forced_turn_roll(game)
+        assert game.game_info
+        game.game_info.game_state.last_timer_start = datetime.now().timestamp() + EXTRA_TIME_ON_FIRST_TURN
+
+        maybe_schedule_forced_turn_roll(game, extra_time=EXTRA_TIME_ON_FIRST_TURN)
 
         socketio.emit('update', room=game.id)      
 
@@ -474,7 +473,10 @@ def join_game(sess):
         game.decks_by_player[1] = deck
         game.start()
         
-        maybe_schedule_forced_turn_roll(game)
+        assert game.game_info
+        game.game_info.game_state.last_timer_start = datetime.now().timestamp() + EXTRA_TIME_ON_FIRST_TURN
+
+        maybe_schedule_forced_turn_roll(game, extra_time=EXTRA_TIME_ON_FIRST_TURN)
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
@@ -799,6 +801,43 @@ def mulligan_all(sess, game_id):
 
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
+
+
+@app.route('/api/games/<game_id>/done_with_animations', methods=['POST'])
+@api_endpoint
+def be_done_with_animations(sess, game_id):
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    player_num = data.get('playerNum')
+
+    if player_num is None:
+        return jsonify({"error": "Player number is required"}), 400
+
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
+        if not game_json:
+            return jsonify({"error": "Game not found"}), 404
+
+        game = Game.from_json(game_json)
+
+        assert game.game_info is not None
+
+        if not game.game_info.game_state.done_with_animations_by_player[player_num]:
+            game.game_info.game_state.done_with_animations_by_player[player_num] = True
+
+            if game.all_players_are_done_with_animations():
+                game.game_info.game_state.last_timer_start = datetime.now().timestamp()
+                maybe_schedule_forced_turn_roll(game)
+
+            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
+            socketio.emit('updateWithoutAnimating', room=game_id)
+
+    return jsonify({"gameId": game.id,})
+
 
 @socketio.on('connect')
 def on_connect():

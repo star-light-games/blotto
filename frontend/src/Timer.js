@@ -1,23 +1,25 @@
 import { Typography } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 
-function Timer({ lastRollTime, secondsPerTurn }) {
+function Timer({ lastTimerStart, secondsPerTurn }) {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
 
   useEffect(() => {
-    // When the component mounts or lastRollTime changes, reset the timer and start counting.
+    // When the component mounts or lastTimerStart changes, reset the timer and start counting.
     setSecondsElapsed(0);
+
+    if (!lastTimerStart) return;
     
     const intervalId = setInterval(() => {
       const currentTime = Date.now(); // Current timestamp in milliseconds
 
-      const difference = Math.floor((lastRollTime * 1000 - currentTime + secondsPerTurn * 1000) / 1000); // Difference in seconds
+      const difference = Math.floor((lastTimerStart * 1000 - currentTime + secondsPerTurn * 1000) / 1000); // Difference in seconds
       setSecondsElapsed(difference);
     }, 1000); // Update every second
 
-    // Cleanup: clear the interval when the component unmounts or when lastRollTime changes
+    // Cleanup: clear the interval when the component unmounts or when lastTimerStart changes
     return () => clearInterval(intervalId);
-  }, [lastRollTime]);
+  }, [lastTimerStart]);
 
   function formatTime(seconds) {
     if (seconds < 0) return '0:00';
@@ -26,7 +28,7 @@ function Timer({ lastRollTime, secondsPerTurn }) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`; // padStart ensures there are always two digits for seconds
   }
 
-  if (!secondsPerTurn) return null;
+  if (!secondsPerTurn || !lastTimerStart) return null;
 
   return (
     <Typography variant="h5">

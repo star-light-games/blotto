@@ -45,6 +45,11 @@ class Game:
         print(f'game_info: {self.game_info}')
 
 
+    def all_players_are_done_with_animations(self) -> bool:
+        assert self.game_info is not None
+        return all([self.game_info.game_state.done_with_animations_by_player[player_num] or self.is_bot_by_player[player_num] for player_num in [0, 1]])
+
+
     def username_to_player_num(self, username: str) -> Optional[int]:
         return next((player_num for player_num, player_username in self.usernames_by_player.items() if player_username == username), None)
 
