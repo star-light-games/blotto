@@ -114,7 +114,7 @@ function DeckBuilder({ cards, laneRewards }) {
   const [drafting, setDrafting] = useState(false);
   const [currentLaneReward, setCurrentLaneReward] = useState(null);
   const [openGames, setOpenGames] = useState([]);
-  const [timeControl, setTimeControl] = useState(-1); // You can set a default value, for instance, 5 seconds for Hyperbullet
+  const [timeControl, setTimeControl] = useState(parseInt(localStorage.getItem('timeControl')) || -1); // You can set a default value, for instance, 5 seconds for Hyperbullet
 
   console.log(laneRewards);
   console.log(currentLaneReward);
@@ -202,6 +202,12 @@ function DeckBuilder({ cards, laneRewards }) {
     // Set the userName in localStorage whenever it changes
     localStorage.setItem('userName', userName);
   }, [userName]);
+
+  useEffect(() => {
+    // Set the timeControl in localStorage whenever it changes
+    localStorage.setItem('timeControl', timeControl);
+  }, [timeControl]);
+
 
   const fetchDecks = () => {
     fetch(`${URL}/api/decks?username=${userName}&rand=${Math.random()}}`)
