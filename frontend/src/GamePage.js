@@ -48,8 +48,6 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
         : 0;
     const turnNumber = game?.game_info?.game_state?.turn || 0;
 
-    console.log(game.game_info.game_state.last_timer_start);
-
     return (
         <Card variant="outlined">
             <CardContent>
