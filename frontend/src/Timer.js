@@ -1,14 +1,11 @@
 import { Typography } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 
-function Timer({ lastTimerStart, secondsPerTurn }) {
-  const [secondsElapsed, setSecondsElapsed] = useState(0);
-
+function Timer({ lastTimerStart, secondsPerTurn, secondsElapsed, setSecondsElapsed, doNotUpdateTimer }) {
   useEffect(() => {
     // When the component mounts or lastTimerStart changes, reset the timer and start counting.
-    setSecondsElapsed(0);
 
-    if (!lastTimerStart) return;
+    if (!lastTimerStart || doNotUpdateTimer) return;
     
     const intervalId = setInterval(() => {
       const currentTime = Date.now(); // Current timestamp in milliseconds
@@ -28,7 +25,7 @@ function Timer({ lastTimerStart, secondsPerTurn }) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`; // padStart ensures there are always two digits for seconds
   }
 
-  if (!secondsPerTurn || !lastTimerStart) return null;
+  if (!secondsPerTurn || !lastTimerStart || secondsElapsed === null) return null;
 
   return (
     <Typography variant="h5">

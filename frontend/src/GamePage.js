@@ -40,7 +40,7 @@ const opponentColorToneReversed = (isDarkMode) => isDarkMode ? '#ffd7d7' : '#995
 
 const getBackgroundColor = (isDarkMode) => isDarkMode ? '#555' : '#f5f5f5';
 
-function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmount }) {
+function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmount, secondsElapsed, setSecondsElapsed, doNotUpdateTimer }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
     const opponentUsername = game.usernames_by_player[opponentNum];
     const opponentHandSize = (gameState && gameState.hands_by_player)
@@ -72,7 +72,13 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
                         <Typography>Mana: {opponentManaAmount}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Timer lastTimerStart={game.game_info.game_state.last_timer_start} secondsPerTurn={game.seconds_per_turn} />
+                        <Timer 
+                            lastTimerStart={game.game_info.game_state.last_timer_start} 
+                            secondsPerTurn={game.seconds_per_turn} 
+                            secondsElapsed={secondsElapsed}
+                            setSecondsElapsed={setSecondsElapsed}
+                            doNotUpdateTimer={doNotUpdateTimer}
+                        />
                     </Grid>
                 </Grid>
             </CardContent>
@@ -824,6 +830,8 @@ export default function GamePage({ }) {
     const [cardsToLanes, setCardsToLanes] = useState({});
     // const [dialogOpen, setDialogOpen] = useState(false);
     const [cardsToMulligan, setCardsToMulligan] = useState([]);
+    const [secondsElapsed, setSecondsElapsed] = useState(null);
+    const [doNotUpdateTimer, setDoNotUpdateTimer] = useState(false);
 
     const [submittedMove, setSubmittedMove] = useState(false);
 
@@ -1388,10 +1396,13 @@ export default function GamePage({ }) {
         socket.emit('join', { room: gameId });
         socket.on('update', () => {
             console.log('update received')
+            setSecondsElapsed(null);
+            setDoNotUpdateTimer(true);
             pollApiForGameUpdates(true);
         })
         socket.on('updateWithoutAnimating', () => {
             console.log('update received without animating')
+            setDoNotUpdateTimer(false);
             pollApiForGameUpdates(false);
         })
         if (!gameState) {
@@ -1522,7 +1533,10 @@ export default function GamePage({ }) {
                         playerNum={playerNum}
                         yourManaAmount={yourManaAmount}
                         opponentManaAmount={opponentManaAmount}
-                        />
+                        secondsElapsed={secondsElapsed}
+                        setSecondsElapsed={setSecondsElapsed}
+                        doNotUpdateTimer={doNotUpdateTimer}
+                    />
                 </div>
                 {gameOver && !animating && <div style={{ margin: '10px' }}>
                     <Card variant="outlined">
