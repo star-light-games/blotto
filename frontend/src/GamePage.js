@@ -1657,12 +1657,12 @@ export default function GamePage({ }) {
                             Rematch
                         </Typography>
                     </Button>}
-                    {!animating && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={replayAnimations} disabled={submittedMove || (secondsElapsed !== null && secondsElapsed <= 8)}>
+                    {!animating && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={replayAnimations} disabled={submittedMove || (secondsElapsed !== null && game?.seconds_per_turn && secondsElapsed <= 8)}>
                         <Typography variant="h6">
                             Replay animations
                         </Typography>
                     </Button>}
-                    {!gameOver && !mulliganing && <ResetButton onReset={() => handleReset(true)} disabled={animating || submittedMove || gameOver || (secondsElapsed !== null && secondsElapsed <= 3)} />}
+                    {!gameOver && !mulliganing && <ResetButton onReset={() => handleReset(true)} disabled={animating || submittedMove || gameOver || (secondsElapsed !== null && game?.seconds_per_turn && secondsElapsed <= 3)} />}
                     {!gameOver && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleSubmit} disabled={animating || gameOver}>
                         <Typography variant="h6">
                             {submittedMove ? 'Unsubmit' : 'Submit'}
