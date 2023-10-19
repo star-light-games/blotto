@@ -162,7 +162,7 @@ class Lane:
             done_attacking_by_player[attacking_player] = True
         else:
             characters_that_can_attack = [character for character in characters_that_can_attack if character.can_attack()]
-            character = random.choice(characters_that_can_attack)
+            character = characters_that_can_attack[0]
             defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
             character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log, animations, game_state)
 
