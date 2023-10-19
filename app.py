@@ -828,7 +828,7 @@ def be_done_with_animations(sess, game_id):
         if not game.game_info.game_state.done_with_animations_by_player[player_num]:
             game.game_info.game_state.done_with_animations_by_player[player_num] = True
 
-            if game.all_players_are_done_with_animations():
+            if game.all_players_are_done_with_animations() and game.game_info.game_state.turn <= 8:
                 game.game_info.game_state.last_timer_start = datetime.now().timestamp()
                 maybe_schedule_forced_turn_roll(game)
 
