@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
+from typing import Optional
 from bot import bot_take_mulligan, find_bot_move, get_bot_deck
 from card import Card
 from card_templates_list import CARD_TEMPLATES
@@ -109,8 +110,11 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
             socketio.emit('update', room=game_id)
 
 
-def roll_turn_in_game(game: Game) -> None:
+def roll_turn_in_game(game: Game, only_if_turn: Optional[int] = None) -> None:
     assert game.game_info
+
+    if only_if_turn is not None and game.game_info.game_state.turn != only_if_turn:
+        return
 
     for player_num_to_make_moves_for in [0, 1]:
         staged_moves = rget_json(get_staged_moves_redis_key(game.id, player_num_to_make_moves_for)) or {}
@@ -141,10 +145,10 @@ def roll_turn_in_game(game: Game) -> None:
     if not game.game_info.game_state.turn > 8:
         for player_num in [0, 1]:
             if game.is_bot_by_player[player_num]:
-                    start_new_thread(bot_move_in_game, (game, player_num))
+                start_new_thread(bot_move_in_game, (game, player_num))
 
         if game.seconds_per_turn is not None:
-            Timer(game.seconds_per_turn, roll_turn_in_game, [game]).start()
+            Timer(game.seconds_per_turn, roll_turn_in_game, [game, game.game_info.game_state.turn + 1]).start()
 
 
 def recurse_to_json(obj):
@@ -639,9 +643,6 @@ def submit_turn(sess, game_id):
             roll_turn_in_game(game)
         else:
             rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
-    
-    if have_moved:
-        socketio.emit('update', room=game.id)
 
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
