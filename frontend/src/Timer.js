@@ -27,8 +27,10 @@ function Timer({ lastTimerStart, secondsPerTurn, secondsElapsed, setSecondsElaps
 
   if (!secondsPerTurn || !lastTimerStart || secondsElapsed === null) return null;
 
+  const isTimeLow = secondsElapsed === 4 || secondsElapsed === 2 || secondsElapsed === 0; // Check if time is 3 or fewer seconds
+
   return (
-    <Typography variant="h2">
+    <Typography variant="h2" style={{ color: isTimeLow ? 'red' : 'inherit' }}>
       {formatTime(secondsElapsed)}
     </Typography>
   );
