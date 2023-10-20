@@ -244,7 +244,7 @@ class Character:
                     lane_to_spawn_in.characters_by_player[self.owner_number].append(character)
                 
             if character.has_ability('OnCharacterMoveHereShackle') and character.id != self.id:
-                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
+                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.shackled_turns > 0)
                 if random_enemy_character is not None:
                     random_enemy_character.shackle(character, log, animations, game_state)
 
@@ -392,13 +392,14 @@ class Character:
             return
         if self.new:
             if self.has_ability('OnRevealShackle'):
-                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
+                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.shackled_turns > 0)
                 if random_enemy_character is not None:
                     random_enemy_character.shackle(self, log, animations, game_state)
 
             if self.has_ability('OnRevealShackleAllEnemies'):
                 for character in self.lane.characters_by_player[1 - self.owner_number]:
-                    character.shackle(self, log, animations, game_state, do_not_animate=True)
+                    if character.shackled_turns == 0:
+                        character.shackle(self, log, animations, game_state, do_not_animate=True)
                 animations.append(
                     on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
                 )
@@ -487,7 +488,7 @@ class Character:
             if 'Earth' in self.template.creature_types or 'Avatar' in self.template.creature_types:
                 for character in self.lane.characters_by_player[self.owner_number]:
                     if character.has_ability('ShackleOnFriendlyEarth') and character.id != self.id:
-                        random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
+                        random_enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.shackled_turns > 0)
                         if random_enemy_character is not None:
                             random_enemy_character.shackle(character, log, animations, game_state)
             
