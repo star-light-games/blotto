@@ -356,6 +356,20 @@ function DeckBuilder({ cards, laneRewards }) {
     <Container>
       <Card>
           <CardContent>
+            <Typography variant="h5">Recent changes:</Typography>
+            <ul>
+              <li>When you <emph>silence</emph> a character, that character permanently loses all its abilities, its attack reverts to its original base attack, its base health reverts to its original base health, and its current health reverts to whichever is smaller of its original base health and its current health.</li>
+              <li>The same character can no longer be shackled several times. Shackles never last more than one turn.</li>
+              <li>Characters that switch lanes only attack once per turn, even if they switch rightwards.</li>
+              <li>There is no more final battle. After turn 8, there's one fight, and then the game ends.</li>
+              <li>Whichever side has more characters in a given lane attacks first. If both sides have the same number of characters, the side that attacks first is random.</li>
+              <li>Characters always attack in reading order now (i.e. the upper-left character attacks first, then the upper-right character, then the lower-left character, etc). This order corresponds to the order in which those characters entered the lane.</li>
+            </ul>
+          </CardContent>
+      </Card>
+      <br />
+      <Card>
+          <CardContent>
             <Typography variant="h5">Deck Builder</Typography>
             <TextField 
                 label="User Name" 
