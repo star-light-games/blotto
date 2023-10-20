@@ -61,6 +61,8 @@ class Lane:
                 for _ in range(self.lane_reward.effect[2]):  # type: ignore
                     character = Character(CARD_TEMPLATES[self.lane_reward.effect[1]], self, player_num, game_state.usernames_by_player[player_num])  # type: ignore
                     self.characters_by_player[player_num].append(character)
+        self.do_start_of_turn(log, animations, game_state)
+        self.do_end_of_turn(log, animations, game_state)
 
 
     def do_start_of_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:

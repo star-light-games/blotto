@@ -432,7 +432,7 @@ function DeckBuilder({ cards, laneRewards }) {
         <Button 
           variant="contained" 
           color="primary" 
-          onClick={() => saveDeck(deckName)} 
+          onClick={() => saveDeck(deckName, currentLaneReward?.name)}
           disabled={!userName || !deckName || !currentDeck || currentDeck.length === 0}>
           {!userName ? 'Enter User Name' : !deckName ? 'Enter Deck Name' : !currentDeck || currentDeck.length === 0 ? 'Add Cards to Deck' : 'Save Deck'}
         </Button>
