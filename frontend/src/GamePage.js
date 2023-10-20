@@ -1589,24 +1589,6 @@ export default function GamePage({ }) {
                         ))}
                     </Select>
                 </FormControl>
-                {/* <Select> */}
-                    {/* <MenuItem value={BASE_ANIMATION_DELAY} onClick={() => setAnimationDelay(BASE_ANIMATION_DELAY)}>Normal</MenuItem> */}
-                {/* </Select> */}
-                {/* <OldLanesDisplay 
-                    lanes={laneData ? laneData : gameState.lanes} 
-                    playerNum={playerNum} 
-                    opponentNum={opponentNum} 
-                    selectedCard={selectedCard} 
-                    setSelectedCard={setSelectedCard}
-                    setLaneData={setLaneData}
-                    handData={handData ? handData : gameState.hands_by_player[playerNum]}
-                    setHandData={setHandData}
-                    setHoveredCard={setHoveredCard}
-                    cardsToLanes={cardsToLanes}
-                    setCardsToLanes={setCardsToLanes}
-                    yourManaAmount={yourManaAmount}
-                    setYourManaAmount={setYourManaAmount}
-                /> */}
                 <Grid container direction="row" style={{margin: '1px'}} spacing={2}>
                     <Grid item>
                         <HandDisplay
@@ -1679,22 +1661,6 @@ export default function GamePage({ }) {
                         </Typography>
                     </Button>}
                 </div>
-                {/* <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-                    <DialogTitle>Confirm Action</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Are you sure you want to submit your turn?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseDialog} color="primary">
-                            Cancel
-                        </Button>
-                        <Button onClick={handleSubmit} color="primary">
-                            Confirm
-                        </Button>
-                    </DialogActions>
-                </Dialog> */}
             </div>
         </div>
     );
