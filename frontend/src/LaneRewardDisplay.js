@@ -2,13 +2,13 @@ import { Typography } from '@mui/material';
 import React from 'react';
 import { Card, CardContent } from '@mui/material';
 
-export default function LaneRewardDisplay({ laneReward, currentLaneReward, setCurrentLaneReward }) {
+export default function LaneRewardDisplay({ laneReward, currentLaneReward, setCurrentLaneReward, notSelectable }) {
     // Determine if the current card should have a border based on the selected reward
-    const isSelected = currentLaneReward && currentLaneReward.name === laneReward.name;
+    const isSelected = !notSelectable && currentLaneReward && currentLaneReward.name === laneReward.name;
 
     return (
         <Card 
-            onClick={() => setCurrentLaneReward(laneReward)}
+            onClick={notSelectable ? () => {} : () => setCurrentLaneReward(laneReward)}
             style={{
                 cursor: 'pointer',
                 border: isSelected ? '2px solid black' : 'none'  // Apply border if selected

@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { objectToArray } from './utils';
 import { useSocket } from './SocketContext';
-import LaneSelectionDisplay from './LaneSelectionDisplay';
+import LaneRewardDisplay from './LaneRewardDisplay';
 
 
 const calculateManaCurve = (deck, cards) => {
@@ -101,6 +101,28 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
 }
 
 
+function TcgCardListItem({ cardName, index, removeFromDeck, doNotAllowDeleting, setHoveredCard  }) {
+  return (
+    <ListItem 
+      component={Box} 
+      borderColor="grey.300" 
+      border={1} 
+      borderRadius={4} 
+      style={{ marginBottom: '8px' }}
+      onMouseEnter={() => setHoveredCard(cardName)}
+      onMouseLeave={() => setHoveredCard(null)}
+    >
+        <ListItemText primary={cardName} />
+        {!doNotAllowDeleting && <ListItemSecondaryAction>
+            <IconButton edge="end" aria-label="delete" onClick={() => removeFromDeck(index)}>
+              ❌
+            </IconButton>
+        </ListItemSecondaryAction>}
+    </ListItem>
+  )
+}
+
+
 function DeckBuilder({ cards, laneRewards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
   console.log(currentDeck);
@@ -124,6 +146,10 @@ function DeckBuilder({ cards, laneRewards }) {
 
   const manaCurve = calculateManaCurve(currentDeck, cards);
   const socket = useSocket();
+
+  console.log(laneRewards);
+
+  console.log(selectedDeck);
 
   const hostGame = (botGame) => {
     const data = {
@@ -303,8 +329,8 @@ function DeckBuilder({ cards, laneRewards }) {
         </Card>
 
   <br></br>
-  <Grid container spacing={3}>
-    <Grid item xs={8}>
+  <Grid container spacing={2}>
+    <Grid item xs={selectedDeck ? 4 : 8}>
       <Card>
         <CardContent>
         <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Decks:</Typography>
@@ -386,6 +412,34 @@ function DeckBuilder({ cards, laneRewards }) {
         </CardContent>
       </Card>
     </Grid>
+
+    {selectedDeck && (<Grid item xs={4}>
+      <Card>
+        <CardContent>
+          <Typography variant="h5">Selected deck:</Typography>
+          <br />
+          <Typography variant="h6">{selectedDeck.name}</Typography>
+          <br />
+          {selectedDeck.associated_lane_reward_name && <LaneRewardDisplay
+            laneReward={laneRewards[selectedDeck.associated_lane_reward_name]}
+            currentLaneReward={null}
+            setCurrentLaneReward={() => {}}
+            notSelectable={true}
+          />}
+          <br />
+          {selectedDeck.card_templates.map((cardTemplate, index) => (
+            <TcgCardListItem
+              key={index}
+              cardName={cardTemplate.name}
+              index={index}
+              doNotAllowDeleting={true}
+              setHoveredCard={setHoveredCard}
+            />
+          ))}
+        </CardContent>
+      </Card>
+    </Grid>)}
+
     <Grid item xs={4}>
     <Card>
               <CardContent>
@@ -445,23 +499,14 @@ function DeckBuilder({ cards, laneRewards }) {
       <Box style={{ maxWidth: '200px', alignItems: 'flex-start' }}>
         <List>
             {currentDeck.map((cardName, index) => (
-                <ListItem 
-                  key={index} 
-                  component={Box} 
-                  borderColor="grey.300" 
-                  border={1} 
-                  borderRadius={4} 
-                  style={{ marginBottom: '8px' }}
-                  onMouseEnter={() => setHoveredCard(cardName)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                    <ListItemText primary={cardName} />
-                    {!drafting && <ListItemSecondaryAction>
-                        <IconButton edge="end" aria-label="delete" onClick={() => removeFromDeck(index)}>
-                          ❌
-                        </IconButton>
-                    </ListItemSecondaryAction>}
-                </ListItem>
+              <TcgCardListItem
+                key={index}
+                cardName={cardName}
+                index={index}
+                removeFromDeck={removeFromDeck}
+                doNotAllowDeleting={drafting}
+                setHoveredCard={setHoveredCard}
+              />
             ))}
         </List>
       </Box>
@@ -524,7 +569,7 @@ function DeckBuilder({ cards, laneRewards }) {
       <Grid container spacing={3}>
         {objectToArray(laneRewards).map((laneReward) => (
           <Grid item key={laneReward.name} xs={12} sm={6} md={4} lg={3}>
-            <LaneSelectionDisplay laneReward={laneReward} currentLaneReward={currentLaneReward} setCurrentLaneReward={setCurrentLaneReward} />
+            <LaneRewardDisplay laneReward={laneReward} currentLaneReward={currentLaneReward} setCurrentLaneReward={setCurrentLaneReward} />
           </Grid>
         ))}
       </Grid>
