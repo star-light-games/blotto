@@ -189,10 +189,10 @@ CARD_TEMPLATES = {
     ),
     'Suyin': CardTemplate(
         name='Suyin',
-        abilities=['OnRevealShackleAllEnemies'],
+        abilities=['OnRevealShackle', 'OnRevealShackle'],
         cost=5,
-        attack=3,
-        health=5,
+        attack=6,
+        health=4,
         creature_types=['Earth'],
     ),
     'Baatar Jr': CardTemplate(
@@ -482,7 +482,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', 'OnAttackDoubleAttack'],
         cost=3,
         attack=1,
-        health=7,
+        health=8,
         creature_types=['Earth'],
     ),
     'Uncle Iroh': CardTemplate(
