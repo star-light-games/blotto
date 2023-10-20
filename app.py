@@ -794,11 +794,6 @@ def mulligan_all(sess, game_id):
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
     
-    # Silly kludge to prevent leakage of hidden info because I didn't want to bother using the hidden_game_info logic
-    for lane in game.game_info.game_state.lanes:
-        lane.characters_by_player[0] = [character for character in lane.characters_by_player[0] if not character.template.name == 'Elephant Rat']
-        lane.characters_by_player[1] = [character for character in lane.characters_by_player[1] if not character.template.name == 'Elephant Rat']
-
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
 
