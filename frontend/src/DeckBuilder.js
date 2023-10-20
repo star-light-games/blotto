@@ -314,6 +314,8 @@ function DeckBuilder({ cards, laneRewards }) {
   };
 
   return (
+    <>
+    <br />
     <Container>
       <Card>
           <CardContent>
@@ -588,6 +590,7 @@ function DeckBuilder({ cards, laneRewards }) {
         </Alert>
       </Snackbar>
     </Container>
+    </>
   );
 }
 
