@@ -363,7 +363,7 @@ function DeckBuilder({ cards, laneRewards }) {
               <li>Characters that switch lanes only attack once per turn, even if they switch rightwards.</li>
               <li>There is no more final battle. After turn 8, there's one fight, and then the game ends.</li>
               <li>Whichever side has more characters in a given lane attacks first. If both sides have the same number of characters, the side that attacks first is random.</li>
-              <li>Characters always attack in reading order now (i.e. the upper-left character attacks first, then the upper-right character, then the lower-left character, etc). This order corresponds to the order in which those characters entered the lane.</li>
+              <li>Characters always attack in reading order now (i.e. the upper-left character attacks first, then the upper-right character, then the lower-left character, etc). This order corresponds to the order in which those characters entered the lane. For this reason, the order in which you play cards into a lane on a single turn can matter.</li>
             </ul>
           </CardContent>
       </Card>
