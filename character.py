@@ -332,6 +332,12 @@ class Character:
         for _ in range(cards_drawn_from_shackles):
             game_state.draw_random_card(1 - self.owner_number)
 
+        for character in self.lane.characters_by_player[1 - self.owner_number]:
+            if character.has_ability('OnShacklePumpSelf'):
+                character.current_attack += character.number_of_ability('OnShacklePumpSelf')
+                character.current_health += character.number_2_of_ability('OnShacklePumpSelf')
+                character.max_health += character.number_2_of_ability('OnShacklePumpSelf')
+
         log.append(f"{shackling_character.owner_username}'s {shackling_character.template.name} shackled {self.owner_username}'s {self.template.name}.")
         if not do_not_animate:
             animations.append({

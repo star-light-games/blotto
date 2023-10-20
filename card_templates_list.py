@@ -173,10 +173,10 @@ CARD_TEMPLATES = {
     ),
     'Lin': CardTemplate(
         name='Lin',
-        abilities=['OnRevealShackle', 'ShacklesLastExtraTurn'],
+        abilities=['OnRevealShackle', ('OnShacklePumpSelf', 2, 2)],
         cost=4,
-        attack=5,
-        health=5,
+        attack=3,
+        health=3,
         creature_types=['Earth'],
     ),
     'Prince Wu': CardTemplate(

@@ -269,4 +269,10 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnDamageCharacterSilenceIt',
         description='After I damage a character, silence it.',
     ),
+    'OnShacklePumpSelf': lambda x, y: Ability(
+        name='OnShacklePumpSelf',
+        description=f'When an enemy character is shackled, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
 }
