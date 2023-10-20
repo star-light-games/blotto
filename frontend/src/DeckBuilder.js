@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { objectToArray } from './utils';
 import { useSocket } from './SocketContext';
+import LaneSelectionDisplay from './LaneSelectionDisplay';
 
 
 const calculateManaCurve = (deck, cards) => {
@@ -116,9 +117,6 @@ function DeckBuilder({ cards, laneRewards }) {
   const [currentLaneReward, setCurrentLaneReward] = useState(null);
   const [openGames, setOpenGames] = useState([]);
   const [timeControl, setTimeControl] = useState(parseInt(localStorage.getItem('timeControl')) || -1); // You can set a default value, for instance, 5 seconds for Hyperbullet
-
-  console.log(laneRewards);
-  console.log(currentLaneReward);
 
   const [hoveredCard, setHoveredCard] = useState(null);
 
@@ -516,6 +514,17 @@ function DeckBuilder({ cards, laneRewards }) {
         {cards.map((card) => (
           card?.notInCardPool ? null : <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
             <TcgCard card={card} doNotBorderOnHighlight={true} displayArt />
+          </Grid>
+        ))}
+      </Grid>
+  </CardContent>}
+
+  {!drafting && <CardContent>
+     <Typography variant="h6" style={{ marginTop: '20px' }}>Available Lanes:</Typography>
+      <Grid container spacing={3}>
+        {objectToArray(laneRewards).map((laneReward) => (
+          <Grid item key={laneReward.name} xs={12} sm={6} md={4} lg={3}>
+            <LaneSelectionDisplay laneReward={laneReward} currentLaneReward={currentLaneReward} setCurrentLaneReward={setCurrentLaneReward} />
           </Grid>
         ))}
       </Grid>
