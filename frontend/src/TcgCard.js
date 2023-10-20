@@ -92,7 +92,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     {card.creatureTypes.join(', ')}
                 </Typography>
                 <Typography>
-                    <ul>
+                    <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
                         {card.abilities.map((ability, index) => (
                             <li key={index}>{ability.description}</li>
                         ))}
