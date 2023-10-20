@@ -122,6 +122,10 @@ function TcgCardListItem({ cardName, index, removeFromDeck, doNotAllowDeleting, 
   )
 }
 
+function toUrlParams(obj) {
+  return Object.keys(obj).map(key => `${key}=${obj[key]}`).join('&');
+}
+
 
 function DeckBuilder({ cards, laneRewards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
@@ -305,6 +309,39 @@ function DeckBuilder({ cards, laneRewards }) {
     });
   };
 
+  const handleDeleteDeck = (deck) => {
+    // deck_name = request.args.get('deckName')
+    // username = request.args.get('username')
+    // deck_id = request.args.get('deckId')
+
+    console.log(deck);
+
+    const deckData = {
+      deckName: deck.name,
+      username: userName,
+      deckId: deck.id,
+    };
+
+    fetch(`${URL}/api/decks?${toUrlParams(deckData)}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => {
+          throw new Error(data.error);
+        });
+      }
+      setDecks(prevDecks => prevDecks.filter(d => d.id !== deck.id));
+    })
+    .catch(error => {
+      setErrorMessage(error.message);
+      setToastOpen(true);
+    });
+  };
+
   const handleCloseToast = () => {
     setToastOpen(false);
   };
@@ -337,6 +374,9 @@ function DeckBuilder({ cards, laneRewards }) {
         <CardContent>
         <Typography variant="h6" style={{ marginTop: '20px' }}>All Your Decks:</Typography>
           {decks.map((deck, index) => (
+            <>
+            <Grid container direction="row" spacing={1}>
+              <Grid item>
             <Box 
               key={index}
               component="button"
@@ -350,6 +390,14 @@ function DeckBuilder({ cards, laneRewards }) {
             >
               {deck.name}
             </Box>
+            </Grid>
+            <Grid item>
+              {deck.username !== 'COMMON_DECK' && <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteDeck(deck)}>
+                ❌
+              </IconButton>}
+            </Grid>
+          </Grid>
+          </>
           ))}
           {/* Host and Join game actions */}
           <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
