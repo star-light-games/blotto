@@ -695,7 +695,7 @@ CARD_TEMPLATES = {
     ),
     'Tashi': CardTemplate(
         name='Tashi',
-        abilities=['Defender', 'SurviveSwitchLAnes'],
+        abilities=['Defender', 'SurviveSwitchLanes'],
         cost=4,
         attack=2,
         health=10,
