@@ -400,7 +400,7 @@ CARD_TEMPLATES = {
         name='La',
         abilities=[('OnDrawCardPump', 2, 0)],
         cost=2,
-        attack=0,
+        attack=1,
         health=2,
         creature_types=['Water'],
     ),
