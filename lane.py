@@ -37,6 +37,7 @@ class Lane:
             if lane_to_spawn_in is not None:
                 character = Character(CARD_TEMPLATES[self.lane_reward.effect[1]], lane_to_spawn_in, player_num, game_state.usernames_by_player[player_num])  # type: ignore
                 lane_to_spawn_in.characters_by_player[player_num].append(character)
+                character.do_all_on_reveal(log, animations, game_state)
         elif self.lane_reward.effect[0] == 'drawRandomCards':
             for _ in range(self.lane_reward.effect[1]):  # type: ignore
                 game_state.draw_random_card(player_num)
@@ -82,7 +83,7 @@ class Lane:
             character.do_early_on_reveal(log, animations, game_state)
 
         for character in characters_to_do_on_reveal:
-            character.do_on_reveal(log, animations, game_state)
+            character.do_regular_on_reveal(log, animations, game_state)
 
         for character in characters_to_do_on_reveal:
             character.do_late_on_reveal(log, animations, game_state)

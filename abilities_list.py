@@ -18,7 +18,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnSurviveDamagePump': lambda x, y: Ability(
         name='OnSurviveDamagePump',
-        description=f'When I survive damage, I get +{x}/+{y}.',
+        description=f'Survive: I get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
@@ -274,5 +274,38 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         description=f'When an enemy character is shackled, I get +{x}/+{y}.',
         number=x,
         number_2=y,
+    ),
+    'OnSurviveGainMana': lambda x: Ability(
+        name='OnSurviveGainMana',
+        description=f'Survive: gain {x} mana.',
+        number=x,
+    ),
+    'OnSurviveDrawCard': Ability(
+        name='OnSurviveDrawCard',
+        description='Survive: draw a random card.',
+    ),
+    'OnRevealSummonDesna': Ability(
+        name='OnRevealSummonDesna',
+        description='On reveal: summon Desna, a 5/2 attacker.',
+    ),
+    'OnRevealStealEnemy': Ability(
+        name='OnRevealStealEnemy',
+        description='On reveal: steal a random enemy character.',
+    ),
+    'OnTriggerSurvivePump': lambda x, y: Ability(
+        name='OnTriggerSurvivePump',
+        description=f'When a friendly character triggers a Survive ability, that character gets +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'OnTriggerSurvivePumpSelf': lambda x, y: Ability(
+        name='OnTriggerSurvivePumpSelf',
+        description=f'When a friendly character triggers a Survive ability, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'OnRevealHealAndPumpSelf': Ability(
+        name='OnRevealHealAndPumpSelf',
+        description=f'On reveal: heal a friendly character fully, then I get +X/+X, where X is the amount healed.',
     ),
 }

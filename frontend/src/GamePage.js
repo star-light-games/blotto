@@ -1085,7 +1085,7 @@ export default function GamePage({ }) {
             arrow.classList.add("healed");
         } else if (arrowType === 'silence') {
             arrow.classList.add("silenced");
-        } else if (arrowType === 'switchLanes') {
+        } else if (['switchLanes', 'switchSides'].includes(arrowType)) {
             arrow.classList.add("switchLanes");
         }
         else {
@@ -1260,6 +1260,12 @@ export default function GamePage({ }) {
                     log('switching lanes');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     showArrowFromCharacterToCharacter(event.data, 'switchLanes');
+                    setGameState(newState);
+                    break;
+                case 'SwitchSides':
+                    log('switching sides');
+                    await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                    showArrowFromCharacterToCharacter(event.data, 'switchSides');
                     setGameState(newState);
                     break;
                 case "EndOfRoll":
