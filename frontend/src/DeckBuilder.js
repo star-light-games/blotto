@@ -428,6 +428,7 @@ function DeckBuilder({ cards, laneRewards }) {
               <li>There is no more final battle. After turn 8, there's one fight, and then the game ends.</li>
               <li>Whichever side has more characters in a given lane attacks first. If both sides have the same number of characters, the side that attacks first is random.</li>
               <li>Characters always attack in reading order now (i.e. the upper-left character attacks first, then the upper-right character, then the lower-left character, etc). This order corresponds to the order in which those characters entered the lane. For this reason, the order in which you play cards into a lane on a single turn can matter.</li>
+              <li>A bunch of card wording has been cleaned up, and instanced of "in this lane" have been removed. It's still the case that by default, characters only "see" and affect things in their own lane, unless explicitly said otherwise.</li>
             </ul>
           </CardContent>
       </Card>
