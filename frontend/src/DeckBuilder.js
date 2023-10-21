@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
   TextField,
@@ -18,6 +18,8 @@ import {
   MenuItem,
   Select,
   Menu,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import TcgCard from './TcgCard';
 
@@ -27,6 +29,7 @@ import { Link } from 'react-router-dom';
 import { objectToArray } from './utils';
 import { useSocket } from './SocketContext';
 import LaneRewardDisplay from './LaneRewardDisplay';
+import Timer from './Timer';
 
 
 const calculateManaCurve = (deck, cards) => {
@@ -44,12 +47,20 @@ const calculateManaCurve = (deck, cards) => {
   return manaCurve;
 };
 
-function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, saveDeck, currentLaneReward, setCurrentLaneReward }) {
+function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, saveDeck, currentLaneReward, setCurrentLaneReward, isTimedDraft, draftStartTime }) {
   const [draftOptions, setDraftOptions] = useState([]);
+  const [secondsElapsed, setSecondsElapsed] = useState(null);
+  const [timerHasElapsed, setTimerHasElapsed] = useState(false);
 
-  console.log(currentDeck.length);
+  const [currentDeck2, setCurrentDeck2] = useState([]);
+
+  const currentDeckRef = useRef(currentDeck);
 
   const DRAFT_DECK_SIZE = 18;
+
+  useEffect(() => {
+    currentDeckRef.current = currentDeck;
+  }, [currentDeck]);
 
   useEffect(() => {
     // Function to generate four distinct random cards from cardPool
@@ -79,10 +90,45 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
     setCurrentDeck(prev => [...prev, cardName]);
   };
 
+  const fillDeckWithRandomCards = () => {
+    const currentDeck = currentDeckRef.current;
+    const numCardsToAdd = DRAFT_DECK_SIZE - currentDeck.length;
+    const randomCards = [];
+    while (randomCards.length < numCardsToAdd) {
+      const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
+      randomCards.push(randomCard.name);
+    }
+    // setCurrentDeck(prev => [...prev, ...randomCards]);
+    let deckName = 'Random draft deck';
+    if (currentDeck.length > 1) {
+      deckName = `Draft deck with ${currentDeck[0]} and ${currentDeck[1]}`;
+    }
+    saveDeck(deckName, currentLaneReward.name, [...currentDeck, ...randomCards]);
+    setDrafting(false);
+    setCurrentLaneReward(null);
+  };
+
+  const onTimerElapsed = () => {
+    if (timerHasElapsed) return;
+    setTimerHasElapsed(true);
+    fillDeckWithRandomCards();
+  }
+
+  // const onTimerElapsed = () => {};
+
   if (currentDeck.length === DRAFT_DECK_SIZE) return null;
 
   return (
     <React.Fragment>
+      {isTimedDraft && draftStartTime && <Timer 
+        lastTimerStart={draftStartTime / 1000} 
+        secondsPerTurn={150} 
+        secondsElapsed={secondsElapsed}
+        setSecondsElapsed={setSecondsElapsed}
+        doNotUpdateTimer={false}
+        onTimerElapsed={onTimerElapsed}
+        currentDeck={currentDeck}
+      />}
       <Typography variant="h6">Your games will contain the following lane:</Typography>
       <Typography variant="h5">{currentLaneReward?.name}</Typography>
       <Typography variant="h6">{currentLaneReward.threshold ? `${currentLaneReward.threshold}: ${currentLaneReward?.reward_description}` : currentLaneReward?.reward_description}</Typography>
@@ -129,7 +175,6 @@ function toUrlParams(obj) {
 
 function DeckBuilder({ cards, laneRewards }) {
   const [currentDeck, setCurrentDeck] = useState([]);
-  console.log(currentDeck);
   const [decks, setDecks] = useState([]);
   const [userName, setUserName] = useState(localStorage.getItem('userName') || ''); // Retrieve from localStorage
   const [deckName, setDeckName] = useState('');
@@ -150,6 +195,9 @@ function DeckBuilder({ cards, laneRewards }) {
 
   const manaCurve = calculateManaCurve(currentDeck, cards);
   const socket = useSocket();
+
+  const [isTimedDraft, setIsTimedDraft] = useState(localStorage.getItem('isTimedDraft') || false);
+  const [draftStartTime, setDraftStartTime] = useState(null);
 
   console.log(laneRewards);
 
@@ -238,6 +286,10 @@ function DeckBuilder({ cards, laneRewards }) {
     localStorage.setItem('timeControl', timeControl);
   }, [timeControl]);
 
+  useEffect(() => {
+    // Set the timeControl in localStorage whenever it changes
+    localStorage.setItem('isTimedDraft', isTimedDraft);
+  }, [isTimedDraft]);
 
   const fetchDecks = () => {
     fetch(`${URL}/api/decks?username=${userName}&rand=${Math.random()}}`)
@@ -275,11 +327,11 @@ function DeckBuilder({ cards, laneRewards }) {
     setCurrentDeck([...currentDeck, cardName]);
   };
 
-  const saveDeck = (deckName, laneRewardName) => {
+  const saveDeck = (deckName, laneRewardName, deckArray) => {
     const deckData = {
       name: deckName,
       username: userName,
-      cards: currentDeck,
+      cards: deckArray ? deckArray : currentDeck,
       laneRewardName: laneRewardName || null,
     };
 
@@ -595,14 +647,33 @@ function DeckBuilder({ cards, laneRewards }) {
   )}
 
   {!drafting && <CardContent>
-    <Button variant="outlined" onClick={() => {
-        const laneRewardsArray = objectToArray(laneRewards);
-        setDrafting(true);
-        setCurrentDeck([]);
-        setCurrentLaneReward(laneRewardsArray[Math.floor(Math.random() * laneRewardsArray.length)]);
-    }}>
-      Draft Cards
-    </Button>
+    <Grid container direction="row" spacing={3}>
+      <Grid item>
+        <Button variant="outlined" onClick={() => {
+            const laneRewardsArray = objectToArray(laneRewards);
+            setDrafting(true);
+            setCurrentDeck([]);
+            setCurrentLaneReward(laneRewardsArray[Math.floor(Math.random() * laneRewardsArray.length)]);
+            if (isTimedDraft) {
+              setDraftStartTime(Date.now());
+            }
+        }}>
+          Draft Cards
+        </Button>
+      </Grid>
+      <Grid item>
+        <FormControlLabel 
+          control={
+            <Checkbox 
+              checked={isTimedDraft} 
+              onChange={(e) => setIsTimedDraft(e.target.checked)} 
+              name="timedDraftCheckbox" 
+            />
+          } 
+          label="Timed draft" 
+        />
+      </Grid>
+    </Grid>
   </CardContent>}
 
   {drafting && <CardContent>
@@ -614,6 +685,8 @@ function DeckBuilder({ cards, laneRewards }) {
       saveDeck={saveDeck} 
       currentLaneReward={currentLaneReward}
       setCurrentLaneReward={setCurrentLaneReward}
+      isTimedDraft={isTimedDraft}
+      draftStartTime={draftStartTime}
     />
   </CardContent>}
 

@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 
-function Timer({ lastTimerStart, secondsPerTurn, secondsElapsed, setSecondsElapsed, doNotUpdateTimer }) {
+function Timer({ lastTimerStart, secondsPerTurn, secondsElapsed, setSecondsElapsed, doNotUpdateTimer, onTimerElapsed }) {
   useEffect(() => {
     // When the component mounts or lastTimerStart changes, reset the timer and start counting.
 
@@ -12,6 +12,9 @@ function Timer({ lastTimerStart, secondsPerTurn, secondsElapsed, setSecondsElaps
 
       const difference = Math.floor((lastTimerStart * 1000 - currentTime + secondsPerTurn * 1000) / 1000); // Difference in seconds
       setSecondsElapsed(difference);
+      if (onTimerElapsed && difference <= -1) {
+        onTimerElapsed();
+      }
     }, 1000); // Update every second
 
     // Cleanup: clear the interval when the component unmounts or when lastTimerStart changes
