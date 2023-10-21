@@ -1039,7 +1039,7 @@ export default function GamePage({ }) {
         let defendingCharacterPos;
 
         attackingCharacterPos = characterRefs?.current?.[event.lane]?.[event.acting_player]?.[event.from_character_index]?.current?.getBoundingClientRect();
-        if (arrowType === 'heal') {
+        if (['heal', 'friendlyAttack'].includes(arrowType)) {
             defendingCharacterPos = characterRefs?.current?.[event.lane]?.[event.acting_player]?.[event.to_character_index]?.current?.getBoundingClientRect();
         }
         else if (arrowType === 'switchLanes') {
@@ -1226,6 +1226,13 @@ export default function GamePage({ }) {
                     showArrowFromCharacterToCharacter(event.data, null);
                     setGameState(newState);
                     break;
+                case "FriendlyAttack":
+                    // Run your animation function, e.g., showArrowToTower(event);
+                    log('attacking character');
+                    await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                    showArrowFromCharacterToCharacter(event.data, 'friendlyAttack');
+                    setGameState(newState);
+                    break;                    
                 case "TowerDamage":
                     log('attacking tower');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay

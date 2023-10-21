@@ -308,4 +308,12 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealHealAndPumpSelf',
         description=f'On reveal: heal a friendly character fully, then I get +X/+X, where X is the amount healed.',
     ),
+    'SurviveSwitchLanes': Ability(
+        name='SurviveSwitchLanes',
+        description='Survive: I switch lanes.',
+    ),
+    'OnRevealEnemiesFight': Ability(
+        name='OnRevealEnemiesFight',
+        description='On reveal: two enemy characters fight each other.',
+    ),
 }

@@ -340,12 +340,20 @@ CARD_TEMPLATES = {
         health=6,
         creature_types=['Earth'],
     ),
-    'Hama': CardTemplate(
-        name='Hama',
+    'Elder Katara': CardTemplate(
+        name='Elder Katara',
         abilities=['EndOfTurnFullHealForAllFriendlies', ('OnFriendlyHealPumpMyself', 2, 0)],
         cost=3,
         attack=2,
         health=6,
+        creature_types=['Water'],
+    ),
+    'Hama': CardTemplate(
+        name='Hama',
+        abilities=['OnRevealEnemiesFight'],
+        cost=3,
+        attack=3,
+        health=1,
         creature_types=['Water'],
     ),
     'Hiroshi': CardTemplate(
@@ -630,10 +638,10 @@ CARD_TEMPLATES = {
     ),
     'Taqukaq': CardTemplate(
         name='Taqukaq',
-        abilities=['Defender', 'OnSurviveDrawCard'],
+        abilities=['Defender', ('OnKillBuffHealth', 1, 0)],
         cost=2,
         attack=1,
-        health=6,
+        health=8,
         creature_types=['Water'],
     ),
     'Eska': CardTemplate(
@@ -679,10 +687,18 @@ CARD_TEMPLATES = {
     ),
     'Yagoda': CardTemplate(
         name='Yagoda',
-        abilities=[('OnRevealHealAndPumpSelf')],
+        abilities=['OnRevealHealAndPumpSelf'],
         cost=3,
         attack=2,
         health=2,
         creature_types=['Water'],
+    ),
+    'Tashi': CardTemplate(
+        name='Tashi',
+        abilities=['Defender', 'SurviveSwitchLAnes'],
+        cost=4,
+        attack=2,
+        health=10,
+        creature_types=['Air'],
     ),
 }

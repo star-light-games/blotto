@@ -184,6 +184,10 @@ class Character:
                 log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
                 self.on_trigger_survive_ability(log, animations, game_state)
 
+            if self.has_ability('SurviveSwitchLanes'):
+                self.on_trigger_survive_ability(log, animations, game_state)
+                self.switch_lanes(log, animations, game_state)
+
     def on_trigger_survive_ability(self, log: list[str], animations: list, game_state: 'GameState'):
         for character in self.lane.characters_by_player[self.owner_number]:
             if character.has_ability('OnTriggerSurvivePumpSelf'):
@@ -197,19 +201,19 @@ class Character:
                 self.max_health += character.number_2_of_ability('OnTriggerSurvivePump')
                 log.append(f"{self.owner_username}'s {self.template.name} got +{character.number_of_ability('OnTriggerSurvivePump')}/+{character.number_2_of_ability('OnTriggerSurvivePump')} for surviving damage.")
 
-    def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState'):
+    def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState', friendly: bool = False):
         defender_starting_current_attack = defending_character.current_health if defending_character.has_ability('DealDamageEqualToCurrentHealth') else defending_character.current_attack
         self.punch(defending_character, lane_number, log, animations, game_state)
         if not self.has_ability('InvincibilityWhileAttacking'):
             defending_character.punch(self, lane_number, log, animations, game_state, starting_current_attack=defender_starting_current_attack)
 
         animations.append({
-                        "event_type": "CharacterAttack",
+                        "event_type": "FriendlyAttack" if friendly else "CharacterAttack",
                         "data": {
                             "lane": lane_number,
                             "acting_player": self.owner_number,
                             "from_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                            "to_character_index": [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(defending_character.id),                            
+                            "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number if friendly else 1 - self.owner_number]].index(defending_character.id),
                         },
                         "game_state": game_state.to_json(),
                     })
@@ -641,10 +645,10 @@ class Character:
                 lane.process_dying_characters(log, animations, game_state)
 
         if self.has_ability('OnRevealStealEnemy'):
-            animations.append(
-                on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
-            )
             if len(self.lane.characters_by_player[self.owner_number]) < 4:
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
                 random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
                 if random_enemy_character is not None:
                     starting_character_index = [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(random_enemy_character.id)
@@ -663,6 +667,18 @@ class Character:
                         },
                         "game_state": game_state.to_json(),
                     })
+
+
+        if self.has_ability('OnRevealEnemiesFight'):
+            if len(self.lane.characters_by_player[1 - self.owner_number]) > 1:
+                animations.append(
+                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                )
+                enemy_attacker = self.lane.get_random_enemy_character(self.owner_number)
+                if enemy_attacker is not None:
+                    enemy_defender = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.id == enemy_attacker.id)
+                    if enemy_defender is not None:
+                        enemy_attacker.fight(enemy_defender, self.lane.lane_number, log, animations, game_state, friendly=True)
 
 
         self.did_on_reveal = True
