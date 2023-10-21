@@ -10,8 +10,9 @@ export default function LaneRewardDisplay({ laneReward, currentLaneReward, setCu
         <Card 
             onClick={notSelectable ? () => {} : () => setCurrentLaneReward(laneReward)}
             style={{
-                cursor: 'pointer',
-                border: isSelected ? '2px solid black' : 'none'  // Apply border if selected
+                ...(notSelectable ? {} : {cursor: 'pointer'}),
+                border: isSelected ? '2px solid black' : 'none',  // Apply border if selected
+                maxWidth: 500,
             }}
         >
             <CardContent>

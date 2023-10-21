@@ -120,27 +120,39 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
 
   return (
     <React.Fragment>
-      {isTimedDraft && draftStartTime && <Timer 
-        lastTimerStart={draftStartTime / 1000} 
-        secondsPerTurn={150} 
-        secondsElapsed={secondsElapsed}
-        setSecondsElapsed={setSecondsElapsed}
-        doNotUpdateTimer={false}
-        onTimerElapsed={onTimerElapsed}
-        currentDeck={currentDeck}
-      />}
-      <Typography variant="h6">Your games will contain the following lane:</Typography>
-      <Typography variant="h5">{currentLaneReward?.name}</Typography>
-      <Typography variant="h6">{currentLaneReward.threshold ? `${currentLaneReward.threshold}: ${currentLaneReward?.reward_description}` : currentLaneReward?.reward_description}</Typography>
-      <br />
-      <Typography variant="h6">Drafting card {currentDeck.length + 1}/{DRAFT_DECK_SIZE}</Typography>
-      <br />
-      <Grid container spacing={3}>
-        {draftOptions.map((card) => (
-          <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
-            <TcgCard card={card} doNotBorderOnHighlight={true} displayArt />
+      <Grid container direction="column" spacing={1}>
+        {isTimedDraft && draftStartTime && <Grid item>
+          <Timer 
+            lastTimerStart={draftStartTime / 1000} 
+            secondsPerTurn={150} 
+            secondsElapsed={secondsElapsed}
+            setSecondsElapsed={setSecondsElapsed}
+            doNotUpdateTimer={false}
+            onTimerElapsed={onTimerElapsed}
+            currentDeck={currentDeck}
+          />
+        </Grid>}
+        <Grid item xs={4}>
+          <Typography variant="h6">Your games will contain the following lane:</Typography>
+          <LaneRewardDisplay
+            laneReward={currentLaneReward}
+            currentLaneReward={currentLaneReward}
+            setCurrentLaneReward={setCurrentLaneReward}
+            notSelectable={true}
+          />
+        </Grid>
+        <Grid item>
+          <Typography variant="h6">Drafting card {currentDeck.length + 1}/{DRAFT_DECK_SIZE}</Typography>
+        </Grid>
+        <Grid item>
+          <Grid container spacing={3}>
+            {draftOptions.map((card) => (
+              <Grid item key={card.name} xs={12} sm={6} md={4} lg={3} onClick={() => addToDeck(card.name)}>
+                <TcgCard card={card} doNotBorderOnHighlight={true} displayArt />
+              </Grid>
+            ))}
           </Grid>
-        ))}
+        </Grid>
       </Grid>
     </React.Fragment>
   );
