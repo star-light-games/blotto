@@ -566,30 +566,6 @@ class Character:
                 self.lane.characters_by_player[self.owner_number].append(desna_character)
                 desna_character.do_all_on_reveal(log, animations, game_state)
 
-            if self.has_ability('OnRevealStealEnemy'):
-                animations.append(
-                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
-                )
-                if len(self.lane.characters_by_player[self.owner_number]) < 4:
-                    random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
-                    if random_enemy_character is not None:
-                        starting_character_index = [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(random_enemy_character.id)
-                        self.lane.characters_by_player[1 - self.owner_number] = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.id != random_enemy_character.id]
-                        self.lane.characters_by_player[self.owner_number].append(random_enemy_character)
-                        random_enemy_character.owner_number = self.owner_number
-                        random_enemy_character.owner_username = self.owner_username
-
-                        animations.append({
-                            'event_type': 'SwitchSides',
-                            'data': {
-                                "acting_player": 1 - self.owner_number,
-                                "lane": self.lane.lane_number,
-                                "from_character_index": starting_character_index,
-                                "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(random_enemy_character.id),
-                            },
-                            "game_state": game_state.to_json(),
-                        })
-
             if self.has_ability('OnRevealHealAndPumpSelf'):
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
                 if random_friendly_damaged_character is not None:
@@ -663,6 +639,30 @@ class Character:
                         defending_characters = [character for character in lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
                         character.attack(self.owner_number, lane.damage_by_player, defending_characters, lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                
                 lane.process_dying_characters(log, animations, game_state)
+
+        if self.has_ability('OnRevealStealEnemy'):
+            animations.append(
+                on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+            )
+            if len(self.lane.characters_by_player[self.owner_number]) < 4:
+                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number)
+                if random_enemy_character is not None:
+                    starting_character_index = [c.id for c in self.lane.characters_by_player[1 - self.owner_number]].index(random_enemy_character.id)
+                    self.lane.characters_by_player[1 - self.owner_number] = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.id != random_enemy_character.id]
+                    self.lane.characters_by_player[self.owner_number].append(random_enemy_character)
+                    random_enemy_character.owner_number = self.owner_number
+                    random_enemy_character.owner_username = self.owner_username
+
+                    animations.append({
+                        'event_type': 'SwitchSides',
+                        'data': {
+                            "acting_player": 1 - self.owner_number,
+                            "lane": self.lane.lane_number,
+                            "from_character_index": starting_character_index,
+                            "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(random_enemy_character.id),
+                        },
+                        "game_state": game_state.to_json(),
+                    })
 
 
         self.did_on_reveal = True
