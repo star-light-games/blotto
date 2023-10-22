@@ -76,10 +76,10 @@ class GameState:
     def run_card_discard_triggers(self, player_num: int):
         for lane in self.lanes:
             for character in lane.characters_by_player[player_num]:
-                if character.has_ability('OnDiscardCardPump'):
-                    character.current_attack += character.number_of_ability('OnDiscardCardPump')
-                    character.current_health += character.number_2_of_ability('OnDiscardCardPump')
-                    character.max_health += character.number_2_of_ability('OnDiscardCardPump')
+                if character.has_ability('OnDiscardPump'):
+                    character.current_attack += character.number_of_ability('OnDiscardPump')
+                    character.current_health += character.number_2_of_ability('OnDiscardPump')
+                    character.max_health += character.number_2_of_ability('OnDiscardPump')
 
     def discard_all_cards(self, player_num: int):
         card_ids = [card.id for card in self.hands_by_player[player_num]]
