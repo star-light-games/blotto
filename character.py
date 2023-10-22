@@ -147,9 +147,8 @@ class Character:
                do_not_set_has_attacked: bool = False):
         if not do_not_set_has_attacked:
             self.has_attacked = True
-        is_attacker = self.is_attacker()
         defenders = [character for character in defending_characters if character.is_defender() and character.can_fight()]
-        if len(defenders) == 0 and not is_attacker:
+        if len(defenders) == 0 and not self.is_attacker():
             self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
         else:
             if len(defenders) == 0:
@@ -161,9 +160,9 @@ class Character:
                 target_character = random.choice(defenders)
             if target_character is not None:
                 self.fight(target_character, lane_number, log, animations, game_state)
-            if is_attacker:
+            else:
                 self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
-        
+
         if self.has_ability('SwitchLanesAfterAttacking'):
             self.switch_lanes(log, animations, game_state)
 
@@ -182,7 +181,7 @@ class Character:
     def exists(self):
         return self.id in [c.id for c in self.lane.characters_by_player[self.owner_number]]
 
-    def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState', friendly: bool = False):
+    def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState', friendly: bool = False, do_not_attack_tower: bool = False):
         from_character_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
         to_character_index = [c.id for c in self.lane.characters_by_player[self.owner_number if friendly else 1 - self.owner_number]].index(defending_character.id)
         attacker_damage_to_deal = self.get_damage_to_deal_in_punch(defending_character, lane_number, log, animations, game_state)
@@ -202,22 +201,23 @@ class Character:
             "game_state": game_state.to_json(),
         })
 
+        if self.is_attacker():
+            self.deal_tower_damage(self.owner_number, self.lane.characters_by_player[defending_character.owner_number], self.lane.damage_by_player, lane_number, log, animations, game_state)
+
         self.lane.process_dying_characters(log, animations, game_state)
 
         if self.has_ability('OnDamageCharacterSilenceIt') and attacker_damage_to_deal > 0:
             defending_character.silence(self, log, animations, game_state, do_not_animate=True)
         if defending_character.has_ability('OnDamageCharacterSilenceIt') and defender_damage_to_deal > 0:
             self.silence(defending_character, log, animations, game_state, do_not_animate=True)
-        if defender_damage_to_deal > 0:
+        if defender_damage_to_deal > 0 and defending_character.current_health > 0:
             self.do_survive_damage_triggers(log, animations, game_state)
-        if attacker_damage_to_deal > 0:
+        if attacker_damage_to_deal > 0 and defending_character.current_health > 0:
             defending_character.do_survive_damage_triggers(log, animations, game_state)
-        if not defending_character.current_health <= 0:
-            if self.exists():
-                self.do_kill_enemy_triggers(defending_character, log, animations, game_state)
-        if self.current_health <= 0:
-            if defending_character.exists():
-                defending_character.do_kill_enemy_triggers(self, log, animations, game_state)
+        if not defending_character.exists() and self.exists():
+            self.do_kill_enemy_triggers(defending_character, log, animations, game_state)
+        if not self.exists() and defending_character.exists():
+            defending_character.do_kill_enemy_triggers(self, log, animations, game_state)
 
     def do_kill_enemy_triggers(self, defending_character: 'Character', log: list[str], animations: list, game_state: 'GameState'):
         if self.has_ability('OnKillBuffHealth'):
@@ -745,7 +745,7 @@ class Character:
                 if enemy_attacker is not None:
                     enemy_defender = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.id == enemy_attacker.id)
                     if enemy_defender is not None:
-                        enemy_attacker.fight(enemy_defender, self.lane.lane_number, log, animations, game_state, friendly=True)
+                        enemy_attacker.fight(enemy_defender, self.lane.lane_number, log, animations, game_state, friendly=True, do_not_attack_tower=True)
 
         if self.has_ability('OnRevealEnemiesSwitchLanes'):
             animations.append(
