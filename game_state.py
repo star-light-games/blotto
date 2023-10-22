@@ -69,9 +69,24 @@ class GameState:
                     character.current_health += character.number_2_of_ability('OnDrawCardPump')
                     character.max_health += character.number_2_of_ability('OnDrawCardPump')
 
+    def discard_card(self, player_num: int, card_id: str):
+        self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
+        self.run_card_discard_triggers(player_num)
+
+    def run_card_discard_triggers(self, player_num: int):
+        for lane in self.lanes:
+            for character in lane.characters_by_player[player_num]:
+                if character.has_ability('OnDiscardCardPump'):
+                    character.current_attack += character.number_of_ability('OnDiscardCardPump')
+                    character.current_health += character.number_2_of_ability('OnDiscardCardPump')
+                    character.max_health += character.number_2_of_ability('OnDiscardCardPump')
+
+    def discard_all_cards(self, player_num: int):
+        card_ids = [card.id for card in self.hands_by_player[player_num]]
+        for card_id in card_ids:
+            self.discard_card(player_num, card_id)
+
     def mulligan_all(self, player_num: int):
-        print(player_num)
-        print(self.has_mulliganed_by_player)
         if self.has_mulliganed_by_player[player_num]:
             return
         self.has_mulliganed_by_player[player_num] = True
@@ -81,15 +96,10 @@ class GameState:
             self.mulligan_card(player_num, card.id)
 
     def mulligan_card(self, player_num: int, card_id: str):
-        print(player_num)
-        print(card_id)
         self.draw_piles_by_player[player_num].append([card for card in self.hands_by_player[player_num] if card.id == card_id][0])
         self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
         self.log.append(f"{self.usernames_by_player[player_num]} mulliganed a card.")
         self.draw_card(player_num)
-
-        print(self.hands_by_player[0])
-        print(self.draw_piles_by_player[0])
 
     def mulligan_cards(self, player_num: int, cards: list[str]):
         if self.has_mulliganed_by_player[player_num]:

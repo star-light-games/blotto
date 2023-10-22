@@ -50,7 +50,7 @@ class Lane:
                 lane.process_dying_characters(log, animations, game_state)
 
         elif self.lane_reward.effect[0] == 'discardHand':
-            game_state.hands_by_player[player_num] = []
+            game_state.discard_all_cards(player_num)
 
         elif self.lane_reward.effect[0] == 'gainMana':
             game_state.mana_by_player[player_num] += self.lane_reward.effect[1]  # type: ignore

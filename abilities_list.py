@@ -46,7 +46,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnTowerAttackDealMassDamage': lambda x: Ability(
         name='OnTowerAttackDealMassDamage',
-        description=f'When I attack the enemy tower, I deal {x} damage to enemy characters.',
+        description=f'Hit tower: deal {x} damage to enemy characters.',
         number=x,
     ),
     'OnRevealPumpAttackers': lambda x, y: Ability(
@@ -63,7 +63,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnTowerAttackDrawCard': Ability(
         name='OnTowerAttackDrawCard',
-        description='When I attack the enemy tower, draw a random card.',
+        description='Hit tower: draw a random card.',
     ),
     'ShacklesLastExtraTurn': Ability(
         name='ShacklesLastExtraTurn',
@@ -121,10 +121,6 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealLaneFightsFirst',
         description='On reveal: this lane fights first this turn.',
     ),
-    'OnKillSwitchLanes': Ability(
-        name='OnKillSwitchLanes',
-        description='When I kill a character, I switch lanes.',
-    ),
     'PumpOnFriendlyHeal': lambda x, y: Ability(
         name='PumpOnFriendlyHeal',
         description=f'Whenever another friendly character is healed, that character gets +{x}/+{y}.',
@@ -133,7 +129,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnKillBuffHealth': lambda x, y: Ability(
         name='OnKillBuffHealth',
-        description=f'When I kill a character, I get +{x}/+{y}.',
+        description=f'Kill enemy: I get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
@@ -180,19 +176,13 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnDamageTowerPumpTeam': lambda x, y: Ability(
         name='OnDamageTowerPumpTeam',
-        description=f'When I damage the enemy tower, other friendly characters get +{x}/+{y}.',
-        number=x,
-        number_2=y,
-    ),
-    'OnFriendlySlayPump': lambda x, y: Ability(
-        name='OnFriendlySlayPump',
-        description=f'Whenever another friendly character kills an enemy character, I get +{x}/+{y}.',
+        description=f'Hit tower: other friendly characters get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
     'OnTowerDamageGainMana': lambda x: Ability(
         name='OnTowerDamageGainMana',
-        description=f'When I damage the enemy tower, gain {x} mana next turn.',
+        description=f'Hit tower: gain {x} mana next turn.',
         number=x,
     ),
     'DoNotDamageEnemyCharacters': Ability(
@@ -315,5 +305,50 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'OnRevealEnemiesFight': Ability(
         name='OnRevealEnemiesFight',
         description='On reveal: two enemy characters fight each other.',
+    ),
+    'OnRevealDiscard': Ability(
+        name='OnRevealDiscard',
+        description='On reveal: discard a random card.',
+    ),
+    'HitTowerPumpSelf': lambda x, y: Ability(
+        name='HitTowerPumpSelf',
+        description=f'Hit tower: I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'OnRevealEnemiesSwitchLanes': Ability(
+        name='OnRevealEnemiesSwitchLanes',
+        description='On reveal: enemy characters here switch lanes.',
+    ),
+    'OnDiscardPump': lambda x, y: Ability(
+        name='OnDiscardPump',
+        description=f'When you discard a card, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'HitTowerDamageAllCharacters': lambda x: Ability(
+        name='HitTowerDamageAllCharacters',
+        description=f'Hit tower: I deal {x} damage to all other characters here (including yours).',
+        number=x,
+    ),
+    'OnTriggerHitTowerPump': lambda x, y: Ability(
+        name='OnTriggerHitTowerPump',
+        description=f'When a friendly character triggers a Hit Tower ability, that character gets +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'HitTowerOtherCharactersSwitchLanes': Ability(
+        name='HitTowerOtherCharactersSwitchLanes',
+        description='Hit tower: other friendly characters switch lanes.',
+    ),
+    'OnTriggerKillEnemyHealAndPumpSelf': lambda x, y: Ability(
+        name='OnTriggerKillEnemyHealAndPumpSelf',
+        description=f'When a friendly character triggeres a kill enemy ability, heal that character fully and I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'KillEnemyAttackAgain': Ability(
+        name='KillEnemyAttackAgain',
+        description='Kill enemy: I attack again.',
     ),
 }

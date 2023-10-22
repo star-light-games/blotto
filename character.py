@@ -50,25 +50,31 @@ class Character:
         assert ability.creature_type is not None
         return ability.creature_type
 
-    def compute_damage_to_deal(self, damage_by_player: dict[int, int], is_tower_attack: bool = False, starting_current_attack: Optional[int] = None):
+    def compute_damage_to_deal(self, damage_by_player: dict[int, int], is_tower_attack: bool = False):
         multiplier = 2 if self.has_ability('DoubleTowerDamage') and is_tower_attack else 1
         extra_for_losing = self.number_of_ability('DealMoreDamageWhenLosing') if self.has_ability('DealMoreDamageWhenLosing') and damage_by_player[1 - self.owner_number] > damage_by_player[self.owner_number] else 0
-        base_attack = starting_current_attack if starting_current_attack is not None else self.current_health if self.has_ability('DealDamageEqualToCurrentHealth') else self.current_attack
+        base_attack = self.current_health if self.has_ability('DealDamageEqualToCurrentHealth') else self.current_attack
         damage_dealt = (base_attack + extra_for_losing) * multiplier
         return damage_dealt
 
     def deal_tower_damage(self, attacking_player: int, defending_characters: list['Character'], damage_by_player: dict[int, int], lane_number: int, log: list[str], animations: list, game_state: 'GameState'):
         damage_dealt = self.compute_damage_to_deal(damage_by_player, is_tower_attack=True)
         damage_by_player[self.owner_number] += damage_dealt
+
+        log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
+
         if self.has_ability('OnTowerAttackDealMassDamage'):
             for character in defending_characters:
-                character.current_health -= self.number_of_ability('OnTowerAttackDealMassDamage')
+                character.sustain_damage(self.number_of_ability('OnTowerAttackDealMassDamage'), log, animations, game_state)
                 log.append(f"{self.owner_username}'s {self.template.name} dealt 2 damage to {character.owner_username}'s {character.template.name} in Lane {lane_number + 1}. "
                             f"{character.template.name}'s health is now {character.current_health}.")
-        log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
+            self.on_trigger_hit_tower_ability(log, animations, game_state)
+
         if self.has_ability('OnTowerAttackDrawCard'):
             game_state.draw_random_card(attacking_player)
             log.append(f"{self.owner_username}'s {self.template.name} drew a random card.")
+            self.on_trigger_hit_tower_ability(log, animations, game_state)
+
         if self.has_ability('OnDamageTowerPumpTeam'):
             for character in self.lane.characters_by_player[self.owner_number]:
                 if character.id != self.id:
@@ -76,10 +82,27 @@ class Character:
                     character.current_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
                     character.max_health += self.number_2_of_ability('OnDamageTowerPumpTeam')
                     log.append(f"{self.owner_username}'s {self.template.name} pumped {character.owner_username}'s {character.template.name}.")
+            self.on_trigger_hit_tower_ability(log, animations, game_state)
 
         if self.has_ability('OnTowerDamageGainMana'):
             game_state.mana_by_player[self.owner_number] += 1
             log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
+            self.on_trigger_hit_tower_ability(log, animations, game_state)
+
+        if self.has_ability('HitTowerPumpSelf'):
+            self.current_attack += self.number_of_ability('HitTowerPumpSelf')
+            self.current_health += self.number_2_of_ability('HitTowerPumpSelf')
+            self.max_health += self.number_2_of_ability('HitTowerPumpSelf')
+            log.append(f"{self.owner_username}'s {self.template.name} pumped itself.")
+            self.on_trigger_hit_tower_ability(log, animations, game_state)
+
+        if self.has_ability('HitTowerDamageAllCharacters'):
+            for character in [*self.lane.characters_by_player[self.owner_number], *defending_characters]:
+                if character.id != self.id:
+                    character.sustain_damage(self.number_of_ability('HitTowerDamageAllCharacters'), log, animations, game_state)
+                    log.append(f"{self.owner_username}'s {self.template.name} dealt 2 damage to {character.owner_username}'s {character.template.name} in Lane {lane_number + 1}. "
+                                f"{character.template.name}'s health is now {character.current_health}.")
+            self.on_trigger_hit_tower_ability(log, animations, game_state)
 
         try:
             attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
@@ -96,7 +119,22 @@ class Character:
                     }, 
                     'game_state': game_state.to_json()})
 
+        if self.has_ability('HitTowerOtherCharactersSwitchLanes'):
+            for character in self.lane.characters_by_player[self.owner_number]:
+                if character.id != self.id:
+                    character.switch_lanes(log, animations, game_state)
+            self.on_trigger_hit_tower_ability(log, animations, game_state)
+
         self.lane.maybe_give_lane_reward(attacking_player, game_state, log, animations)
+
+
+    def on_trigger_hit_tower_ability(self, log: list[str], animations: list, game_state: 'GameState'):
+        for character in self.lane.characters_by_player[self.owner_number]:
+            if character.has_ability('OnTriggerHitTowerPump'):
+                self.current_attack += character.number_of_ability('OnTriggerHitTowerPump')
+                self.current_health += character.number_2_of_ability('OnTriggerHitTowerPump')
+                self.max_health += character.number_2_of_ability('OnTriggerHitTowerPump')
+                log.append(f"{character.owner_username}'s {self.template.name} got +{character.number_of_ability('OnTriggerHitTowerPump')}/+{character.number_2_of_ability('OnTriggerHitTowerPump')} for hitting the enemy tower.")
 
 
     def attack(self, attacking_player: int, 
@@ -132,33 +170,70 @@ class Character:
         if self.has_ability('OnAttackDoubleAttack'):
             self.current_attack *= 2
 
-    def punch(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState',
-              starting_current_attack: Optional[int] = None):
+    def get_damage_to_deal_in_punch(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState') -> int:
         if self.has_ability('Deathtouch'):
-            defending_character.current_health = 0
-            log.append(f"{self.owner_username}'s {self.template.name} deathtouched {defending_character.owner_username}'s {defending_character.template.name}.")
+            return defending_character.current_health
         elif self.has_ability('DoNotDamageEnemyCharacters'):
-            return
+            return 0
         else:
-            damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player, starting_current_attack=starting_current_attack)
-            defending_character.sustain_damage(damage_to_deal, log, animations, game_state, suppress_trigger=self.has_ability('OnDamageCharacterSilenceIt') and damage_to_deal > 0)
-            log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_to_deal} damage to the enemy {defending_character.template.name} in Lane {lane_number + 1}. "
-                        f"{defending_character.template.name}'s health is now {defending_character.current_health}.")
-
-            if damage_to_deal > 0 and self.has_ability('OnDamageCharacterSilenceIt'):
-                defending_character.silence(self, log, animations, game_state, do_not_animate=True)
+            damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player)
+            return damage_to_deal
 
 
-        if defending_character.current_health <= 0 and self.has_ability('OnKillBuffHealth'):
+    def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState', friendly: bool = False):
+        from_character_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
+        to_character_index = [c.id for c in self.lane.characters_by_player[self.owner_number if friendly else 1 - self.owner_number]].index(defending_character.id)
+        attacker_damage_to_deal = self.get_damage_to_deal_in_punch(defending_character, lane_number, log, animations, game_state)
+        defender_damage_to_deal = 0 if self.has_ability('InvincibilityWhileAttacking') else defending_character.get_damage_to_deal_in_punch(self, lane_number, log, animations, game_state)
+
+        defending_character.sustain_damage(attacker_damage_to_deal, log, animations, game_state, suppress_trigger=True)
+        self.sustain_damage(defender_damage_to_deal, log, animations, game_state, suppress_trigger=True)
+
+        animations.append({
+            "event_type": "FriendlyAttack" if friendly else "CharacterAttack",
+            "data": {
+                "lane": lane_number,
+                "acting_player": self.owner_number,
+                "from_character_index": from_character_index,
+                "to_character_index": to_character_index,
+            },
+            "game_state": game_state.to_json(),
+        })
+
+        if self.has_ability('OnDamageCharacterSilenceIt') and attacker_damage_to_deal > 0:
+            defending_character.silence(self, log, animations, game_state, do_not_animate=True)
+        if defending_character.has_ability('OnDamageCharacterSilenceIt') and defender_damage_to_deal > 0:
+            self.silence(defending_character, log, animations, game_state, do_not_animate=True)
+        if defender_damage_to_deal > 0:
+            self.do_survive_damage_triggers(log, animations, game_state)
+        if attacker_damage_to_deal > 0:
+            defending_character.do_survive_damage_triggers(log, animations, game_state)
+        if defending_character.current_health <= 0:
+            self.do_kill_enemy_triggers(defending_character, log, animations, game_state)
+        if self.current_health <= 0:
+            defending_character.do_kill_enemy_triggers(self, log, animations, game_state)
+
+    def do_kill_enemy_triggers(self, defending_character: 'Character', log: list[str], animations: list, game_state: 'GameState'):
+        if self.has_ability('OnKillBuffHealth'):
             self.current_attack += self.number_of_ability('OnKillBuffHealth')
             self.current_health += self.number_2_of_ability('OnKillBuffHealth')
             self.max_health += self.number_2_of_ability('OnKillBuffHealth')
 
-        if defending_character.has_ability('OnSurviveDamagePump') and defending_character.current_health > 0:
-            defending_character.current_attack += defending_character.number_of_ability('OnSurviveDamagePump')
-            defending_character.current_health += defending_character.number_2_of_ability('OnSurviveDamagePump')
-            defending_character.max_health += defending_character.number_2_of_ability('OnSurviveDamagePump')
-            log.append(f"{defending_character.owner_username}'s {defending_character.template.name} got +{defending_character.number_of_ability('OnSurviveDamagePump')}/+{defending_character.number_2_of_ability('OnSurviveDamagePump')} for surviving damage.")
+            self.on_trigger_kill_enemy_ability(log, animations, game_state)
+        if self.has_ability('KillEnemyAttackAgain'):
+            self.on_trigger_kill_enemy_ability(log, animations, game_state)
+
+            self.make_bonus_attack(log, animations, game_state)
+            self.lane.process_dying_characters(log, animations, game_state)            
+
+    def on_trigger_kill_enemy_ability(self, log: list[str], animations: list, game_state: 'GameState'):
+        for character in self.lane.characters_by_player[self.owner_number]:
+            if character.has_ability('OnTriggerKillEnemyHealAndPumpSelf'):
+                self.fully_heal()
+                character.current_attack += character.number_of_ability('OnTriggerKillEnemyBuffHealth')
+                character.current_health += character.number_2_of_ability('OnTriggerKillEnemyBuffHealth')
+                character.max_health += character.number_2_of_ability('OnTriggerKillEnemyBuffHealth')
+                log.append(f"{character.owner_username}'s {character.template.name} got +{character.number_of_ability('OnTriggerKillEnemyBuffHealth')}/+{character.number_2_of_ability('OnTriggerKillEnemyBuffHealth')} for killing an enemy.")
 
     def sustain_damage(self, damage: int, log: list[str], animations: list, game_state: 'GameState', suppress_trigger: bool = False):
         self.current_health -= damage
@@ -167,26 +242,29 @@ class Character:
             return
 
         if self.current_health > 0:
-            if self.has_ability('OnSurviveDamagePump'):
-                self.current_attack += self.number_of_ability('OnSurviveDamagePump')
-                self.current_health += self.number_2_of_ability('OnSurviveDamagePump')
-                self.max_health += self.number_2_of_ability('OnSurviveDamagePump')
-                log.append(f"{self.owner_username}'s {self.template.name} got +{self.number_of_ability('OnSurviveDamagePump')}/+{self.number_2_of_ability('OnSurviveDamagePump')} for surviving damage.")
-                self.on_trigger_survive_ability(log, animations, game_state)
+            self.do_survive_damage_triggers(log, animations, game_state)
 
-            if self.has_ability('OnSurviveDrawCard'):
-                game_state.draw_random_card(self.owner_number)
-                log.append(f"{self.owner_username}'s {self.template.name} drew a random card.")
-                self.on_trigger_survive_ability(log, animations, game_state)
-            
-            if self.has_ability('OnSurviveGainMana'):
-                game_state.mana_by_player[self.owner_number] += 1
-                log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
-                self.on_trigger_survive_ability(log, animations, game_state)
+    def do_survive_damage_triggers(self, log: list[str], animations: list, game_state: 'GameState'):
+        if self.has_ability('OnSurviveDamagePump'):
+            self.current_attack += self.number_of_ability('OnSurviveDamagePump')
+            self.current_health += self.number_2_of_ability('OnSurviveDamagePump')
+            self.max_health += self.number_2_of_ability('OnSurviveDamagePump')
+            log.append(f"{self.owner_username}'s {self.template.name} got +{self.number_of_ability('OnSurviveDamagePump')}/+{self.number_2_of_ability('OnSurviveDamagePump')} for surviving damage.")
+            self.on_trigger_survive_ability(log, animations, game_state)
 
-            if self.has_ability('SurviveSwitchLanes'):
-                self.on_trigger_survive_ability(log, animations, game_state)
-                self.switch_lanes(log, animations, game_state)
+        if self.has_ability('OnSurviveDrawCard'):
+            game_state.draw_random_card(self.owner_number)
+            log.append(f"{self.owner_username}'s {self.template.name} drew a random card.")
+            self.on_trigger_survive_ability(log, animations, game_state)
+        
+        if self.has_ability('OnSurviveGainMana'):
+            game_state.mana_by_player[self.owner_number] += 1
+            log.append(f"{self.owner_username}'s {self.template.name} gained 1 mana.")
+            self.on_trigger_survive_ability(log, animations, game_state)
+
+        if self.has_ability('SurviveSwitchLanes'):
+            self.on_trigger_survive_ability(log, animations, game_state)
+            self.switch_lanes(log, animations, game_state)        
 
     def on_trigger_survive_ability(self, log: list[str], animations: list, game_state: 'GameState'):
         for character in self.lane.characters_by_player[self.owner_number]:
@@ -201,33 +279,11 @@ class Character:
                 self.max_health += character.number_2_of_ability('OnTriggerSurvivePump')
                 log.append(f"{self.owner_username}'s {self.template.name} got +{character.number_of_ability('OnTriggerSurvivePump')}/+{character.number_2_of_ability('OnTriggerSurvivePump')} for surviving damage.")
 
-    def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState', friendly: bool = False):
-        defender_starting_current_attack = defending_character.current_health if defending_character.has_ability('DealDamageEqualToCurrentHealth') else defending_character.current_attack
-        self.punch(defending_character, lane_number, log, animations, game_state)
-        if not self.has_ability('InvincibilityWhileAttacking'):
-            defending_character.punch(self, lane_number, log, animations, game_state, starting_current_attack=defender_starting_current_attack)
-
-        animations.append({
-                        "event_type": "FriendlyAttack" if friendly else "CharacterAttack",
-                        "data": {
-                            "lane": lane_number,
-                            "acting_player": self.owner_number,
-                            "from_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id),
-                            "to_character_index": [c.id for c in self.lane.characters_by_player[self.owner_number if friendly else 1 - self.owner_number]].index(defending_character.id),
-                        },
-                        "game_state": game_state.to_json(),
-                    })
-
-        if defending_character.current_health <= 0 and self.has_ability('OnKillSwitchLanes'):
-            self.switch_lanes(log, animations, game_state)
-
     def can_fight(self):
         return self.current_health > 0
 
-
     def can_attack(self):
         return self.can_fight() and not self.has_attacked and self.shackled_turns == 0 and self.current_attack > 0
-
 
     def switch_lanes(self, log: list[str], animations: list, game_state: 'GameState', lane_number: Optional[int] = None, and_fully_heal_if_switching: bool = False) -> bool:
         original_spot_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
@@ -400,6 +456,10 @@ class Character:
         self.do_late_on_reveal(log, animations, game_state)
         self.did_on_reveal = True
 
+    def make_bonus_attack(self, log: list[str], animations: list, game_state: 'GameState'):
+        defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
+        self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)
+
     def do_very_early_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
         if self.did_on_reveal:
             return
@@ -518,7 +578,6 @@ class Character:
 
             if self.has_ability('OnRevealFriendliesSwitchLanes'):
                 friendlies = self.lane.characters_by_player[self.owner_number][:]
-                random.shuffle(friendlies)
                 animations.append(
                     on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
                 )                
@@ -591,6 +650,10 @@ class Character:
                         },
                     )
 
+            if self.has_ability('OnRevealDiscard'):
+                random_card = random.choice(game_state.hands_by_player[self.owner_number])
+                game_state.discard_card(self.owner_number, random_card.id)
+                log.append(f"{self.owner_username}'s {self.template.name} discarded {random_card.template.name}.")
 
 
     def do_late_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
@@ -600,7 +663,7 @@ class Character:
         if self.has_ability('OnRevealDiscardRandomCardAndDealDamageEqualToCost'):
             if len(game_state.hands_by_player[self.owner_number]) > 0:
                 random_card = random.choice(game_state.hands_by_player[self.owner_number])
-                game_state.hands_by_player[self.owner_number] = [card for card in game_state.hands_by_player[self.owner_number] if card.id != random_card.id]
+                game_state.discard_card(self.owner_number, random_card.id)
                 damage_to_deal = random_card.template.cost
                 defending_character = self.lane.get_random_enemy_character(self.owner_number)
                 if defending_character is not None:
@@ -632,16 +695,14 @@ class Character:
 
         if self.has_ability('OnRevealBonusAttack'):
             for _ in range(self.number_of_ability('OnRevealBonusAttack')):
-                defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
-                self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)
+                self.make_bonus_attack(log, animations, game_state)
             self.lane.process_dying_characters(log, animations, game_state)
 
         if self.has_ability('OnRevealAllAttackersMakeBonusAttack'):
             for lane in game_state.lanes:
                 for character in lane.characters_by_player[self.owner_number]:
                     if character.is_attacker() and character.id != self.id:
-                        defending_characters = [character for character in lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
-                        character.attack(self.owner_number, lane.damage_by_player, defending_characters, lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                
+                        character.make_bonus_attack(log, animations, game_state)              
                 lane.process_dying_characters(log, animations, game_state)
 
         if self.has_ability('OnRevealStealEnemy'):
@@ -668,7 +729,6 @@ class Character:
                         "game_state": game_state.to_json(),
                     })
 
-
         if self.has_ability('OnRevealEnemiesFight'):
             if len(self.lane.characters_by_player[1 - self.owner_number]) > 1:
                 animations.append(
@@ -680,6 +740,12 @@ class Character:
                     if enemy_defender is not None:
                         enemy_attacker.fight(enemy_defender, self.lane.lane_number, log, animations, game_state, friendly=True)
 
+        if self.has_ability('OnRevealEnemiesSwitchLanes'):
+            animations.append(
+                on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+            )
+            for character in self.lane.characters_by_player[1 - self.owner_number]:
+                character.switch_lanes(log, animations, game_state)
 
         self.did_on_reveal = True
 
