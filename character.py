@@ -179,6 +179,8 @@ class Character:
             damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player)
             return damage_to_deal
 
+    def exists(self):
+        return self.id in [c.id for c in self.lane.characters_by_player[self.owner_number]]
 
     def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState', friendly: bool = False):
         from_character_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
@@ -200,6 +202,8 @@ class Character:
             "game_state": game_state.to_json(),
         })
 
+        self.lane.process_dying_characters(log, animations, game_state)
+
         if self.has_ability('OnDamageCharacterSilenceIt') and attacker_damage_to_deal > 0:
             defending_character.silence(self, log, animations, game_state, do_not_animate=True)
         if defending_character.has_ability('OnDamageCharacterSilenceIt') and defender_damage_to_deal > 0:
@@ -208,10 +212,12 @@ class Character:
             self.do_survive_damage_triggers(log, animations, game_state)
         if attacker_damage_to_deal > 0:
             defending_character.do_survive_damage_triggers(log, animations, game_state)
-        if defending_character.current_health <= 0:
-            self.do_kill_enemy_triggers(defending_character, log, animations, game_state)
+        if not defending_character.current_health <= 0:
+            if self.exists():
+                self.do_kill_enemy_triggers(defending_character, log, animations, game_state)
         if self.current_health <= 0:
-            defending_character.do_kill_enemy_triggers(self, log, animations, game_state)
+            if defending_character.exists():
+                defending_character.do_kill_enemy_triggers(self, log, animations, game_state)
 
     def do_kill_enemy_triggers(self, defending_character: 'Character', log: list[str], animations: list, game_state: 'GameState'):
         if self.has_ability('OnKillBuffHealth'):
@@ -220,20 +226,21 @@ class Character:
             self.max_health += self.number_2_of_ability('OnKillBuffHealth')
 
             self.on_trigger_kill_enemy_ability(log, animations, game_state)
+
         if self.has_ability('KillEnemyAttackAgain'):
             self.on_trigger_kill_enemy_ability(log, animations, game_state)
 
             self.make_bonus_attack(log, animations, game_state)
-            self.lane.process_dying_characters(log, animations, game_state)            
+            self.lane.process_dying_characters(log, animations, game_state)                  
 
     def on_trigger_kill_enemy_ability(self, log: list[str], animations: list, game_state: 'GameState'):
         for character in self.lane.characters_by_player[self.owner_number]:
             if character.has_ability('OnTriggerKillEnemyHealAndPumpSelf'):
                 self.fully_heal()
-                character.current_attack += character.number_of_ability('OnTriggerKillEnemyBuffHealth')
-                character.current_health += character.number_2_of_ability('OnTriggerKillEnemyBuffHealth')
-                character.max_health += character.number_2_of_ability('OnTriggerKillEnemyBuffHealth')
-                log.append(f"{character.owner_username}'s {character.template.name} got +{character.number_of_ability('OnTriggerKillEnemyBuffHealth')}/+{character.number_2_of_ability('OnTriggerKillEnemyBuffHealth')} for killing an enemy.")
+                character.current_attack += character.number_of_ability('OnTriggerKillEnemyHealAndPumpSelf')
+                character.current_health += character.number_2_of_ability('OnTriggerKillEnemyHealAndPumpSelf')
+                character.max_health += character.number_2_of_ability('OnTriggerKillEnemyHealAndPumpSelf')
+                log.append(f"{character.owner_username}'s {character.template.name} got +{character.number_of_ability('OnTriggerKillEnemyHealAndPumpSelf')}/+{character.number_2_of_ability('OnTriggerKillEnemyHealAndPumpSelf')} for killing an enemy.")
 
     def sustain_damage(self, damage: int, log: list[str], animations: list, game_state: 'GameState', suppress_trigger: bool = False):
         self.current_health -= damage

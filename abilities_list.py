@@ -349,6 +349,6 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'KillEnemyAttackAgain': Ability(
         name='KillEnemyAttackAgain',
-        description='Kill enemy: I attack again.',
+        description='Kill enemy: I make a bonus attack.',
     ),
 }
