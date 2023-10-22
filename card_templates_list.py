@@ -767,7 +767,7 @@ CARD_TEMPLATES = {
     ),
     'Huu': CardTemplate(
         name='Huu',
-        abilities=['OnTriggerKillEnemyHealAndPumpSelf'],
+        abilities=[('OnTriggerKillEnemyHealAndPumpSelf', 2, 2)],
         cost=3,
         attack=4,
         health=5,
