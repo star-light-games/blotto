@@ -163,11 +163,12 @@ class Character:
             else:
                 self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state)
 
-        if self.has_ability('SwitchLanesAfterAttacking'):
-            self.switch_lanes(log, animations, game_state)
+        if self.exists():
+            if self.has_ability('SwitchLanesAfterAttacking'):
+                self.switch_lanes(log, animations, game_state)
 
-        if self.has_ability('OnAttackDoubleAttack'):
-            self.current_attack *= 2
+            if self.has_ability('OnAttackDoubleAttack'):
+                self.current_attack *= 2
 
     def get_damage_to_deal_in_punch(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState') -> int:
         if self.has_ability('Deathtouch'):
@@ -629,12 +630,13 @@ class Character:
                     cabbage_character.do_all_on_reveal(log, animations, game_state)
 
             if self.has_ability('OnRevealSummonDesna'):
-                animations.append(
-                    on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
-                )
-                desna_character = Character(CARD_TEMPLATES['Desna'], self.lane, self.owner_number, game_state.usernames_by_player[self.owner_number])
-                self.lane.characters_by_player[self.owner_number].append(desna_character)
-                desna_character.do_all_on_reveal(log, animations, game_state)
+                if len(self.lane.characters_by_player[self.owner_number]) < 4:
+                    animations.append(
+                        on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+                    )
+                    desna_character = Character(CARD_TEMPLATES['Desna'], self.lane, self.owner_number, game_state.usernames_by_player[self.owner_number])
+                    self.lane.characters_by_player[self.owner_number].append(desna_character)
+                    desna_character.do_all_on_reveal(log, animations, game_state)
 
             if self.has_ability('OnRevealHealAndPumpSelf'):
                 random_friendly_damaged_character = self.get_random_other_friendly_damaged_character()
@@ -706,11 +708,11 @@ class Character:
             self.lane.process_dying_characters(log, animations, game_state)
 
         if self.has_ability('OnRevealAllAttackersMakeBonusAttack'):
-            for lane in game_state.lanes:
-                for character in lane.characters_by_player[self.owner_number]:
-                    if character.is_attacker() and character.id != self.id:
-                        character.make_bonus_attack(log, animations, game_state)              
-                lane.process_dying_characters(log, animations, game_state)
+            characters_to_bonus_attack = [character for character in [*game_state.lanes[0].characters_by_player[self.owner_number], *game_state.lanes[1].characters_by_player[self.owner_number], *game_state.lanes[2].characters_by_player[self.owner_number]] if character.is_attacker() and character.id != self.id]
+
+            for character in characters_to_bonus_attack:
+                character.make_bonus_attack(log, animations, game_state)
+
 
         if self.has_ability('OnRevealStealEnemy'):
             if len(self.lane.characters_by_player[self.owner_number]) < 4:

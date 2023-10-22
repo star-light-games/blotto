@@ -42,12 +42,11 @@ class Lane:
             for _ in range(self.lane_reward.effect[1]):  # type: ignore
                 game_state.draw_random_card(player_num)
         elif self.lane_reward.effect[0] == 'bonusAttackAllFriendlies':
-            for lane in game_state.lanes:
-                for character in lane.characters_by_player[player_num]:
-                    defending_characters = [character for character in character.lane.characters_by_player[1 - character.owner_number] if character.can_fight()]
-                    character.attack(character.owner_number, character.lane.damage_by_player, defending_characters, character.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True)                    
-                # If we instead process character-by-character, there's a problem
-                lane.process_dying_characters(log, animations, game_state)
+            characters_to_bonus_attack = [*game_state.lanes[0].characters_by_player[player_num], *game_state.lanes[1].characters_by_player[player_num], *game_state.lanes[2].characters_by_player[player_num]]
+
+            for character in characters_to_bonus_attack:
+                character.make_bonus_attack(log, animations, game_state)
+
 
         elif self.lane_reward.effect[0] == 'discardHand':
             game_state.discard_all_cards(player_num)
