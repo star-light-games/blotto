@@ -52,7 +52,7 @@ CARD_TEMPLATES = {
     ),
     'Tonraq': CardTemplate(
         name='Tonraq',
-        abilities=['Defender', ('OnSurviveDamagePump', 0, 1)],
+        abilities=['Defender', ('OnSurviveDamagePump', 0, 2)],
         cost=1,
         attack=1,
         health=4,
