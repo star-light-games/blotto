@@ -603,6 +603,12 @@ class Character:
                 if random_enemy_character is not None:
                     random_enemy_character.shackle(self, log, animations, game_state)
 
+            if self.has_ability('OnRevealShackleSeveral'):
+                for _ in range(self.number_of_ability('OnRevealShackleSeveral')):
+                    random_enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.shackled_turns > 0)
+                    if random_enemy_character is not None:
+                        random_enemy_character.shackle(self, log, animations, game_state)
+
             if self.has_ability('OnRevealShackleAllEnemies'):
                 for character in self.lane.characters_by_player[1 - self.owner_number]:
                     if character.shackled_turns == 0:

@@ -16,6 +16,11 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealShackle',
         description='On reveal: shackle a random enemy character.',
     ),
+    'OnRevealShackleSeveral': lambda x: Ability(
+        name='OnRevealShackleSeveral',
+        description=f'On reveal: shackle {x} random enemy character{plural(x)}.',
+        number=x,
+    ),
     'OnSurviveDamagePump': lambda x, y: Ability(
         name='OnSurviveDamagePump',
         description=f'Survive: I get +{x}/+{y}.',

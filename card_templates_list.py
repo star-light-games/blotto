@@ -189,7 +189,7 @@ CARD_TEMPLATES = {
     ),
     'Suyin': CardTemplate(
         name='Suyin',
-        abilities=['OnRevealShackle', 'OnRevealShackle'],
+        abilities=[('OnRevealShackleSeveral', 2)],
         cost=5,
         attack=6,
         health=4,
