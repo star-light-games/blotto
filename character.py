@@ -142,7 +142,7 @@ class Character:
         if self.has_ability('HitTowerShackle'):
             enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.shackled_turns > 0)
             if enemy_character is not None:
-                enemy_character.shackle(self, log, animations, game_state, do_not_animate=True)
+                enemy_character.shackle(self, log, animations, game_state)
                 self.on_trigger_hit_tower_ability(log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
         if self.has_ability('HitTowerDamageAllEnemiesEqualToDamage'):
