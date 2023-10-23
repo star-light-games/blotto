@@ -2,3 +2,12 @@
     border: 8px solid green;
     transition: border 0.5s ease-in-out;
   }
+
+.card-border-transition {
+  border: 8px solid transparent;
+  transition: border-color 0.5s ease-in-out;
+}
+
+.lane-highlight-reveal {
+  border-color: green;
+}

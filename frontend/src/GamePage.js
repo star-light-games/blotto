@@ -712,7 +712,7 @@ function Lane({
                     justifyContent: 'space-between',
                     marginLeft: '18px',
                     marginTop: '10px',
-                }}>
+                }} className="card-border-transition">
                     <CardContent>
                         <LaneTitle laneData={laneData}/>
                     </CardContent>
@@ -1199,11 +1199,11 @@ export default function GamePage({ }) {
 
         if (characterElement) {
             // Add the highlighting class
-            characterElement.classList.add('highlight-reveal');
+            characterElement.classList.add('lane-highlight-reveal');
 
             // Remove the highlighting class after 1 second (1000 milliseconds)
             setTimeout(() => {
-                characterElement.classList.remove('highlight-reveal');
+                characterElement.classList.remove('lane-highlight-reveal');
             }, 1000);
         }
     }
