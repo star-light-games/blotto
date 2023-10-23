@@ -135,6 +135,8 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
     const backgroundColor = getCardBackgroundColor(character.template, isDarkMode);
 
     const isDead = character.current_health <= 0;
+    const isShielded = character.shielded;
+
     let filterStyle = '';
     if (character.shackled_turns > 0) {
         filterStyle += 'brightness(0.5)'; // darken image if shackled_turns is greater than zero
@@ -176,6 +178,23 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
                     }}
                 />
             )}
+            {isShielded && (
+                <img
+                    src={'/images/shield.png'}
+                    alt="shield-icon"
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 16,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 2,
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        filter: 'invert(1)',
+                    }}
+                />
+            )}            
             <Grid item xs={12}>
                 <Box
                     display="flex"

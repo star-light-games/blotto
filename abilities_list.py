@@ -351,4 +351,62 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='KillEnemyAttackAgain',
         description='Kill enemy: I make a bonus attack.',
     ),
+    'InvincibilityAgainstShackled': Ability(
+        name='InvincibilityAgainstShackled',
+        description='I take no damage from shackled characters.',
+    ),
+    'AttackersDontDealDamage': Ability(
+        name='AttackersDontDealDamage',
+        description='Attackers here (including yours) don\'t deal damage to other characters.',
+    ),
+    'HitTowerGiveShield': Ability(
+        name='HitTowerGiveShield',
+        description='Hit tower: give a friendly character a shield.',
+    ),
+    'OnRevealDiscardHandAndPump': lambda x, y: Ability(
+        name='OnRevealDiscardHandAndPump',
+        description=f'On reveal: discard your hand and give me +{x}/+{y} for each card discarded.',
+        number=x,
+        number_2=y,
+    ),
+    'OnShieldBreakPumpSelf': lambda x, y: Ability(
+        name='OnShieldBreakPumpSelf',
+        description=f'When a friendly character\'s shield breaks, I get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'Shield': Ability(
+        name='Shield',
+        description='Shield',
+    ),
+    'HitTowerShackle': Ability(
+        name='HitTowerShackle',
+        description='Hit tower: shackle a random enemy character.',
+    ),
+    'OnTriggerHitTowerBonusAttack': Ability(
+        name='OnTriggerHitTowerBonusAttack',
+        description='When a friendly character triggers a Hit Tower ability, that character makes a bonus attack (this ability won\'t trigger again for that character).',
+    ),
+    'DeathtouchAgainstDefenders': Ability(
+        name='DeathtouchAgainstDefenders',
+        description='I kill any defender I fight with.',
+    ),
+    'OnRevealShieldFriendlies': Ability(
+        name='OnRevealShieldFriendlies',
+        description='On reveal: give a shield to other friendly characters.',
+    ),
+    'HitTowerDamageAllEnemiesEqualToDamage': Ability(
+        name='HitTowerDamageAllEnemiesEqualToDamage',
+        description='Hit tower: I deal damage to all enemy characters here equal to the damage I dealt.',
+    ),
+    'EarlyFighter': Ability(
+        name='EarlyFighter',
+        description='I attack before other characters.',
+    ),
+    'PumpOnGainShield': lambda x, y: Ability(
+        name='PumpOnGainShield',
+        description=f'When a friendly character gains a shield, that character gets +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
 }

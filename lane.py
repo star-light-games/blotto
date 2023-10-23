@@ -94,11 +94,9 @@ class Lane:
 
 
     def roll_turn(self, log: list[str], animations: list, game_state: 'GameState') -> None:
-        done_attacking_by_player = {0: False, 1: False}
+        self.resolve_combat(log, animations, game_state)
 
-        self.resolve_combat(done_attacking_by_player, log, animations, game_state)
-
-        for player_num in done_attacking_by_player:
+        for player_num in [0, 1]:
             for character in self.characters_by_player[player_num]:
                 character.roll_turn(log, animations, game_state)
 
@@ -123,24 +121,40 @@ class Lane:
             self.process_dying_characters(log, animations, game_state)
 
     def resolve_combat(self, 
-                       done_attacking_by_player: dict[int, bool], 
                        log: list[str], 
                        animations: list,
-                       game_state: 'GameState',
-                       attacking_player: Optional[int] = None) -> None:
+                       game_state: 'GameState') -> None:
+
+        done_attacking_by_player_first_strike = {0: False, 1: False}
+        done_attacking_by_player = {0: False, 1: False}
+
+        self.resolve_combat_inner(done_attacking_by_player_first_strike, log, animations, game_state, first_strikers_only=True)
+        self.resolve_combat_inner(done_attacking_by_player, log, animations, game_state)
+
+
+    def resolve_combat_inner(self, 
+                             done_attacking_by_player: dict[int, bool], 
+                             log: list[str], 
+                             animations: list,
+                             game_state: 'GameState',
+                             first_strikers_only: bool = False,
+                             attacking_player: Optional[int] = None) -> None:
         if attacking_player is None:
             # The player with more characters attacks first
-            attacking_player = (0 if len(self.characters_by_player[0]) > len(self.characters_by_player[1]) 
-                                else 1 if len(self.characters_by_player[1]) > len(self.characters_by_player[0]) 
+            player_0_characters = [c for c in self.characters_by_player[0] if not first_strikers_only or c.has_ability('EarlyFighter')]
+            player_1_characters = [c for c in self.characters_by_player[1] if not first_strikers_only or c.has_ability('EarlyFighter')]
+
+            attacking_player = (0 if len(player_0_characters) > len(player_1_characters)
+                                else 1 if len(player_1_characters) > len(player_0_characters) 
                                 else random.randint(0, 1))
-        self.player_single_attack(attacking_player, done_attacking_by_player, log, animations, game_state)
+        self.player_single_attack(attacking_player, done_attacking_by_player, log, animations, game_state, first_strikers_only=first_strikers_only)
         if done_attacking_by_player[1 - attacking_player]:
             if done_attacking_by_player[attacking_player]:
                 return
             else:
-                self.resolve_combat(done_attacking_by_player, log, animations, game_state, attacking_player)
+                self.resolve_combat_inner(done_attacking_by_player, log, animations, game_state, first_strikers_only=first_strikers_only, attacking_player=attacking_player)
         else:
-            self.resolve_combat(done_attacking_by_player, log, animations, game_state, 1 - attacking_player)
+            self.resolve_combat_inner(done_attacking_by_player, log, animations, game_state, first_strikers_only=first_strikers_only, attacking_player=1 - attacking_player)
 
 
     def process_dying_characters(self, log: list[str], animations: list, game_state: 'GameState') -> None:
@@ -173,13 +187,13 @@ class Lane:
                              done_attacking_by_player: dict[int, bool], 
                              log: list[str],
                              animations: list,
-                             game_state: 'GameState'):
-        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack()]            
+                             game_state: 'GameState', 
+                             first_strikers_only: bool = False):
+        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack() and (not first_strikers_only or character.has_ability('EarlyFighter'))]            
         
         if len(characters_that_can_attack) == 0:
             done_attacking_by_player[attacking_player] = True
         else:
-            characters_that_can_attack = [character for character in characters_that_can_attack if character.can_attack()]
             character = characters_that_can_attack[0]
             defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
             character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log, animations, game_state)
@@ -189,6 +203,10 @@ class Lane:
 
     def get_random_enemy_character(self, player_num: int, exclude_characters: Optional[Callable] = None) -> Optional[Character]:
         characters_available = [character for character in self.characters_by_player[1 - player_num] if character.can_fight() and (exclude_characters is None or not exclude_characters(character))]
+        return random.choice(characters_available) if len(characters_available) > 0 else None
+
+    def get_random_friendly_character(self, player_num: int, exclude_characters: Optional[Callable] = None) -> Optional[Character]:
+        characters_available = [character for character in self.characters_by_player[player_num] if character.can_fight() and (exclude_characters is None or not exclude_characters(character))]
         return random.choice(characters_available) if len(characters_available) > 0 else None
 
 
