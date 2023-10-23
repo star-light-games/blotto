@@ -104,6 +104,12 @@ LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enume
         'reward_description': 'When a character here dies, its owner gains +1 mana next turn.',
         'effect': ['ownerGainsManaNextTurnWhenCharacterDiesHere', 1],
     },
+    {
+        'name': 'Mt. Makapu',
+        'threshold': None,
+        'reward_description': 'At the end of each turn, deal 1 damage to all characters here.',
+        'effect': ['dealDamageToAllCharactersHereAtEndOfTurn', 1],
+    }
 ])}
 
 class LaneReward:

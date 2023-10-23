@@ -410,13 +410,14 @@ class Character:
             return
         if self.has_ability('EndOfTurnFullHeal'):
             self.fully_heal()
-            log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
+            self.add_basic_animation(animations, game_state)
         
-        for character in self.lane.characters_by_player[self.owner_number]:
-            if character.has_ability('EndOfTurnFullHealForAllFriendlies') and character.id != self.id:
-                self.fully_heal()
-                log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
-        
+        if self.has_ability('EndOfTurnFullHealForAllFriendlies'):
+            for character in self.lane.characters_by_player[self.owner_number]:
+                if character.id != self.id:
+                    character.fully_heal()
+            self.add_basic_animation(animations, game_state)
+
         if self.lane.lane_reward.effect[0] == 'healAllCharactersHereAtEndOfTurn':
             self.fully_heal()
             log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
