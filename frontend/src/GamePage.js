@@ -443,6 +443,7 @@ function LanesDisplay({
     setYourManaAmount,
     characterRefs,
     towerRefs,
+    laneRefs,
     displayArt,
     gameId,
 }) {
@@ -468,6 +469,7 @@ function LanesDisplay({
                     setYourManaAmount={setYourManaAmount}
                     characterRefs={characterRefs}
                     towerRefs={towerRefs}
+                    laneRefs={laneRefs}
                     displayArt={displayArt}
                     gameId={gameId}
                 />
@@ -585,6 +587,7 @@ function Lane({
     setYourManaAmount,
     characterRefs,
     towerRefs,
+    laneRefs,
     displayArt,
     gameId,
 }) {
@@ -699,7 +702,21 @@ function Lane({
                     />
                 </Box>
                 </Grid> */}
-                <LaneTitle laneData={laneData}/>
+                <Card ref={laneRefs?.current?.[laneNumber]} style={{
+                    width: '93%',
+                    height: '100%',
+                    backgroundColor: getBackgroundColor(isDarkMode),
+                    padding: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    marginLeft: '18px',
+                    marginTop: '10px',
+                }}>
+                    <CardContent>
+                        <LaneTitle laneData={laneData}/>
+                    </CardContent>
+                </Card>
                 <Grid item container direction="row" spacing={1} alignItems="center" textAlign="right">
                     <Grid item>
                         <LaneForOneSide
@@ -1025,6 +1042,12 @@ export default function GamePage({ }) {
         },
     });
 
+    const laneRefs = useRef({
+        0: React.createRef(),
+        1: React.createRef(),
+        2: React.createRef(),
+    });
+
     const darkMode = useTheme().palette.mode === 'dark';
 
     const showArrowFromCharacterToCharacter = (event, arrowType = null) => {
@@ -1171,6 +1194,20 @@ export default function GamePage({ }) {
         }
     }
 
+    const highlightLane = (event) => {
+        const characterElement = laneRefs?.current?.[event.lane]?.current;
+
+        if (characterElement) {
+            // Add the highlighting class
+            characterElement.classList.add('highlight-reveal');
+
+            // Remove the highlighting class after 1 second (1000 milliseconds)
+            setTimeout(() => {
+                characterElement.classList.remove('highlight-reveal');
+            }, 1000);
+        }
+    }
+
     const opponentManaAmount = gameState?.mana_by_player?.[opponentNum] || 1;
 
     const gameOver = gameState?.turn > 8;
@@ -1273,6 +1310,12 @@ export default function GamePage({ }) {
                     log('switching sides');
                     await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
                     showArrowFromCharacterToCharacter(event.data, 'switchSides');
+                    setGameState(newState);
+                    break;
+                case 'LaneAnimation': 
+                    log('lane animation');
+                    await new Promise((resolve) => setTimeout(resolve, animationDelay)); // 1 second delay
+                    highlightLane(event.data);
                     setGameState(newState);
                     break;
                 case "EndOfRoll":
@@ -1632,6 +1675,7 @@ export default function GamePage({ }) {
                             setYourManaAmount={setYourManaAmount}
                             characterRefs={characterRefs}
                             towerRefs={towerRefs}
+                            laneRefs={laneRefs}
                             displayArt={displayArt}
                             gameId={gameId}
                         />

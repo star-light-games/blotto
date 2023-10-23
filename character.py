@@ -418,10 +418,6 @@ class Character:
                     character.fully_heal()
             self.add_basic_animation(animations, game_state)
 
-        if self.lane.lane_reward.effect[0] == 'healAllCharactersHereAtEndOfTurn':
-            self.fully_heal()
-            log.append(f"{self.owner_username}'s {self.template.name} healed to full health.")
-
         if self.has_ability('SwitchLanesAtEndOfTurn'):
             self.switch_lanes(log, animations, game_state)
 

@@ -4,7 +4,7 @@ from typing import Optional
 from card_templates_list import CARD_TEMPLATES
 from character import Character
 from lane_rewards import LANE_REWARDS, LaneReward
-from utils import shuffled
+from utils import basic_lane_animation, shuffled
 if TYPE_CHECKING:
     from game_state import GameState
 
@@ -21,8 +21,13 @@ class Lane:
 
     def maybe_give_lane_reward(self, player_num: int, game_state: 'GameState', log: list[str], animations: list) -> None:
         if not self.earned_rewards_by_player[player_num] and self.lane_reward.threshold is not None and self.damage_by_player[player_num] >= self.lane_reward.threshold:
-            self.earned_rewards_by_player[player_num] = True            
+            early_animation = self.lane_reward.effect[0] in ['bonusAttackAllFriendlies']
+            self.earned_rewards_by_player[player_num] = True
+            if early_animation:
+                animations.append(basic_lane_animation(self.lane_number, game_state))
             self.give_lane_reward(player_num, game_state, log, animations)
+            if not early_animation:
+                animations.append(basic_lane_animation(self.lane_number, game_state))
 
 
     def give_lane_reward(self, player_num: int, game_state: 'GameState', log: list[str], animations: list) -> None:
@@ -105,6 +110,17 @@ class Lane:
             for character in self.characters_by_player[player_num]:
                 character.do_end_of_turn(log, animations, game_state)
 
+        if self.lane_reward.effect[0] == 'healAllCharactersHereAtEndOfTurn':
+            for character in [*self.characters_by_player[0], *self.characters_by_player[1]]:
+                character.fully_heal()
+            animations.append(basic_lane_animation(self.lane_number, game_state))
+
+        if self.lane_reward.effect[0] == 'dealDamageToAllCharactersHereAtEndOfTurn':
+            for character in [*self.characters_by_player[0], *self.characters_by_player[1]]:
+                character.sustain_damage(self.lane_reward.effect[1], log, animations, game_state)  # type: ignore
+            animations.append(basic_lane_animation(self.lane_number, game_state))
+
+            self.process_dying_characters(log, animations, game_state)
 
     def resolve_combat(self, 
                        done_attacking_by_player: dict[int, bool], 

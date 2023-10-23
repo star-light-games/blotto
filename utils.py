@@ -65,3 +65,12 @@ def on_reveal_animation(lane_number: int, acting_player: int, from_character_ind
         },
         "game_state": game_state.to_json(),
     }
+
+def basic_lane_animation(lane_number: int, game_state: 'GameState') -> dict:
+    return {
+        "event_type": "LaneAnimation",
+        "data": {
+            "lane": lane_number,
+        },
+        "game_state": game_state.to_json(),
+    }
