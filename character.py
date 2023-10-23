@@ -573,9 +573,10 @@ class Character:
             self.current_attack = 0
 
     def add_basic_animation(self, animations: list, game_state: 'GameState'):
-        animations.append(
-            on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
-        )
+        if self.exists():
+            animations.append(
+                on_reveal_animation(self.lane.lane_number, self.owner_number, [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id), game_state)
+            )
 
     def do_early_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
         if self.did_on_reveal:
