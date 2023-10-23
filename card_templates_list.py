@@ -195,8 +195,8 @@ CARD_TEMPLATES = {
         health=4,
         creature_types=['Earth'],
     ),
-    'Baatar Jr': CardTemplate(
-        name='Baatar Jr',
+    'Baatar Jr.': CardTemplate(
+        name='Baatar Jr.',
         abilities=['OnRevealShackle', ('ShacklesDealDamage', 2)],
         cost=3,
         attack=3,
@@ -243,8 +243,8 @@ CARD_TEMPLATES = {
         health=5,
         creature_types=['Air'],
     ),
-    'Gran Gran Kanna': CardTemplate(
-        name='Gran Gran Kanna',
+    'Gran-Gran Kanna': CardTemplate(
+        name='Gran-Gran Kanna',
         abilities=[('OnRevealHealAllFriendliesAndTowers', 5)],
         cost=4,
         attack=3,
@@ -259,8 +259,8 @@ CARD_TEMPLATES = {
         health=8,
         creature_types=['Fire'],
     ),
-    'Ming Hua': CardTemplate(
-        name='Ming Hua',
+    'Ming-Hua': CardTemplate(
+        name='Ming-Hua',
         abilities=['Attacker', 'KillEnemyAttackAgain'],
         cost=4,
         attack=4,
@@ -829,8 +829,8 @@ CARD_TEMPLATES = {
         health=4,
         creature_types=['Earth'],
     ),
-    'Queen Hou Ting': CardTemplate(
-        name='Queen Hou Ting',
+    'Queen Hou-Ting': CardTemplate(
+        name='Queen Hou-Ting',
         abilities=['OnTriggerHitTowerBonusAttack'],
         cost=4,
         attack=5,
