@@ -111,14 +111,17 @@ class Lane:
         if self.lane_reward.effect[0] == 'healAllCharactersHereAtEndOfTurn':
             for character in [*self.characters_by_player[0], *self.characters_by_player[1]]:
                 character.fully_heal()
-            animations.append(basic_lane_animation(self.lane_number, game_state))
+            if game_state.turn > 1:
+                animations.append(basic_lane_animation(self.lane_number, game_state))
 
         if self.lane_reward.effect[0] == 'dealDamageToAllCharactersHereAtEndOfTurn':
             for character in [*self.characters_by_player[0], *self.characters_by_player[1]]:
                 character.sustain_damage(self.lane_reward.effect[1], log, animations, game_state)  # type: ignore
-            animations.append(basic_lane_animation(self.lane_number, game_state))
+            if game_state.turn > 1:
+                animations.append(basic_lane_animation(self.lane_number, game_state))
 
             self.process_dying_characters(log, animations, game_state)
+
 
     def resolve_combat(self, 
                        log: list[str], 
