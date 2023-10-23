@@ -63,6 +63,21 @@ class Character:
 
         log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
 
+        try:
+            attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
+        except Exception:
+            print('Attacking character not found')
+            attacking_character_array_index = None
+
+        animations.append({
+                    "event_type": "TowerDamage",
+                    'data': {
+                        "lane": lane_number,
+                        "acting_player": self.owner_number,
+                        "from_character_index": attacking_character_array_index,
+                    }, 
+                    'game_state': game_state.to_json()})
+
         if self.has_ability('OnTowerAttackDealMassDamage'):
             self.add_basic_animation(animations, game_state)
             for character in defending_characters:
@@ -109,21 +124,6 @@ class Character:
                     log.append(f"{self.owner_username}'s {self.template.name} dealt 2 damage to {character.owner_username}'s {character.template.name} in Lane {lane_number + 1}. "
                                 f"{character.template.name}'s health is now {character.current_health}.")
             self.on_trigger_hit_tower_ability(log, animations, game_state)
-
-        try:
-            attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
-        except Exception:
-            print('Attacking character not found')
-            attacking_character_array_index = None
-
-        animations.append({
-                    "event_type": "TowerDamage",
-                    'data': {
-                        "lane": lane_number,
-                        "acting_player": self.owner_number,
-                        "from_character_index": attacking_character_array_index,
-                    }, 
-                    'game_state': game_state.to_json()})
 
         if self.has_ability('HitTowerOtherCharactersSwitchLanes'):
             for character in self.lane.characters_by_player[self.owner_number]:
