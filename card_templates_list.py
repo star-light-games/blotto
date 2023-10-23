@@ -787,7 +787,7 @@ CARD_TEMPLATES = {
         cost=3,
         attack=4,
         health=1,
-        creature_types=['Air'],
+        creature_types=['Earth'],
     ),
     'Teo': CardTemplate(
         name='Teo',
