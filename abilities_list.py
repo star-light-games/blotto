@@ -385,7 +385,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnTriggerHitTowerBonusAttack': Ability(
         name='OnTriggerHitTowerBonusAttack',
-        description='When a friendly character triggers a Hit Tower ability, that character makes a bonus attack (this ability won\'t trigger again for that character).',
+        description='When a friendly character triggers a Hit Tower ability, that character makes a bonus attack (without re-triggering this ability).',
     ),
     'DeathtouchAgainstDefenders': Ability(
         name='DeathtouchAgainstDefenders',
