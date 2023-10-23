@@ -106,6 +106,11 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         if have_moved:
             socketio.emit('update', room=game_id)
 
+            if not game.game_info.game_state.turn > 8:
+                for player_num in [0, 1]:
+                    if game.is_bot_by_player[player_num]:
+                        start_new_thread(bot_move_in_game, (game, player_num))
+
 
 def maybe_schedule_forced_turn_roll(game: Game, extra_time: int = 0) -> None:
     if game.seconds_per_turn is not None:
