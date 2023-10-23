@@ -869,4 +869,20 @@ CARD_TEMPLATES = {
         health=3,
         creature_types=['Earth'],
     ),
+    'Bum-Ju': CardTemplate(
+        name='Bum-Ju',
+        abilities=['Attacker', ('OnDrawCardPump', 1, 1)],
+        cost=1,
+        attack=1,
+        health=1,
+        creature_types=['Water'],
+    ),
+    'Guru Laghima': CardTemplate(
+        name='Guru Laghima',
+        abilities=['Attacker', 'FriendliesDealDamageEqualToCurrentHealth'],
+        cost=5,
+        attack=3,
+        health=7,
+        creature_types=['Air'],
+    ),
 }

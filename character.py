@@ -1,3 +1,4 @@
+from collections import defaultdict
 import random
 from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
@@ -51,15 +52,15 @@ class Character:
         assert ability.creature_type is not None
         return ability.creature_type
 
-    def compute_damage_to_deal(self, damage_by_player: dict[int, int], is_tower_attack: bool = False):
+    def compute_damage_to_deal(self, damage_by_player: dict[int, int], combat_modification_auras: dict[int, defaultdict[str, int]], is_tower_attack: bool = False):
         multiplier = 2 if self.has_ability('DoubleTowerDamage') and is_tower_attack else 1
         extra_for_losing = self.number_of_ability('DealMoreDamageWhenLosing') if self.has_ability('DealMoreDamageWhenLosing') and damage_by_player[1 - self.owner_number] > damage_by_player[self.owner_number] else 0
-        base_attack = self.current_health if self.has_ability('DealDamageEqualToCurrentHealth') else self.current_attack
+        base_attack = self.current_health if self.has_ability('DealDamageEqualToCurrentHealth') or combat_modification_auras[self.owner_number]['FriendliesDealDamageEqualToCurrentHealth'] > 0 else self.current_attack
         damage_dealt = (base_attack + extra_for_losing) * multiplier
         return damage_dealt
 
-    def deal_tower_damage(self, attacking_player: int, defending_characters: list['Character'], damage_by_player: dict[int, int], lane_number: int, log: list[str], animations: list, game_state: 'GameState', suppress_hit_tower_bonus_attack_triggers: bool = False):
-        damage_dealt = self.compute_damage_to_deal(damage_by_player, is_tower_attack=True)
+    def deal_tower_damage(self, attacking_player: int, defending_characters: list['Character'], damage_by_player: dict[int, int], lane_number: int, combat_modification_auras: dict[int, defaultdict[str, int]], log: list[str], animations: list, game_state: 'GameState', suppress_hit_tower_bonus_attack_triggers: bool = False):
+        damage_dealt = self.compute_damage_to_deal(damage_by_player, combat_modification_auras, is_tower_attack=True)
         damage_by_player[self.owner_number] += damage_dealt
 
         log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_dealt} damage to the enemy player in Lane {lane_number + 1}.")
@@ -167,6 +168,28 @@ class Character:
                 character.add_basic_animation(animations, game_state)
                 self.make_bonus_attack(log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=True)
 
+    def compute_combat_modification_auras(self) -> dict[int, defaultdict[str, int]]:
+        combat_modification_auras = {
+            0: defaultdict(int),
+            1: defaultdict(int),
+        }
+
+        aura_ability_names = ['FriendliesDealDamageEqualToCurrentHealth', 'AttackersDontDealDamage']
+
+        for character in self.lane.characters_by_player[self.owner_number]:
+            if not character.silenced:
+                for ability in character.template.abilities:
+                    if ability.name in aura_ability_names:
+                        combat_modification_auras[self.owner_number][ability.name] += 1
+
+        for character in self.lane.characters_by_player[1 - self.owner_number]:
+            if not character.silenced:
+                for ability in character.template.abilities:
+                    if ability.name in aura_ability_names:
+                        combat_modification_auras[self.owner_number][ability.name] += 1
+
+        return combat_modification_auras
+
     def attack(self, attacking_player: int, 
                damage_by_player: dict[int, int], 
                defending_characters: list['Character'], 
@@ -179,8 +202,11 @@ class Character:
         if not do_not_set_has_attacked:
             self.has_attacked = True
         defenders = [character for character in defending_characters if character.is_defender() and character.can_fight()]
+
+        combat_modification_auras = self.compute_combat_modification_auras()
+
         if len(defenders) == 0 and not self.is_attacker():
-            self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
+            self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, combat_modification_auras, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
         else:
             if len(defenders) == 0:
                 if len(defending_characters) > 0:
@@ -190,9 +216,9 @@ class Character:
             else:
                 target_character = random.choice(defenders)
             if target_character is not None:
-                self.fight(target_character, lane_number, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
+                self.fight(target_character, lane_number, combat_modification_auras, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
             else:
-                self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
+                self.deal_tower_damage(attacking_player, defending_characters, damage_by_player, lane_number, combat_modification_auras, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
         if self.exists():
             if self.has_ability('SwitchLanesAfterAttacking'):
@@ -201,10 +227,10 @@ class Character:
             if self.has_ability('OnAttackDoubleAttack'):
                 self.current_attack *= 2
 
-    def get_damage_to_deal_in_punch(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState') -> int:
+    def get_damage_to_deal_in_punch(self, defending_character: 'Character', lane_number: int, combat_modification_auras: dict[int, defaultdict[str, int]], log: list[str], animations: list, game_state: 'GameState') -> int:
         if self.shackled_turns > 0 and defending_character.has_ability('InvincibilityAgainstShackled'):
             return 0
-        elif self.is_attacker() and any([character.has_ability('AttackersDontDealDamage') for character in [*self.lane.characters_by_player[0], *self.lane.characters_by_player[1]]]):
+        elif self.is_attacker() and (combat_modification_auras[0]['AttackersDontDealDamage'] > 0 or combat_modification_auras[1]['AttackersDontDealDamage'] > 0):
             return 0
         elif self.has_ability('Deathtouch'):
             return defending_character.current_health
@@ -213,17 +239,17 @@ class Character:
         elif self.has_ability('DoNotDamageEnemyCharacters'):
             return 0
         else:
-            damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player)
+            damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player, combat_modification_auras)
             return damage_to_deal
 
     def exists(self):
         return self.id in [c.id for c in self.lane.characters_by_player[self.owner_number]]
 
-    def fight(self, defending_character: 'Character', lane_number: int, log: list[str], animations: list, game_state: 'GameState', friendly: bool = False, do_not_attack_tower: bool = False, suppress_hit_tower_bonus_attack_triggers: bool = False):
+    def fight(self, defending_character: 'Character', lane_number: int, combat_modification_auras: dict[int, defaultdict[str, int]], log: list[str], animations: list, game_state: 'GameState', friendly: bool = False, do_not_attack_tower: bool = False, suppress_hit_tower_bonus_attack_triggers: bool = False):
         from_character_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
         to_character_index = [c.id for c in self.lane.characters_by_player[self.owner_number if friendly else 1 - self.owner_number]].index(defending_character.id)
-        attacker_damage_to_deal = self.get_damage_to_deal_in_punch(defending_character, lane_number, log, animations, game_state)
-        defender_damage_to_deal = 0 if self.has_ability('InvincibilityWhileAttacking') else defending_character.get_damage_to_deal_in_punch(self, lane_number, log, animations, game_state)
+        attacker_damage_to_deal = self.get_damage_to_deal_in_punch(defending_character, lane_number, combat_modification_auras, log, animations, game_state)
+        defender_damage_to_deal = 0 if self.has_ability('InvincibilityWhileAttacking') else defending_character.get_damage_to_deal_in_punch(self, lane_number, combat_modification_auras, log, animations, game_state)
 
         defending_character.sustain_damage(attacker_damage_to_deal, log, animations, game_state, suppress_trigger=True)
         self.sustain_damage(defender_damage_to_deal, log, animations, game_state, suppress_trigger=True)
@@ -240,7 +266,7 @@ class Character:
         })
 
         if self.is_attacker() and not do_not_attack_tower:
-            self.deal_tower_damage(self.owner_number, self.lane.characters_by_player[defending_character.owner_number], self.lane.damage_by_player, lane_number, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
+            self.deal_tower_damage(self.owner_number, self.lane.characters_by_player[defending_character.owner_number], self.lane.damage_by_player, lane_number, combat_modification_auras, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
         self.lane.process_dying_characters(log, animations, game_state)
 
@@ -833,7 +859,8 @@ class Character:
                 if enemy_attacker is not None:
                     enemy_defender = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.id == enemy_attacker.id)
                     if enemy_defender is not None:
-                        enemy_attacker.fight(enemy_defender, self.lane.lane_number, log, animations, game_state, friendly=True, do_not_attack_tower=True)
+                        combat_modification_auras = self.compute_combat_modification_auras()
+                        enemy_attacker.fight(enemy_defender, self.lane.lane_number, combat_modification_auras, log, animations, game_state, friendly=True, do_not_attack_tower=True)
 
         if self.has_ability('OnRevealEnemiesSwitchLanes'):
             self.add_basic_animation(animations, game_state)

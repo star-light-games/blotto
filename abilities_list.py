@@ -414,4 +414,8 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         number=x,
         number_2=y,
     ),
+    'FriendliesDealDamageEqualToCurrentHealth': Ability(
+        name='FriendliesDealDamageEqualToCurrentHealth',
+        description='Friendly characters (including me) deal damage equal to their current health.',
+    ),
 }
