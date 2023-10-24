@@ -10,6 +10,8 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
 
     const outlineSize = 2;
 
+    const displayCreatureTypes = card.creatureTypes.includes('Avatar');
+
     return (
       <div 
           style={{
@@ -88,9 +90,9 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     paddingRight: '20px'  // Add some padding to the right
                 }}
             >
-                <Typography variant="body2" color="textSecondary">
+                {displayCreatureTypes && <Typography variant="body2" color="textSecondary">
                     {card.creatureTypes.join(', ')}
-                </Typography>
+                </Typography>}
                 <Typography>
                     <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
                         {card.abilities.map((ability, index) => (

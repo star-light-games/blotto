@@ -1,5 +1,5 @@
 export function snakeCase(str) {
-    return str.toLowerCase().replace(/[- ]/g, '_').replace(/\./g, '');
+    return str.toLowerCase().replace(/[- ]/g, '_').replace(/[\.\']/g, '');
 }
 
 export function getCardBackgroundColor(card, isDarkMode) {

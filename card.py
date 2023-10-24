@@ -9,20 +9,30 @@ class Card:
     def __init__(self, template: 'CardTemplate'):
         self.template = template
         self.id = generate_unique_id()
+        self.attack = template.attack
+        self.health = template.health
 
     def to_character(self, lane, owner_number, owner_username):
-        return Character(self.template, lane, owner_number, owner_username)
+        character = Character(self.template, lane, owner_number, owner_username)
+        character.current_attack = self.attack
+        character.current_health = self.health
+        character.max_health = self.health
+        return character
 
     def to_json(self):
         return {
             "id": self.id,
-            "template": self.template.to_json()
+            "template": self.template.to_json(),
+            "attack": self.attack,
+            "health": self.health,
         }
     
     @staticmethod
     def from_json(json):
         card = Card(CardTemplate.from_json(json['template']))
         card.id = json['id']
+        card.attack = json['attack']
+        card.health = json['health']
         return card
 
     @staticmethod

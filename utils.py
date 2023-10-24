@@ -74,3 +74,9 @@ def basic_lane_animation(lane_number: int, game_state: 'GameState') -> dict:
         },
         "game_state": game_state.to_json(),
     }
+
+def product(l):
+    result = 1
+    for x in l:
+        result *= x
+    return result

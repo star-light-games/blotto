@@ -163,6 +163,8 @@ class Lane:
     def process_dying_characters(self, log: list[str], animations: list, game_state: 'GameState') -> None:
         dying_characters = [character for character in self.characters_by_player[0] + self.characters_by_player[1] if character.current_health <= 0]
 
+        truly_dead_characters = []
+
         for dying_character in dying_characters:
             was_saved = False
             for lane in shuffled([lane for lane in game_state.lanes if not lane.lane_number == self.lane_number]):
@@ -180,9 +182,22 @@ class Lane:
                 if dying_character.lane.lane_reward.effect[0] == 'ownerGainsManaNextTurnWhenCharacterDiesHere':
                     game_state.mana_by_player[dying_character.owner_number] += dying_character.lane.lane_reward.effect[1]  # type: ignore
 
+                truly_dead_characters.append(dying_character)
+
         for player_num in self.characters_by_player:
             self.characters_by_player[player_num] = [character for character in self.characters_by_player[player_num] if character.current_health > 0]
 
+        for dead_character in truly_dead_characters:
+            if dead_character.has_ability('DeathMoveCharactersHereAndPumpThem'):
+                friendly_characters_not_in_this_lane = [character for character in [*game_state.lanes[0].characters_by_player[dead_character.owner_number], *game_state.lanes[1].characters_by_player[dead_character.owner_number], *game_state.lanes[2].characters_by_player[dead_character.owner_number]] if not character.lane.lane_number == self.lane_number]
+                random.shuffle(friendly_characters_not_in_this_lane)
+
+                for character_to_switch in friendly_characters_not_in_this_lane:
+                    if len(self.characters_by_player[dead_character.owner_number]) < 4:
+                        character_to_switch.switch_lanes(log, animations, game_state, lane_number=self.lane_number)
+                        character_to_switch.current_attack += dead_character.number_of_ability('DeathMoveCharactersHereAndPumpThem')
+                        character_to_switch.current_health += dead_character.number_of_ability('DeathMoveCharactersHereAndPumpThem')
+                        character_to_switch.max_health += dead_character.number_of_ability('DeathMoveCharactersHereAndPumpThem')
 
 
     def player_single_attack(self, 

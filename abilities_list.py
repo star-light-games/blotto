@@ -250,7 +250,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealAllAttackersMakeBonusAttack': Ability(
         name='OnRevealAllAttackersMakeBonusAttack',
-        description='On reveal: your other friendly attackers in ALL lanes make a bonus attack.',
+        description='On reveal: your friendly attackers in ALL lanes (including me) make a bonus attack.',
     ),
     'OnRevealSilenceRandomEnemy': Ability(
         name='OnRevealSilenceRandomEnemy',
@@ -281,7 +281,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnRevealSummonDesna': Ability(
         name='OnRevealSummonDesna',
-        description='On reveal: summon Desna, a 5/2 attacker.',
+        description='On reveal: summon Desna, a 2/5 defender.',
     ),
     'OnRevealStealEnemy': Ability(
         name='OnRevealStealEnemy',
@@ -417,5 +417,58 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'FriendliesDealDamageEqualToCurrentHealth': Ability(
         name='FriendliesDealDamageEqualToCurrentHealth',
         description='Friendly characters (including me) deal damage equal to their current health.',
+    ),
+    'OnTriggerKillEnemyBonusAttack': Ability(
+        name='OnTriggerKillEnemyBonusAttack',
+        description='When a friendly character triggers a Kill Enemy ability, I make a bonus attack.',
+    ),
+    'MoreStrengthMeansDoubleDamage': Ability(
+        name='MoreStrengthMeansDoubleDamage',
+        description='Friendly characters with more strength than health (including me) deal double damage.',
+    ),
+    'KillEnemySummonNyla': Ability(
+        name='KillEnemySummonNyla',
+        description='Kill enemy: if Nyla isn\'t already here, summon Nyla, a 4/3 attacker.',
+    ),
+    'DealDoubleDamageAgainstShackled': Ability(
+        name='DealDoubleDamageAgainstShackled',
+        description='I deal double damage to shackled characters.',
+    ),
+    'ShieldedCharactersDealExtraDamage': lambda x: Ability(
+        name='ShieldedCharactersDealExtraDamage',
+        description=f'Friendly characters with a shield deal {x} extra damage.',
+        number=x,
+    ),
+    'KillEnemyGainShield': Ability(
+        name='KillEnemyGainShield',
+        description='Kill enemy: I gain a shield.',
+    ),
+    'OnRevealPumpCardsInHand': lambda x, y: Ability(
+        name='OnRevealPumpCardsInHand',
+        description=f'On reveal: your cards in hand get +{x}/+{y}.',
+    ),
+    'FriendlyAttackersAreInvincibleWhileAttacking': Ability(
+        name='FriendlyAttackersAreInvincibleWhileAttacking',
+        description='Friendly attackers don\'t take damage while attacking.',
+    ),
+    'OnRevealPumpFriendliesIfFullMatchingLane': lambda x, y: Ability(
+        name='OnRevealPumpFriendliesIfFullMatchingLane',
+        description=f'On reveal: if your side of the lane has four characters that share an element, all four characters (including me) get +{x}/+{y}.',
+    ),
+    'OnRevealFriendliesMakeBonusAttack': Ability(
+        name='OnRevealFriendliesMakeBonusAttack',
+        description='On reveal: other friendly characters make a bonus attack.',
+    ),
+    'SurvivePumpFriendlyAttackers': lambda x, y: Ability(
+        name='SurvivePumpFriendlyAttackers',
+        description=f'Survive: your friendly attackers here (including me) get +{x}/+{y}.',
+        number=x,
+        number_2=y,
+    ),
+    'DeathMoveCharactersHereAndPumpThem': lambda x, y: Ability(
+        name='DeathMoveCharactersHereAndPumpThem',
+        description=f'Death: until the lane is full, friendly characters switch into this lane. Each one gets +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
 }
