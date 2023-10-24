@@ -371,7 +371,7 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
                         {cards.map((card, index) => (
                             <Grid item key={index} xs={4}>
                                 <TcgCard
-                                    card={card.template}
+                                    card={{...card.template, attack: card.attack, health: card.health}}
                                     isSelected={selectedCard ? selectedCard.id === card.id : false}
                                     onMouseEnter={() => setHoveredCard(card.template)}
                                     onCardClick={mulliganing ? 
