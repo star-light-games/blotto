@@ -446,6 +446,8 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'OnRevealPumpCardsInHand': lambda x, y: Ability(
         name='OnRevealPumpCardsInHand',
         description=f'On reveal: your cards in hand get +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
     'FriendlyAttackersAreInvincibleWhileAttacking': Ability(
         name='FriendlyAttackersAreInvincibleWhileAttacking',
@@ -454,6 +456,8 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'OnRevealPumpFriendliesIfFullMatchingLane': lambda x, y: Ability(
         name='OnRevealPumpFriendliesIfFullMatchingLane',
         description=f'On reveal: if your side of the lane has four characters that share an element, all four characters (including me) get +{x}/+{y}.',
+        number=x,
+        number_2=y,
     ),
     'OnRevealFriendliesMakeBonusAttack': Ability(
         name='OnRevealFriendliesMakeBonusAttack',
