@@ -681,7 +681,7 @@ CARD_TEMPLATES = {
         name='Princess Yue',
         abilities=[('OnTriggerSurvivePump', 2, 3)],
         cost=3,
-        attack=3,
+        attack=2,
         health=3,
         creature_types=['Water'],
     ),
