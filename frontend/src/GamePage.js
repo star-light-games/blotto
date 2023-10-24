@@ -202,7 +202,7 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
                     alignItems="center"
                     height="30px">
                     <span>{character.template.name}</span>
-                    <span>{character.current_attack == null ? character.template.attack : character.current_attack}/{character.current_health == null ? character.template.health : character.current_health}</span>
+                    <span>{character.current_attack == null ? character.attack : character.current_attack}/{character.current_health == null ? character.health : character.current_health}</span>
                 </Box>
             </Grid>
             {displayArt && <Grid item xs={12}>
