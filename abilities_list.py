@@ -449,7 +449,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'FriendlyAttackersAreInvincibleWhileAttacking': Ability(
         name='FriendlyAttackersAreInvincibleWhileAttacking',
-        description='Friendly attackers don\'t take damage while attacking.',
+        description='Friendly attackers (including me) don\'t take damage while attacking.',
     ),
     'OnRevealPumpFriendliesIfFullMatchingLane': lambda x, y: Ability(
         name='OnRevealPumpFriendliesIfFullMatchingLane',
