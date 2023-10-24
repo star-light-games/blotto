@@ -605,6 +605,10 @@ class Character:
                 "game_state": game_state.to_json(),                
             })
 
+        if total_damage_from_shackles > 0:
+            self.lane.process_dying_characters(log, animations, game_state)
+            
+
     def do_all_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
         self.do_very_early_on_reveal(log, animations, game_state)
         self.do_early_on_reveal(log, animations, game_state)
