@@ -290,7 +290,7 @@ class Character:
             defending_character.silence(self, log, animations, game_state, do_not_animate=True)
         if defending_character.has_ability('OnDamageCharacterSilenceIt') and defender_damage_to_deal > 0:
             self.silence(defending_character, log, animations, game_state, do_not_animate=True)
-        if defender_damage_to_deal > 0 and defending_character.current_health > 0:
+        if defender_damage_to_deal > 0 and self.current_health > 0:
             self.do_survive_damage_triggers(log, animations, game_state)
         if attacker_damage_to_deal > 0 and defending_character.current_health > 0:
             defending_character.do_survive_damage_triggers(log, animations, game_state)
