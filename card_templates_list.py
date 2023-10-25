@@ -566,9 +566,9 @@ CARD_TEMPLATES = {
     'Cabbage Man': CardTemplate(
         name='Cabbage Man',
         abilities=['Attacker', 'OnRevealFillEnemyLaneWithCabbages'],
-        cost=3,
+        cost=2,
         attack=3,
-        health=3,
+        health=2,
         creature_types=['Earth'],
         rarity='rare',
     ),
