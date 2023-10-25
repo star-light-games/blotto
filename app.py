@@ -844,16 +844,15 @@ def be_done_with_animations(sess, game_id):
 def get_draft_pick(sess):
     pick_num = request.args.get('pickNum')
     
-    DEFAULT_RARE_CHANCE = 0.1
+    DEFAULT_RARE_CHANCE = 0.07
 
     pick_num_to_rare_chance: dict[Optional[int], float] = {
         1: 1,
-        2: 0.35,
-        3: 0.3,
-        4: 0.25,
-        5: 0.2,
-        6: 0.15,
-        18: 0.3,
+        2: 0.25,
+        3: 0.2,
+        4: 0.15,
+        5: 0.15,
+        18: 0.2,
     }
 
     rare_chance = pick_num_to_rare_chance.get(int(pick_num) if pick_num is not None else None) or DEFAULT_RARE_CHANCE
