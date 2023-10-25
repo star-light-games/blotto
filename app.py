@@ -844,7 +844,7 @@ def be_done_with_animations(sess, game_id):
 def get_draft_pick(sess):
     pick_num = request.args.get('pickNum')
     
-    DEFAULT_RARE_CHANCE = 0.12
+    DEFAULT_RARE_CHANCE = 0.1
 
     pick_num_to_rare_chance: dict[Optional[int], float] = {
         1: 1,
