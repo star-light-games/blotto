@@ -1078,10 +1078,10 @@ CARD_TEMPLATES = {
     ),
     'Wan': CardTemplate(
         name='Wan',
-        abilities=['Attacker', ('OnRevealPumpFriendliesIfFullMatchingLane', 3, 3)],
+        abilities=['Attacker', ('OnRevealPumpFriendliesIfFullMatchingLane', 4, 4)],
         cost=5,
-        attack=5,
-        health=5,
+        attack=6,
+        health=6,
         creature_types=['Avatar'],
         rarity='rare',
     ),
