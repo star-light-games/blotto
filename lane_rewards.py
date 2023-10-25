@@ -4,19 +4,19 @@ from typing import Union
 LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enumerate([
     {
         'name': 'Earth Empire',
-        'threshold': 50,
+        'threshold': 45,
         'reward_description': 'Create an 8/8 attacker in another lane.',
         'effect': ['spawn', 'The Colossus'],
     },
     {
         'name': 'Fire Nation',
-        'threshold': 45,
+        'threshold': 40,
         'reward_description': 'ALL friendly characters get +3/+0.',
         'effect': ['pumpAllFriendlies', 3, 0],
     },
     {
         'name': 'Omashu',
-        'threshold': 40,
+        'threshold': 35,
         'reward_description': 'ALL friendly characters make a bonus attack.',
         'effect': ['bonusAttackAllFriendlies'],
     },
