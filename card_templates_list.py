@@ -225,7 +225,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=6,
         creature_types=['Air'],
-        rarity='common',
+        rarity='rare',
     ),
     'Momo': CardTemplate(
         name='Momo',
@@ -261,7 +261,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=5,
         creature_types=['Air'],
-        rarity='rare',
+        rarity='common',
     ),
     'Gran-Gran Kanna': CardTemplate(
         name='Gran-Gran Kanna',
@@ -775,7 +775,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=10,
         creature_types=['Air'],
-        rarity='rare',
+        rarity='common',
     ),
     'Meelo': CardTemplate(
         name='Meelo',
@@ -824,12 +824,12 @@ CARD_TEMPLATES = {
     ),
     'Ryu': CardTemplate(
         name='Ryu',
-        abilities=[('HitTowerDamageAllCharacters', 1)],
+        abilities=[('HitTowerDamageAllCharacters', 2)],
         cost=4,
-        attack=5,
+        attack=4,
         health=8,
         creature_types=['Air'],
-        rarity='common',
+        rarity='rare',
     ),
     'Council of Elders': CardTemplate(
         name='Council of Elders',
