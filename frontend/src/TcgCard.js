@@ -24,22 +24,25 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
       };
 
       const ovalStyle = {
-        width: '20px', 
-        height: '30px', 
-        backgroundColor: getRarityColor(card.rarity),
-        border: '3px solid black',
-        borderRadius: '50%', 
         position: 'absolute',
         top: '53%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        zIndex: 1
+        width: '20px',
+        height: '26px',
+        backgroundColor: getRarityColor(card.rarity),
+        border: '0px solid black',
+        borderRadius: '50%',
+        zIndex: 1,
+        boxShadow: 'inset 2px 2px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.5)', // inner shadow for added depth
+        // background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%)', // subtle gradient for a shiny effect
       };
+      
 
       const aspectRatioBox = {
         position: 'relative',
         width: '100%',
-        paddingBottom: '75%',  // for 4:3 aspect ratio. Adjust for other ratios.
+        paddingBottom: '75.7%',  // for 4:3 aspect ratio. Adjust for other ratios.
         overflow: 'hidden'
       };
       
