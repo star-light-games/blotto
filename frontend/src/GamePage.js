@@ -337,7 +337,7 @@ function OldLanesDisplay({ lanes, playerNum, opponentNum, selectedCard, setSelec
     );
 }
 
-function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, yourManaAmount, cardsToMulligan, setCardsToMulligan, mulliganing }) {        
+function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, yourManaAmount, cardsToMulligan, setCardsToMulligan, mulliganing, animating }) {        
     // const toggleMulliganingCard = (card) => {
     //     if (cardsToMulligan.includes(card.id)) {
     //         setCardsToMulligan(cardsToMulligan.filter(id => id !== card.id));
@@ -376,11 +376,11 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
                                     onMouseEnter={() => setHoveredCard(card.template)}
                                     onCardClick={mulliganing ? 
                                         () => toggleMulliganingCard(card) : 
-                                        yourManaAmount >= card.template.cost ? 
+                                        (yourManaAmount >= card.template.cost && !animating) ? 
                                         () => setSelectedCard(card) : 
                                         () => { }
                                     }
-                                    doNotBorderOnHighlight={yourManaAmount < card.template.cost}
+                                    doNotBorderOnHighlight={yourManaAmount < card.template.cost || animating}
                                     displayArt={true}
                                     displayRedX={cardsToMulligan.includes(card.id) && mulliganing}
                                 />
@@ -1638,6 +1638,7 @@ export default function GamePage({ }) {
                             cardsToMulligan={cardsToMulligan}
                             setCardsToMulligan={setCardsToMulligan}
                             mulliganing={mulliganing}
+                            animating={animating}
                         />
                     </Grid>
                     <Grid item>
