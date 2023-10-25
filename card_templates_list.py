@@ -17,7 +17,7 @@ CARD_TEMPLATES = {
         abilities=['ShackleOnFriendlyEarth'],
         cost=1,
         attack=2,
-        health=1,
+        health=2,
         creature_types=['Earth'],
         rarity='common',
     ),
