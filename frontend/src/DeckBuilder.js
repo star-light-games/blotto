@@ -128,7 +128,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
         {isTimedDraft && draftStartTime && <Grid item>
           <Timer 
             lastTimerStart={draftStartTime / 1000} 
-            secondsPerTurn={150} 
+            secondsPerTurn={240}
             secondsElapsed={secondsElapsed}
             setSecondsElapsed={setSecondsElapsed}
             doNotUpdateTimer={false}
