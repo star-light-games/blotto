@@ -294,24 +294,20 @@ class Character:
             self.do_survive_damage_triggers(log, animations, game_state)
         if attacker_damage_to_deal > 0 and defending_character.current_health > 0:
             defending_character.do_survive_damage_triggers(log, animations, game_state)
-        if not defending_character.exists() and self.exists():
-            self.do_kill_enemy_triggers_existence_required(defending_character, log, animations, game_state)
-        if not self.exists() and defending_character.exists():
-            defending_character.do_kill_enemy_triggers_existence_required(self, log, animations, game_state)
         if not defending_character.exists():
-            self.do_kill_enemy_triggers_existence_not_required(defending_character, log, animations, game_state)
+            self.do_kill_enemy_triggers(defending_character, log, animations, game_state)
         if not self.exists():
-            defending_character.do_kill_enemy_triggers_existence_not_required(self, log, animations, game_state)
+            defending_character.do_kill_enemy_triggers(self, log, animations, game_state)
 
-    def do_kill_enemy_triggers_existence_not_required(self, defending_character: 'Character', log: list[str], animations: list, game_state: 'GameState'):
+    def do_kill_enemy_triggers(self, defending_character: 'Character', log: list[str], animations: list, game_state: 'GameState'):
         if self.has_ability('KillEnemySummonNyla'):
             if len(self.lane.characters_by_player[self.owner_number]) < 4 and not any([character.template.name == 'Nyla' for character in self.lane.characters_by_player[self.owner_number]]):
                 self.add_basic_animation(animations, game_state)
                 nyla_character = Character(CARD_TEMPLATES['Nyla'], self.lane, self.owner_number, game_state.usernames_by_player[self.owner_number])
                 self.lane.characters_by_player[self.owner_number].append(nyla_character)
                 nyla_character.do_all_on_reveal(log, animations, game_state)
+                self.on_trigger_kill_enemy_ability(log, animations, game_state)
 
-    def do_kill_enemy_triggers_existence_required(self, defending_character: 'Character', log: list[str], animations: list, game_state: 'GameState'):
         if self.has_ability('OnKillBuffHealth'):
             self.current_attack += self.number_of_ability('OnKillBuffHealth')
             self.current_health += self.number_2_of_ability('OnKillBuffHealth')
@@ -323,12 +319,15 @@ class Character:
         if self.has_ability('KillEnemyAttackAgain'):
             self.on_trigger_kill_enemy_ability(log, animations, game_state)
 
-            self.make_bonus_attack(log, animations, game_state)
-            self.lane.process_dying_characters(log, animations, game_state)
+            if self.exists():
+                self.make_bonus_attack(log, animations, game_state)
+                self.lane.process_dying_characters(log, animations, game_state)
         
         if self.has_ability('KillEnemyGainShield'):
             self.gain_shield(log, animations, game_state)
             self.add_basic_animation(animations, game_state)
+
+            self.on_trigger_kill_enemy_ability(log, animations, game_state)
 
     def on_trigger_kill_enemy_ability(self, log: list[str], animations: list, game_state: 'GameState'):
         for character in self.lane.characters_by_player[self.owner_number]:
