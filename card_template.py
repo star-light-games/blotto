@@ -3,7 +3,7 @@ from abilities_list import ABILITIES
 
 
 class CardTemplate:
-    def __init__(self, name: str, abilities: list[Union[str, tuple[str, int], tuple[str, int, int], tuple[str, int, int, str]]], cost: int, attack: int, health: int, creature_types: list[str], not_in_card_pool: bool = False):
+    def __init__(self, name: str, abilities: list[Union[str, tuple[str, int], tuple[str, int, int], tuple[str, int, int, str]]], cost: int, attack: int, health: int, creature_types: list[str], rarity: str, not_in_card_pool: bool = False):
         self.name = name
         self.abilities = []
         for ability in abilities:
@@ -22,6 +22,7 @@ class CardTemplate:
         self.health = health
         self.creature_types = creature_types
         self.not_in_card_pool = not_in_card_pool
+        self.rarity = rarity
 
     def to_json(self):
         return {
@@ -31,6 +32,7 @@ class CardTemplate:
             "attack": self.attack,
             "health": self.health,
             "creatureTypes": self.creature_types,
+            "rarity": self.rarity,
             **({"notInCardPool": self.not_in_card_pool} if self.not_in_card_pool else {}),
         }
     
@@ -56,5 +58,6 @@ class CardTemplate:
 
         return CardTemplate(json["name"], abilities, 
                             json["cost"], json["attack"], json["health"], json["creatureTypes"],
+                            json["rarity"],
                             json["notInCardPool"] if "notInCardPool" in json else False)
     

@@ -12,6 +12,46 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
 
     const displayCreatureTypes = card.creatureTypes.includes('Avatar');
 
+    const getRarityColor = (rarity) => {
+        switch (rarity) {
+          case 'common':
+            return 'white';
+          case 'rare':
+            return 'orange';
+          default:
+            return 'transparent'; // Default to transparent for other rarities or no rarity
+        }
+      };
+
+      const ovalStyle = {
+        width: '20px', 
+        height: '30px', 
+        backgroundColor: getRarityColor(card.rarity),
+        border: '3px solid black',
+        borderRadius: '50%', 
+        position: 'absolute',
+        top: '53%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 1
+      };
+
+      const aspectRatioBox = {
+        position: 'relative',
+        width: '100%',
+        paddingBottom: '75%',  // for 4:3 aspect ratio. Adjust for other ratios.
+        overflow: 'hidden'
+      };
+      
+      const imageStyle = {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover'
+      };
+
     return (
       <div 
           style={{
@@ -53,17 +93,15 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
             <Typography variant="h6">{card.cost}</Typography>
             </Box>
 
-            {displayArt ? <Box 
-                display="flex" 
-                justifyContent="center" 
-                alignItems="center" 
-                height="100%" 
-                width="100%">
-                <img 
-                    src={`/images/${snakeCase(card.name)}.png`} 
-                    alt={`${snakeCase(card.name)}-character-art`} 
-                    style={{maxWidth: '100%', maxHeight: '100%'}} 
-                />
+            {displayArt ? 
+                <Box display="flex" justifyContent="center" alignItems="center" height="100%" width="100%">
+                    <div style={aspectRatioBox}>
+                    <img 
+                        src={`/images/${snakeCase(card.name)}.png`} 
+                        alt={`${snakeCase(card.name)}-character-art`} 
+                        style={imageStyle} 
+                    />
+                    </div>
                 {displayRedX && (
                     <img
                         src={'/images/red_x.png'}
@@ -82,6 +120,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     />
             )}
             </Box> : null}
+            {card.rarity === 'rare' && <div style={ovalStyle}></div>}
             <Box 
                 mt={2} 
                 style={{ 

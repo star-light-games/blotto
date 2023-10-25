@@ -9,6 +9,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=1,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Dai Li Agent': CardTemplate(
         name='Dai Li Agent',
@@ -17,6 +18,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=3,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Katara': CardTemplate(
         name='Katara',
@@ -25,6 +27,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=6,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Korra': CardTemplate(
         name='Korra',
@@ -33,6 +36,7 @@ CARD_TEMPLATES = {
         attack=6,
         health=7,
         creature_types=['Avatar'],
+        rarity='rare',
     ),
     'Foot Soldier': CardTemplate(
         name='Foot Soldier',
@@ -41,6 +45,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=2,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Pabu': CardTemplate(
         name='Pabu',
@@ -49,6 +54,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=1,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Tonraq': CardTemplate(
         name='Tonraq',
@@ -57,6 +63,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=4,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Zaheer': CardTemplate(
         name='Zaheer',
@@ -65,6 +72,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=6,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Ikki': CardTemplate(
         name='Ikki',
@@ -73,6 +81,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=6,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Riley': CardTemplate(
         name='Riley',
@@ -81,6 +90,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=3,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Visola': CardTemplate(
         name='Visola',
@@ -89,6 +99,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=7,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Southern Raider': CardTemplate(
         name='Southern Raider',
@@ -97,6 +108,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=3,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Hakoda': CardTemplate(
         name='Hakoda',
@@ -105,6 +117,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=5,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Yon Rha': CardTemplate(
         name='Yon Rha',
@@ -113,6 +126,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=2,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Sokka': CardTemplate(
         name='Sokka',
@@ -121,6 +135,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=4,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Mai': CardTemplate(
         name='Mai',
@@ -129,6 +144,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=2,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'Naga': CardTemplate(
         name='Naga',
@@ -137,6 +153,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=7,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Admiral Zhao': CardTemplate(
         name='Admiral Zhao',
@@ -145,6 +162,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=6,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Iroh II': CardTemplate(
         name='Iroh II',
@@ -153,15 +171,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=1,
         creature_types=['Fire'],
-    ),
-    'Great Sage': CardTemplate(
-        name='Great Sage',
-        abilities=['OnTowerAttackDrawCard'],
-        cost=4,
-        attack=4,
-        health=2,
-        creature_types=['Fire'],
-        not_in_card_pool=True,
+        rarity='common',
     ),
     'Professor Zei': CardTemplate(
         name='Professor Zei',
@@ -170,6 +180,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=2,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Lin': CardTemplate(
         name='Lin',
@@ -178,6 +189,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Prince Wu': CardTemplate(
         name='Prince Wu',
@@ -186,14 +198,16 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Suyin': CardTemplate(
         name='Suyin',
-        abilities=[('OnRevealShackleSeveral', 2)],
+        abilities=[('OnRevealShackleSeveral', 3)],
         cost=5,
-        attack=6,
-        health=4,
+        attack=4,
+        health=2,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Baatar Jr.': CardTemplate(
         name='Baatar Jr.',
@@ -202,6 +216,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=4,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Oogi': CardTemplate(
         name='Oogi',
@@ -210,6 +225,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=6,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Momo': CardTemplate(
         name='Momo',
@@ -218,6 +234,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=6,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Kya': CardTemplate(
         name='Kya',
@@ -226,6 +243,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=6,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Aang': CardTemplate(
         name='Aang',
@@ -234,6 +252,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=1,
         creature_types=['Avatar'],
+        rarity='rare',
     ),
     'Tenzin': CardTemplate(
         name='Tenzin',
@@ -242,6 +261,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=5,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Gran-Gran Kanna': CardTemplate(
         name='Gran-Gran Kanna',
@@ -250,6 +270,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Fire Lord Ozai': CardTemplate(
         name='Fire Lord Ozai',
@@ -258,6 +279,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=8,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Ming-Hua': CardTemplate(
         name='Ming-Hua',
@@ -266,6 +288,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=6,
         creature_types=['Water'],
+        rarity='common'
     ),
     'Master Pakku': CardTemplate(
         name='Master Pakku',
@@ -274,6 +297,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=10,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Opal': CardTemplate(
         name='Opal',
@@ -282,6 +306,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=7,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Mother Kya': CardTemplate(
         name='Mother Kya',
@@ -290,6 +315,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=5,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Air Nomads': CardTemplate(
         name='Air Nomads',
@@ -299,6 +325,7 @@ CARD_TEMPLATES = {
         health=4,
         creature_types=['Air'],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'Bato': CardTemplate(
         name='Bato',
@@ -307,6 +334,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=7,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Tarrlok': CardTemplate(
         name='Tarrlok',
@@ -315,6 +343,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Appa': CardTemplate(
         name='Appa',
@@ -323,6 +352,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=6,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Monk Gyatso': CardTemplate(
         name='Monk Gyatso',
@@ -331,6 +361,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=2,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Ghazan': CardTemplate(
         name='Ghazan',
@@ -339,6 +370,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=6,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Elder Katara': CardTemplate(
         name='Elder Katara',
@@ -347,6 +379,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=6,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Hama': CardTemplate(
         name='Hama',
@@ -355,6 +388,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=1,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Hiroshi': CardTemplate(
         name='Hiroshi',
@@ -363,6 +397,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=1,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Zuko': CardTemplate(
         name='Zuko',
@@ -371,6 +406,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=5,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Fire Lord Sozin': CardTemplate(
         name='Fire Lord Sozin',
@@ -379,6 +415,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=2,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'Kyoshi': CardTemplate(
         name='Kyoshi',
@@ -387,6 +424,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=10,
         creature_types=['Avatar'],
+        rarity='common',
     ),
     'The Big Bad Hippo': CardTemplate(
         name='The Big Bad Hippo',
@@ -395,6 +433,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=3,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'The Boulder': CardTemplate(
         name='The Boulder',
@@ -403,6 +442,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=6,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'La': CardTemplate(
         name='La',
@@ -411,6 +451,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=2,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Moon Spirit Yang': CardTemplate(
         name='Moon Spirit Yang',
@@ -419,6 +460,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=2,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Izumi': CardTemplate(
         name='Izumi',
@@ -427,6 +469,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=2,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Kai': CardTemplate(
         name='Kai',
@@ -435,6 +478,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=3,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Roku': CardTemplate(
         name='Roku',
@@ -443,6 +487,7 @@ CARD_TEMPLATES = {
         attack=6,
         health=8,
         creature_types=['Avatar'],
+        rarity='common',
     ),
     'Kuvira': CardTemplate(
         name='Kuvira',
@@ -451,6 +496,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=2,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Jinora': CardTemplate(
         name='Jinora',
@@ -459,6 +505,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Spirit': CardTemplate(
         name='Spirit',
@@ -468,6 +515,7 @@ CARD_TEMPLATES = {
         health=2,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'Unalaq': CardTemplate(
         name='Unalaq',
@@ -476,6 +524,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=8,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Bumi II': CardTemplate(
         name='Bumi II',
@@ -484,6 +533,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=3,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Toph': CardTemplate(
         name='Toph',
@@ -492,6 +542,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=8,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Uncle Iroh': CardTemplate(
         name='Uncle Iroh',
@@ -500,6 +551,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=5,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'Yangchen': CardTemplate(
         name='Yangchen',
@@ -508,6 +560,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=4,
         creature_types=['Avatar'],
+        rarity='common',
     ),
     'Cabbage Man': CardTemplate(
         name='Cabbage Man',
@@ -516,6 +569,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Cabbage': CardTemplate(
         name='Cabbage',
@@ -525,6 +579,7 @@ CARD_TEMPLATES = {
         health=1,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'generic_1drop': CardTemplate(
         name='generic_1drop',
@@ -534,6 +589,7 @@ CARD_TEMPLATES = {
         health=2,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'generic_2drop': CardTemplate(
         name='generic_2drop',
@@ -543,6 +599,7 @@ CARD_TEMPLATES = {
         health=3,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'generic_3drop': CardTemplate(
         name='generic_3drop',
@@ -552,6 +609,7 @@ CARD_TEMPLATES = {
         health=5,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'generic_4drop': CardTemplate(
         name='generic_4drop',
@@ -561,6 +619,7 @@ CARD_TEMPLATES = {
         health=7,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'Elephant Rat': CardTemplate(
         name='Elephant Rat',
@@ -570,6 +629,7 @@ CARD_TEMPLATES = {
         health=1,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'The Colossus': CardTemplate(
         name='The Colossus',
@@ -579,6 +639,7 @@ CARD_TEMPLATES = {
         health=8,
         creature_types=[],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'The Painted Lady': CardTemplate(
         name='The Painted Lady',
@@ -587,6 +648,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=4,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Azula': CardTemplate(
         name='Azula',
@@ -595,6 +657,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=4,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Kuruk': CardTemplate(
         name='Kuruk',
@@ -603,6 +666,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=9,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Ty Lee': CardTemplate(
         name='Ty Lee',
@@ -611,6 +675,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=4,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Amon': CardTemplate(
         name='Amon',
@@ -619,6 +684,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=7,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Thod': CardTemplate(
         name='Thod',
@@ -627,6 +693,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=1,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Senna': CardTemplate(
         name='Senna',
@@ -635,6 +702,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=7,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Taqukaq': CardTemplate(
         name='Taqukaq',
@@ -643,6 +711,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=8,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Eska': CardTemplate(
         name='Eska',
@@ -651,6 +720,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=2,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Desna': CardTemplate(
         name='Desna',
@@ -660,6 +730,7 @@ CARD_TEMPLATES = {
         health=5,
         creature_types=['Water'],
         not_in_card_pool=True,
+        rarity='rare',
     ),
     'Kelsang': CardTemplate(
         name='Kelsang',
@@ -668,6 +739,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=4,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Varrick': CardTemplate(
         name='Varrick',
@@ -676,6 +748,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=2,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Princess Yue': CardTemplate(
         name='Princess Yue',
@@ -684,6 +757,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=3,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Yagoda': CardTemplate(
         name='Yagoda',
@@ -692,6 +766,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=2,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Tashi': CardTemplate(
         name='Tashi',
@@ -700,6 +775,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=10,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Meelo': CardTemplate(
         name='Meelo',
@@ -708,6 +784,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=6,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Tsemo': CardTemplate(
         name='Tsemo',
@@ -716,14 +793,16 @@ CARD_TEMPLATES = {
         attack=1,
         health=1,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Yung': CardTemplate(
         name='Yung',
-        abilities=[('HitTowerPumpSelf', 2, 2)],
+        abilities=[('HitTowerPumpSelf', 2, 1)],
         cost=2,
         attack=2,
         health=2,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Juicy': CardTemplate(
         name='Juicy',
@@ -732,6 +811,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=6,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Otaku': CardTemplate(
         name='Otaku',
@@ -740,6 +820,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=5,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Ryu': CardTemplate(
         name='Ryu',
@@ -748,6 +829,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=8,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Council of Elders': CardTemplate(
         name='Council of Elders',
@@ -756,6 +838,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=3,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Lefty': CardTemplate(
         name='Lefty',
@@ -764,6 +847,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=3,
         creature_types=['Air'],
+        rarity='common',
     ),
     'Huu': CardTemplate(
         name='Huu',
@@ -772,6 +856,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=5,
         creature_types=['Water'],
+        rarity='rare',
     ),
     'Master Yu': CardTemplate(
         name='Master Yu',
@@ -780,6 +865,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=6,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Joo Dee': CardTemplate(
         name='Joo Dee',
@@ -788,6 +874,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=1,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Teo': CardTemplate(
         name='Teo',
@@ -796,6 +883,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=2,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'King Bumi': CardTemplate(
         name='King Bumi',
@@ -804,6 +892,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Suki': CardTemplate(
         name='Suki',
@@ -812,6 +901,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=4,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Badgermole': CardTemplate(
         name='Badgermole',
@@ -820,6 +910,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=5,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Champion Ming': CardTemplate(
         name='Champion Ming',
@@ -828,6 +919,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=4,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Queen Hou-Ting': CardTemplate(
         name='Queen Hou-Ting',
@@ -836,6 +928,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=6,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Resistance Fighter': CardTemplate(
         name='Resistance Fighter',
@@ -844,6 +937,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=4,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Canyon Guide': CardTemplate(
         name='Canyon Guide',
@@ -852,6 +946,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=1,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Bolin': CardTemplate(
         name='Bolin',
@@ -860,6 +955,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=7,
         creature_types=['Earth'],
+        rarity='rare',
     ),
     'Tyro': CardTemplate(
         name='Tyro',
@@ -868,6 +964,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=3,
         creature_types=['Earth'],
+        rarity='common',
     ),
     'Bum-Ju': CardTemplate(
         name='Bum-Ju',
@@ -876,6 +973,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=1,
         creature_types=['Water'],
+        rarity='common',
     ),
     'Guru Laghima': CardTemplate(
         name='Guru Laghima',
@@ -884,14 +982,16 @@ CARD_TEMPLATES = {
         attack=3,
         health=7,
         creature_types=['Air'],
+        rarity='rare',
     ),
     'Yuyan Archers': CardTemplate(
         name='Yuyan Archers',
         abilities=['Attacker', 'EarlyFighter', 'InvincibilityWhileAttacking'],
         cost=3,
         attack=3,
-        health=1,
+        health=2,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'Man in the Mask': CardTemplate(
         name='Man in the Mask',
@@ -900,6 +1000,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=1,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Ran and Shaw': CardTemplate(
         name='Ran and Shaw',
@@ -908,6 +1009,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=2,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'June': CardTemplate(
         name='June',
@@ -916,6 +1018,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=4,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'Nyla': CardTemplate(
         name='Nyla',
@@ -925,6 +1028,7 @@ CARD_TEMPLATES = {
         health=3,
         creature_types=['Fire'],
         not_in_card_pool=True,
+        rarity='common',
     ),
     'Mako': CardTemplate(
         name='Mako',
@@ -933,6 +1037,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=4,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Master Jeong Jeong': CardTemplate(
         name='Master Jeong Jeong',
@@ -941,6 +1046,7 @@ CARD_TEMPLATES = {
         attack=1,
         health=2,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Piandao': CardTemplate(
         name='Piandao',
@@ -949,6 +1055,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=3,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'P\'li': CardTemplate(
         name='P\'li',
@@ -957,6 +1064,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=1,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Fire Lord Azulon': CardTemplate(
         name='Fire Lord Azulon',
@@ -965,6 +1073,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=8,
         creature_types=['Fire'],
+        rarity='rare',
     ),
     'Wan': CardTemplate(
         name='Wan',
@@ -973,6 +1082,7 @@ CARD_TEMPLATES = {
         attack=5,
         health=5,
         creature_types=['Avatar'],
+        rarity='rare',
     ),
     'Navy Officer': CardTemplate(
         name='Navy Officer',
@@ -981,6 +1091,7 @@ CARD_TEMPLATES = {
         attack=4,
         health=3,
         creature_types=['Fire'],
+        rarity='common',
     ),
     'Dragon Bird Spirit': CardTemplate(
         name='Dragon Bird Spirit',
@@ -989,5 +1100,6 @@ CARD_TEMPLATES = {
         attack=5,
         health=5,
         creature_types=[],
+        rarity='rare',
     ),
 }
