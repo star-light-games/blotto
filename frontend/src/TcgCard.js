@@ -60,7 +60,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
           style={{
               border: isSelected ? `${outlineSize}px solid black` : 'none',
               boxSizing: 'border-box',
-              cursor: 'pointer',
+              ...(doNotBorderOnHighlight ? {} : {cursor: 'pointer'}),
               width: width || 250 + (outlineSize * 2),
               height: height || (displayArt ? 400 : 250) + (outlineSize * 2),
           }}
