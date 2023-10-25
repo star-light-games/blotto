@@ -912,69 +912,32 @@ export default function GamePage({ }) {
     }, []);
 
     const onRematch = () => {
-        const rematchGameId = game?.rematch_game_id;
         let data = {};
 
-        fetch(`${URL}/api/games/${rematchGameId}`).then(response => {
-            if (!response.ok) {
-                data = {
-                    deckId: game?.decks_by_player?.[playerNum].id,
-                    hostGameId: rematchGameId,
-                    username: game.usernames_by_player[playerNum],
-                    bot_game: game.is_bot_by_player[1 - playerNum],
-                }
-                fetch(`${URL}/api/host_game`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                throw new Error(data.error);
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        navigate(`/game/${rematchGameId}?playerNum=0`);
-                        
-                        // Then refresh the page
-                        window.location.reload();                        
-                    })
-            }
-            else {
-                data = {
-                    deckId: game?.decks_by_player?.[playerNum].id,
-                    gameId: rematchGameId,
-                    username: game.usernames_by_player[playerNum],
-                }
-                fetch(`${URL}/api/join_game`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                throw new Error(data.error);
-                            });
-                        }
-                        // Handle successful join, if necessary
-                    })
-                    .then(() => {
-                        navigate(`/game/${rematchGameId}?playerNum=1`); // Redirect to the game page
-
-                        // Then refresh the page
-                        window.location.reload();
-                    })
-            }
+        data = {
+            username: game.usernames_by_player[playerNum],
         }
-        )
+        fetch(`${URL}/api/games/${game.id}/rematch`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                navigate(`/game/${data.gameId}?playerNum=${data.playerNum}`);
+                
+                // Then refresh the page
+                window.location.reload();                        
+            })
     }
 
     const SPEEDS = [

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Union
 from bot import bot_take_mulligan, find_bot_move, get_bot_deck
 from card import Card
 from card_templates_list import CARD_TEMPLATES, get_random_card_template_of_rarity, get_sample_card_templates_of_rarity
@@ -104,7 +104,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         rset_json(get_game_redis_key(game_id), game_from_json.to_json(), ex=24 * 60 * 60)
 
         if have_moved:
-            socketio.emit('update', room=game_id)
+            socketio.emit('update', room=game_id)  # type: ignore
 
             if not game.game_info.game_state.turn > 8:
                 for player_num in [0, 1]:
@@ -159,7 +159,7 @@ def roll_turn_in_game(game: Game) -> None:
 
     rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
-    socketio.emit('update', room=game.id)
+    socketio.emit('update', room=game.id)  # type: ignore
 
     if not game.game_info.game_state.turn > 8:
         for player_num in [0, 1]:
@@ -340,6 +340,72 @@ def get_decks(sess):
     return recurse_to_json([deck for deck in decks if deck.username in [request.args.get('username'), COMMON_DECK_USERNAME]])
 
 
+def _host_game_inner(sess, deck_id: Optional[str], deck_name: Optional[str], username: str, is_bot_game: bool, host_game_id: Optional[str] = None, seconds_per_turn: Optional[int] = None, rematch: bool = False) -> Union[Game, tuple[dict, int]]:
+    if deck_id:
+        db_deck = sess.query(DbDeck).get(deck_id)
+        if not db_deck:
+            return {"error": "Deck not found"}, 404
+        deck = Deck.from_db_deck(db_deck)
+    else:
+        assert deck_name
+        db_deck = sess.query(DbDeck).filter(DbDeck.username.in_([username, COMMON_DECK_USERNAME])).filter(DbDeck.name == deck_name).first()
+        if not db_deck:
+            return {"error": "Deck not found"}, 404
+        deck = Deck.from_db_deck(db_deck)
+
+    if is_bot_game:
+        player_0_username = username
+        player_1_username = 'RUFUS_THE_ROBOT'
+
+        bot_deck = get_bot_deck(sess, deck.name) or deck
+        
+        player_0_deck = deck
+        player_1_deck = bot_deck
+
+        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id, seconds_per_turn=seconds_per_turn)
+        game.is_bot_by_player[1] = True
+        game.start()
+
+        assert game.game_info
+        game.game_info.game_state.last_timer_start = datetime.now().timestamp() + EXTRA_TIME_ON_FIRST_TURN
+
+        maybe_schedule_forced_turn_roll(game, extra_time=EXTRA_TIME_ON_FIRST_TURN)
+
+        socketio.emit('update', room=game.id)  # type: ignore
+
+        assert game.game_info
+        bot_take_mulligan(game.game_info.game_state, 1)
+
+        with rlock(get_game_lock_redis_key(game.id)):
+            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
+        start_new_thread(bot_move_in_game, (game, 1))
+
+    else:
+        player_0_username = username
+        player_1_username = None
+        player_0_deck = deck
+        player_1_deck = None
+
+        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id, seconds_per_turn=seconds_per_turn)
+
+    sess.add(DbGame(
+        id=game.id,
+        player_0_username=player_0_username,
+        player_1_username=player_1_username,
+        rematch=rematch,
+    ))
+    sess.commit()
+
+    socketio.emit('updateGames')
+
+    if not is_bot_game:
+        with rlock(get_game_lock_redis_key(game.id)):
+            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+
+    return game
+
+
 @app.route('/api/host_game', methods=['POST'])
 @api_endpoint
 def host_game(sess):
@@ -365,68 +431,56 @@ def host_game(sess):
     
     seconds_per_turn = data.get('secondsPerTurn')
 
-    if deck_id:
-        db_deck = sess.query(DbDeck).get(deck_id)
-        if not db_deck:
-            return jsonify({"error": "Deck not found"}), 404
-        deck = Deck.from_db_deck(db_deck)
-    else:
-        assert deck_name
-        db_deck = sess.query(DbDeck).filter(DbDeck.username.in_([username, COMMON_DECK_USERNAME])).filter(DbDeck.name == deck_name).first()
-        if not db_deck:
-            return jsonify({"error": "Deck not found"}), 404
-        deck = Deck.from_db_deck(db_deck)
+    game = _host_game_inner(sess, deck_id, deck_name, username, is_bot_game, host_game_id=host_game_id, seconds_per_turn=seconds_per_turn)
 
-    if is_bot_game:
-        player_0_username = username
-        player_1_username = 'RUFUS_THE_ROBOT'
+    if isinstance(game, Game):
+        return jsonify({"gameId": game.id})
+    
+    # Return error
+    return jsonify(game[0]), game[1]
 
-        bot_deck = get_bot_deck(sess, deck.name) or deck
+
+def _join_game_inner(sess, game_id: str, username: str, deck_id: Optional[str], deck_name: Optional[str]) -> Union[Game, tuple[dict, int]]:
+    with rlock(get_game_lock_redis_key(game_id)):
+        game_json = rget_json(get_game_redis_key(game_id))
+        if not game_json:
+            return {"error": "Game not found"}, 404
         
-        player_0_deck = deck
-        player_1_deck = bot_deck
+        game = Game.from_json(game_json)
 
-        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id, seconds_per_turn=seconds_per_turn)
-        game.is_bot_by_player[1] = True
+        if deck_id:
+            db_deck = sess.query(DbDeck).get(deck_id)
+            if not db_deck:
+                return {"error": "Deck not found"}, 404
+            deck = Deck.from_db_deck(db_deck)
+        else:
+            assert deck_name
+            db_deck = sess.query(DbDeck).filter(DbDeck.username.in_([username, COMMON_DECK_USERNAME])).filter(DbDeck.name == deck_name).first()
+            if not db_deck:
+                return {"error": "Deck not found"}, 404
+            deck = Deck.from_db_deck(db_deck)
+
+        game.usernames_by_player[1] = username
+        game.decks_by_player[1] = deck
         game.start()
-
+        
         assert game.game_info
         game.game_info.game_state.last_timer_start = datetime.now().timestamp() + EXTRA_TIME_ON_FIRST_TURN
 
         maybe_schedule_forced_turn_roll(game, extra_time=EXTRA_TIME_ON_FIRST_TURN)
 
-        socketio.emit('update', room=game.id)      
+        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
-        assert game.game_info
-        bot_take_mulligan(game.game_info.game_state, 1)
+        socketio.emit('update', room=game.id)  # type: ignore
 
-        with rlock(get_game_lock_redis_key(game.id)):
-            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
+    db_game = sess.query(DbGame).get(game.id)
+    db_game.player_1_username = username
 
-        start_new_thread(bot_move_in_game, (game, 1))
-
-    else:
-        player_0_username = username
-        player_1_username = None
-        player_0_deck = deck
-        player_1_deck = None
-
-        game = Game({0: player_0_username, 1: player_1_username}, {0: player_0_deck, 1: player_1_deck}, id=host_game_id, seconds_per_turn=seconds_per_turn)
-
-    sess.add(DbGame(
-        id=game.id,
-        player_0_username=player_0_username,
-        player_1_username=player_1_username,
-    ))
     sess.commit()
 
     socketio.emit('updateGames')
 
-    if not is_bot_game:
-        with rlock(get_game_lock_redis_key(game.id)):
-            rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
-
-    return jsonify({"gameId": game.id})
+    return game
 
 
 @app.route('/api/join_game', methods=['POST'])
@@ -452,47 +506,14 @@ def join_game(sess):
 
     if not (deck_id or deck_name):
         return jsonify({"error": "Deck ID or name is required"}), 400
-
-    with rlock(get_game_lock_redis_key(game_id)):
-        game_json = rget_json(get_game_redis_key(game_id))
-        if not game_json:
-            return jsonify({"error": "Game not found"}), 404
-        
-        game = Game.from_json(game_json)
-
-        if deck_id:
-            db_deck = sess.query(DbDeck).get(deck_id)
-            if not db_deck:
-                return jsonify({"error": "Deck not found"}), 404
-            deck = Deck.from_db_deck(db_deck)
-        else:
-            assert deck_name
-            db_deck = sess.query(DbDeck).filter(DbDeck.username.in_([username, COMMON_DECK_USERNAME])).filter(DbDeck.name == deck_name).first()
-            if not db_deck:
-                return jsonify({"error": "Deck not found"}), 404
-            deck = Deck.from_db_deck(db_deck)
-
-        game.usernames_by_player[1] = username
-        game.decks_by_player[1] = deck
-        game.start()
-        
-        assert game.game_info
-        game.game_info.game_state.last_timer_start = datetime.now().timestamp() + EXTRA_TIME_ON_FIRST_TURN
-
-        maybe_schedule_forced_turn_roll(game, extra_time=EXTRA_TIME_ON_FIRST_TURN)
-
-        rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
-
-        socketio.emit('update', room=game.id)
-
-    db_game = sess.query(DbGame).get(game.id)
-    db_game.player_1_username = username
-
-    sess.commit()
-
-    socketio.emit('updateGames')
     
-    return jsonify({"gameId": game.id})
+    game = _join_game_inner(sess, game_id, username, deck_id, deck_name)
+
+    if isinstance(game, Game):
+        return jsonify({"gameId": game.id})
+    
+    # Return error
+    return jsonify(game[0]), game[1]
 
 
 @app.route('/api/open_games', methods = ['GET'])
@@ -502,6 +523,7 @@ def get_available_games(sess):
         sess.query(DbGame)
         .filter(DbGame.player_1_username.is_(None))
         .filter(DbGame.created_at > datetime.now() - timedelta(hours=2))
+        .filter(~DbGame.rematch)
         .all()
     )
 
@@ -579,7 +601,7 @@ def take_turn(sess, game_id):
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
     
     if have_moved:
-        socketio.emit('update', room=game.id)
+        socketio.emit('update', room=game.id)  # type: ignore
 
     return jsonify({"gameId": game.id,
                     "game": game.to_json()})
@@ -834,7 +856,7 @@ def be_done_with_animations(sess, game_id):
 
             rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
-            socketio.emit('updateWithoutAnimating', room=game_id)
+            socketio.emit('updateWithoutAnimating', room=game_id)  # type: ignore
 
     return jsonify({"gameId": game.id,})
 
@@ -863,6 +885,53 @@ def get_draft_pick(sess):
         return {'options': get_sample_card_templates_of_rarity('common', 5)}
 
 
+@app.route('/api/games/<game_id>/rematch', methods=['POST'])
+@api_endpoint
+def rematch(sess, game_id):
+    game = rget_json(get_game_redis_key(game_id))
+    if not game:
+        return jsonify({"error": "Game not found"}), 404
+    
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+    
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+
+    game = Game.from_json(game)
+    
+    player_num = game.username_to_player_num(username)
+    assert player_num is not None
+
+    rematch_game_id = game.rematch_game_id
+    assert rematch_game_id is not None
+
+    rematch_db_game = sess.query(DbGame).get(rematch_game_id)
+
+    my_deck = game.decks_by_player[player_num]
+    assert my_deck is not None
+
+    if rematch_db_game is None:
+        game = _host_game_inner(sess, my_deck.id, my_deck.name, username, 
+                                any([game.is_bot_by_player[game_player_num] for game_player_num in [0, 1]]), 
+                                host_game_id=rematch_game_id, seconds_per_turn=game.seconds_per_turn, rematch=True)
+        player_num = 0
+        
+    else:
+        game = _join_game_inner(sess, rematch_game_id, username, my_deck.id, my_deck.name)
+        player_num = 1
+
+    if isinstance(game, Game):
+        return jsonify({"gameId": game.id, "playerNum": player_num})
+    
+    # Return error
+    return jsonify(game[0]), game[1]
+
+
 @socketio.on('connect')
 def on_connect():
     print('Connected')
@@ -885,6 +954,6 @@ if __name__ == '__main__':
     create_common_decks()
 
     if LOCAL:
-        socketio.run(app, host='0.0.0.0', port=5001, debug=True)
+        socketio.run(app, host='0.0.0.0', port=5001, debug=True)  # type: ignore
     else:
-        socketio.run(app, host='0.0.0.0', port=5007)
+        socketio.run(app, host='0.0.0.0', port=5007)  # type: ignore

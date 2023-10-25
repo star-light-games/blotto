@@ -1,6 +1,6 @@
 
 
-from sqlalchemy import Column, DateTime, Index, String, func
+from sqlalchemy import Boolean, Column, DateTime, Index, String, func
 from database import Base
 
 
@@ -13,6 +13,8 @@ class DbGame(Base):
     player_1_username = Column(String)
 
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
+
+    rematch = Column(Boolean, nullable=False, default=False, server_default='f')
 
     __table_args__ = (
         Index("db_games_idx_player_0_username_created_at", player_0_username, created_at),
