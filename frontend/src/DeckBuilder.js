@@ -219,11 +219,12 @@ function DeckBuilder({ cards, laneRewards }) {
 
   console.log(selectedDeck);
 
-  const hostGame = (botGame) => {
+  const hostGame = (botGame, botDifficulty) => {
     const data = {
       deckId: selectedDeck.id, // Assuming each deck object has an 'id' property
       username: userName,
       bot_game: botGame,
+      bot_difficulty: botDifficulty,
       secondsPerTurn: timeControl === -1 ? null : timeControl,
     };
 
@@ -513,8 +514,18 @@ function DeckBuilder({ cards, laneRewards }) {
               </Button>
             </Grid>
             <Grid item>
+              <Button variant="contained" color="primary" onClick={() => hostGame(true, 'goldfish')} disabled={!selectedDeck}>
+                {selectedDeck ? 'Play vs. goldfish' : 'Select Deck'}
+              </Button>
+            </Grid>            
+            <Grid item>
+              <Button variant="contained" color="primary" onClick={() => hostGame(true, 'easy')} disabled={!selectedDeck}>
+                {selectedDeck ? 'Play vs. bot (easy)' : 'Select Deck'}
+              </Button>
+            </Grid>
+            <Grid item>
               <Button variant="contained" color="primary" onClick={() => hostGame(true)} disabled={!selectedDeck}>
-                {selectedDeck ? 'Play against bot' : 'Select Deck'}
+                {selectedDeck ? 'Play vs. bot (hard)' : 'Select Deck'}
               </Button>
             </Grid>
             <Grid item>

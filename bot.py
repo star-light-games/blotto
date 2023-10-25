@@ -91,7 +91,46 @@ def assess_intermediate_position(player_num: int, mana_amounts_by_player: dict[i
     return total_probability
 
 
-def find_bot_move(player_num: int, game_state: GameState) -> dict[str, int]:
+def find_bot_move(bot_username: str, player_num: int, game_state: GameState) -> dict[str, int]:
+    if bot_username == 'RANDY_THE_ROBOT':
+        return find_bot_move_randy(player_num, game_state)
+    
+    elif bot_username == 'RUFUS_THE_ROBOT':
+        return find_bot_move_rufus(player_num, game_state)
+    
+    return {}
+
+
+def find_bot_move_randy(player_num: int, game_state: GameState) -> dict[str, int]:
+
+    cards_in_hand = game_state.hands_by_player[player_num]
+
+    # Stores dict of mana one could spend to a tuple of (mana actually spent, # cards in each lane, card id to lane number)
+    num_cards_in_each_lane = [len(game_state.lanes[lane_number].characters_by_player[player_num]) for lane_number in [0, 1, 2]]
+    best_move_spending_x_mana: dict[int, tuple[int, list[int], dict[str, int]]] = {0: (0, num_cards_in_each_lane, {})}
+
+    for x in range(1, game_state.mana_by_player[player_num] + 1):
+        best_move_spending_x_mana[x] = best_move_spending_x_mana[x-1]
+        best_mana_spent = best_move_spending_x_mana[x-1][0]
+        for card in cards_in_hand:
+            if card.template.cost <= x:
+                best_move_spending_x_mana_tup = best_move_spending_x_mana[x - card.template.cost]
+                num_cards_in_each_lane_in_this_scenario = best_move_spending_x_mana_tup[1][:]
+                mana_spent_playing_that_card = best_move_spending_x_mana_tup[0] + card.template.cost
+
+                if mana_spent_playing_that_card > best_mana_spent:
+                    best_mana_spent = mana_spent_playing_that_card
+
+                    playable_lanes = [lane_number for lane_number in [0, 1, 2] if num_cards_in_each_lane_in_this_scenario[0] < 4]
+                    if len(playable_lanes) > 0:
+                        lane_number = random.choice(playable_lanes)
+                        num_cards_in_each_lane_in_this_scenario[lane_number] += 1
+                        best_move_spending_x_mana[x] = (best_mana_spent, num_cards_in_each_lane_in_this_scenario, {**best_move_spending_x_mana_tup[2], card.id: lane_number})
+
+    return best_move_spending_x_mana[game_state.mana_by_player[player_num]][2]
+
+
+def find_bot_move_rufus(player_num: int, game_state: GameState) -> dict[str, int]:
     cards_in_hand = game_state.hands_by_player[player_num][:5]
 
     print('My cards: ', [card.template.name for card in cards_in_hand])

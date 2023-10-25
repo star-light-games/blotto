@@ -34,7 +34,9 @@ CORS(app)
 
 def bot_move_in_game(game: Game, player_num: int) -> None:
     assert game.game_info 
-    bot_move = find_bot_move(player_num, game.game_info.game_state)
+    bot_username = game.usernames_by_player[player_num]
+    assert bot_username is not None
+    bot_move = find_bot_move(bot_username, player_num, game.game_info.game_state)
     print('The bot has chosen the following move: ', bot_move)
     game_id = game.id
     with rlock(get_game_lock_redis_key(game_id)):
@@ -340,7 +342,9 @@ def get_decks(sess):
     return recurse_to_json([deck for deck in decks if deck.username in [request.args.get('username'), COMMON_DECK_USERNAME]])
 
 
-def _host_game_inner(sess, deck_id: Optional[str], deck_name: Optional[str], username: str, is_bot_game: bool, host_game_id: Optional[str] = None, seconds_per_turn: Optional[int] = None, rematch: bool = False) -> Union[Game, tuple[dict, int]]:
+def _host_game_inner(sess, deck_id: Optional[str], deck_name: Optional[str], username: str, is_bot_game: bool, 
+                     bot_difficulty: Optional[str] = None,
+                     host_game_id: Optional[str] = None, seconds_per_turn: Optional[int] = None, rematch: bool = False) -> Union[Game, tuple[dict, int]]:
     if deck_id:
         db_deck = sess.query(DbDeck).get(deck_id)
         if not db_deck:
@@ -355,7 +359,8 @@ def _host_game_inner(sess, deck_id: Optional[str], deck_name: Optional[str], use
 
     if is_bot_game:
         player_0_username = username
-        player_1_username = 'RUFUS_THE_ROBOT'
+        player_1_username = ('GOLDA_THE_GOLDFISH' if bot_difficulty == 'goldfish' 
+                             else 'RANDY_THE_ROBOT' if bot_difficulty == 'easy' else 'RUFUS_THE_ROBOT')
 
         bot_deck = get_bot_deck(sess, deck.name) or deck
         
@@ -431,7 +436,9 @@ def host_game(sess):
     
     seconds_per_turn = data.get('secondsPerTurn')
 
-    game = _host_game_inner(sess, deck_id, deck_name, username, is_bot_game, host_game_id=host_game_id, seconds_per_turn=seconds_per_turn)
+    bot_difficulty = data.get('bot_difficulty')
+
+    game = _host_game_inner(sess, deck_id, deck_name, username, is_bot_game, bot_difficulty=bot_difficulty, host_game_id=host_game_id, seconds_per_turn=seconds_per_turn)
 
     if isinstance(game, Game):
         return jsonify({"gameId": game.id})
