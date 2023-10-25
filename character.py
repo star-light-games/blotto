@@ -616,8 +616,9 @@ class Character:
         self.did_on_reveal = True
 
     def make_bonus_attack(self, log: list[str], animations: list, game_state: 'GameState', suppress_hit_tower_bonus_attack_triggers: bool = False):
-        defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
-        self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
+        if self.exists():
+            defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
+            self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, log, animations, game_state, do_not_set_has_attacked=True, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
     def do_very_early_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
         if self.did_on_reveal:
