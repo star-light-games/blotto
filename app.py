@@ -471,7 +471,7 @@ def _join_game_inner(sess, game_id: str, username: str, deck_id: Optional[str], 
 
         rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 
-        socketio.emit('update', room=game.id)  # type: ignore
+        socketio.emit('updateWithoutAnimating', room=game.id)  # type: ignore
 
     db_game = sess.query(DbGame).get(game.id)
     db_game.player_1_username = username
