@@ -348,7 +348,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnTriggerKillEnemyHealAndPumpSelf': lambda x, y: Ability(
         name='OnTriggerKillEnemyHealAndPumpSelf',
-        description=f'When a friendly character triggeres a kill enemy ability, heal that character fully and I get +{x}/+{y}.',
+        description=f'When a friendly character triggers a kill enemy ability, heal that character fully and I get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
