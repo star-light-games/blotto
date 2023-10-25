@@ -99,7 +99,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'HealFriendlyCharacterAndTower': lambda x: Ability(
         name='HealFriendlyCharacterAndTower',
-        description=f'When I am played, heal a friendly character fully and your tower for {x}.',
+        description=f'On reveal: heal a friendly character fully and your tower for {x}.',
         number=x,
     ),
     'SwitchLanesInsteadOfDying': Ability(

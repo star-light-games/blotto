@@ -853,6 +853,7 @@ def get_draft_pick(sess):
         4: 0.25,
         5: 0.2,
         6: 0.15,
+        18: 0.3,
     }
 
     rare_chance = pick_num_to_rare_chance.get(int(pick_num) if pick_num is not None else None) or DEFAULT_RARE_CHANCE
