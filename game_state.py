@@ -168,11 +168,12 @@ class GameState:
                     self.winner = 1
 
     def play_card(self, player_num: int, card_id: str, lane_number: int):
-        card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
-        self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
-        character = card.to_character(self.lanes[lane_number], player_num, self.usernames_by_player[player_num])
-        self.lanes[lane_number].characters_by_player[player_num].append(character)
-        self.log.append(f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.")
+        if len(self.lanes[lane_number].characters_by_player[player_num]) < 4:
+            card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
+            self.hands_by_player[player_num] = [card for card in self.hands_by_player[player_num] if card.id != card_id]
+            character = card.to_character(self.lanes[lane_number], player_num, self.usernames_by_player[player_num])
+            self.lanes[lane_number].characters_by_player[player_num].append(character)
+            self.log.append(f"{self.usernames_by_player[player_num]} played {card.template.name} in Lane {lane_number + 1}.")
 
     # Should be used only by bots
     def play_card_from_template(self, player_num: int, card_template: CardTemplate, lane_number: int):
