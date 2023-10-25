@@ -1,50 +1,50 @@
 .arrow {
-    height: 16px;
-    background-color: red;
-  }
+  height: 16px;
+  background-image: linear-gradient(to right, rgba(255, 0, 0, 0.5), red);
+}
 
-  .arrow:after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 100%;
-    margin-top: -40px;  /* Adjust this according to your needs */
-    margin-left: -32px;  /* Adjust this according to your needs */
-    width: 0;
-    height: 0;
-    border: 40px solid transparent;  /* Make this larger for a larger arrowhead */  
-    border-left-color: red;
-    transform: rotate(0deg);
-  }  
+.arrow:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-top: -40px;
+  margin-left: -32px;
+  width: 0;
+  height: 0;
+  border: 40px solid transparent;
+  border-left-color: red;
+  transform: rotate(0deg);
+}
 
-  .arrow.shackled {
-    background-color: yellow;
-  }
-  
-  .arrow.shackled:after {
-    border-left-color: yellow;
-  }
+.arrow.shackled {
+  background-image: linear-gradient(to right, rgba(255, 255, 0, 0.5), yellow);
+}
 
-  .arrow.silenced {
-    background-color: white;
-  }
+.arrow.shackled:after {
+  border-left-color: yellow;
+}
 
-  .arrow.silenced:after {
-    border-left-color: white;
-  }  
+.arrow.silenced {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.5), white);
+}
 
-  .arrow.healed {
-    background-color: green;
-  }
-  
-  .arrow.healed:after {
-    border-left-color: green;
-  }    
+.arrow.silenced:after {
+  border-left-color: white;
+}
 
-  .arrow.switchLanes {
-    background-color: blue;
-  }
+.arrow.healed {
+  background-image: linear-gradient(to right, rgba(0, 128, 0, 0.5), green);
+}
 
-  .arrow.switchLanes:after {
-    border-left-color: blue;
-  }
+.arrow.healed:after {
+  border-left-color: green;
+}
+
+.arrow.switchLanes {
+  background-image: linear-gradient(to right, rgba(0, 0, 255, 0.5), blue);
+}
+
+.arrow.switchLanes:after {
+  border-left-color: blue;
+}
