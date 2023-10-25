@@ -1,3 +1,4 @@
+import random
 from card_template import CardTemplate
 
 
@@ -1103,3 +1104,11 @@ CARD_TEMPLATES = {
         rarity='rare',
     ),
 }
+
+def get_random_card_template_of_rarity(rarity: str) -> CardTemplate:
+    return random.choice([card for card in CARD_TEMPLATES.values() if card.rarity == rarity and not card.not_in_card_pool])
+
+
+def get_sample_card_templates_of_rarity(rarity: str, n: int) -> list[CardTemplate]:
+    return random.sample([card for card in CARD_TEMPLATES.values() if card.rarity == rarity and not card.not_in_card_pool], n)
+

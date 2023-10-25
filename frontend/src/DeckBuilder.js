@@ -64,19 +64,23 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
 
   useEffect(() => {
     // Function to generate four distinct random cards from cardPool
-    const getRandomCards = () => {
+    const fetchDraftOptions = () => {
       let randomCards = [];
-      while (randomCards.length < 4) {
-        const randomCard = cardPool[Math.floor(Math.random() * cardPool.length)];
-        if (!randomCards.includes(randomCard) && !currentDeck.includes(randomCard)) {
-          randomCards.push(randomCard);
-        }
-      }
+      fetch(`${URL}/api/draft_pick?pickNum=${currentDeck.length + 1}`)
+      .then(response => response.json())
+      .then((data) => {
+          setDraftOptions(data.options);
+      })
+      .catch((error) => {
+          console.error('Error fetching open games:', error);
+      });
       return randomCards;
     };
 
     if (currentDeck.length < DRAFT_DECK_SIZE) {
-      setDraftOptions(getRandomCards());
+      fetchDraftOptions();
+
+      // setDraftOptions(getRandomCards());
     }
     else {
       saveDeck(`Draft deck with ${currentDeck[0]} and ${currentDeck[1]}`, currentLaneReward.name);

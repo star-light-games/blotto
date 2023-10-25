@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from bot import bot_take_mulligan, find_bot_move, get_bot_deck
 from card import Card
-from card_templates_list import CARD_TEMPLATES
+from card_templates_list import CARD_TEMPLATES, get_random_card_template_of_rarity, get_sample_card_templates_of_rarity
 from common_decks import create_common_decks
 from database import SessionLocal
 from db_card import DbCard
@@ -837,6 +837,30 @@ def be_done_with_animations(sess, game_id):
             socketio.emit('updateWithoutAnimating', room=game_id)
 
     return jsonify({"gameId": game.id,})
+
+
+@app.route('/api/draft_pick', methods=['GET'])
+@api_endpoint
+def get_draft_pick(sess):
+    pick_num = request.args.get('pickNum')
+    
+    DEFAULT_RARE_CHANCE = 0.12
+
+    pick_num_to_rare_chance: dict[Optional[int], float] = {
+        1: 1,
+        2: 0.35,
+        3: 0.3,
+        4: 0.25,
+        5: 0.2,
+        6: 0.15,
+    }
+
+    rare_chance = pick_num_to_rare_chance.get(int(pick_num) if pick_num is not None else None) or DEFAULT_RARE_CHANCE
+
+    if random.random() < rare_chance:
+        return {'options': get_sample_card_templates_of_rarity('rare', 3)}
+    else:
+        return {'options': get_sample_card_templates_of_rarity('common', 5)}
 
 
 @socketio.on('connect')
