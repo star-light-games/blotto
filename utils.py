@@ -1,3 +1,4 @@
+from multiprocessing import Process, Queue
 import secrets
 import random
 import math
@@ -5,6 +6,11 @@ import math
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from game_state import GameState
+
+
+def function_wrapper(func, queue, args, kwargs):
+    result = func(*args, **kwargs)
+    queue.put(result)
 
 
 def generate_unique_id():
@@ -80,3 +86,17 @@ def product(l):
     for x in l:
         result *= x
     return result
+
+
+def run_with_timeout(func, timeout, *args, **kwargs):
+    queue = Queue()
+    process = Process(target=function_wrapper, args=(func, queue, args, kwargs))
+    process.start()
+    process.join(timeout)
+
+    if process.is_alive():
+        process.terminate()
+        process.join()
+        return None
+
+    return queue.get()

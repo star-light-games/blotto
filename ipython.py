@@ -26,6 +26,7 @@ def main():
         "get_staged_game_lock_redis_key": get_staged_game_lock_redis_key,
         "get_staged_moves_redis_key": get_staged_moves_redis_key,
         "get_deck_description_json_from_deck": get_deck_description_json_from_deck,
+        "run_with_timeout": run_with_timeout,
     }
 
     embed(user_ns=user_ns)

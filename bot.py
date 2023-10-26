@@ -8,7 +8,7 @@ from game import Game
 from game_state import GameState
 from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import BOT_DECK_USERNAME, COMMON_DECK_USERNAME
-from utils import get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, sigmoid
+from utils import get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, run_with_timeout, sigmoid
 from sqlalchemy import func, not_
 
 
@@ -91,12 +91,23 @@ def assess_intermediate_position(player_num: int, mana_amounts_by_player: dict[i
     return total_probability
 
 
-def find_bot_move(bot_username: str, player_num: int, game_state: GameState) -> dict[str, int]:
+def find_bot_move(bot_username: str, player_num: int, game: Game) -> dict[str, int]:
+    assert game.game_info
+
+    if game.seconds_per_turn is None:
+        time_to_think = 10
+    else:
+        time_to_think = min(10, game.seconds_per_turn - 1)
+
     if bot_username == 'RANDY_THE_ROBOT':
-        return find_bot_move_randy(player_num, game_state)
+        return find_bot_move_randy(player_num, game.game_info.game_state)
     
     elif bot_username == 'RUFUS_THE_ROBOT':
-        return find_bot_move_rufus(player_num, game_state)
+        rufus_move = run_with_timeout(find_bot_move_rufus, time_to_think, player_num, game.game_info.game_state)
+
+        if rufus_move is None:
+            return find_bot_move_randy(player_num, game.game_info.game_state)
+        return rufus_move
     
     return {}
 
