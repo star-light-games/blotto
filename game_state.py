@@ -246,10 +246,10 @@ class GameState:
         game_state.hands_by_player = {int(player_num): [Card.from_json(card_json) for card_json in json['hands_by_player'][player_num]] for player_num in json['hands_by_player']}
         game_state.draw_piles_by_player = {int(player_num): [Card.from_json(card_json) for card_json in json['draw_piles_by_player'][player_num]] for player_num in json['draw_piles_by_player']} if json.get('draw_piles_by_player') else {0: [], 1: []}
         game_state.log = json.get('log') or []
-        game_state.mana_by_player = {int(k): v for k, v in json['mana_by_player']}
-        game_state.has_moved_by_player = {int(k): v for k, v in json['has_moved_by_player']}
-        game_state.done_with_animations_by_player = {int(k): v for k, v in json['done_with_animations_by_player']}
-        game_state.has_mulliganed_by_player = {int(k): v for k, v in json['has_mulliganed_by_player']}
+        game_state.mana_by_player = {int(k): v for k, v in json['mana_by_player'].items()}
+        game_state.has_moved_by_player = {int(k): v for k, v in json['has_moved_by_player'].items()}
+        game_state.done_with_animations_by_player = {int(k): v for k, v in json['done_with_animations_by_player'].items()}
+        game_state.has_mulliganed_by_player = {int(k): v for k, v in json['has_mulliganed_by_player'].items()}
         game_state.winner = json.get('winner')
         game_state.last_timer_start = json.get('last_timer_start')
 
