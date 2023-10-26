@@ -249,7 +249,7 @@ class Lane:
     @staticmethod
     def from_json(json):
         lane = Lane(json["lane_number"], json["lane_reward"]["name"])
-        lane.damage_by_player = json["damage_by_player"]
+        lane.damage_by_player = {int(k): v for k, v in json["damage_by_player"].items()}
         lane.characters_by_player = {int(player): [Character.from_json(character, lane) for character in json["characters_by_player"][player]] for player in json["characters_by_player"]}
-        lane.earned_rewards_by_player = json["earned_rewards_by_player"]
+        lane.earned_rewards_by_player = {int(k): v for k, v in json["earned_rewards_by_player"].items()}
         return lane
