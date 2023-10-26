@@ -3,6 +3,7 @@ from card import Card
 from database import SessionLocal
 from db_card import DbCard
 from db_deck import DbDeck
+from game_state_record import GameStateRecord
 
 from redis_utils import *
 from utils import *
@@ -15,6 +16,7 @@ def main():
         "sess": sess, 
         "DbCard": DbCard,
         "DbDeck": DbDeck,
+        "GameStateRecord": GameStateRecord,
         "rget_json": rget_json,
         "rset_json": rset_json,
         "rlock": rlock,

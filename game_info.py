@@ -15,8 +15,8 @@ class GameInfo:
     def do_start_of_game(self):
         self.game_state.do_start_of_game(self.animations)
 
-    def roll_turn(self):
-        self.game_state.roll_turn(self.animations)
+    def roll_turn(self, sess, game_id: str):
+        self.game_state.roll_turn(self.animations, sess, game_id)
 
     @staticmethod
     def from_json(json: dict) -> 'GameInfo':

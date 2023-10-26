@@ -43,61 +43,62 @@ CORS(app)
 
 
 def bot_move_in_game(game: Game, player_num: int) -> None:
-    assert game.game_info 
-    bot_username = game.usernames_by_player[player_num]
-    assert bot_username is not None
-    bot_move = find_bot_move(bot_username, player_num, game)
-    logger.debug('The bot has chosen the following move: ', bot_move)
-    game_id = game.id
-    with rlock(get_game_lock_redis_key(game_id)):
-        game_json = rget_json(get_game_redis_key(game_id))    
-        if not game_json:
-            return
-        game_from_json = Game.from_json(game_json)
+    with SessionLocal() as sess:
+        assert game.game_info 
+        bot_username = game.usernames_by_player[player_num]
+        assert bot_username is not None
+        bot_move = find_bot_move(bot_username, player_num, game)
+        logger.debug('The bot has chosen the following move: ', bot_move)
+        game_id = game.id
+        with rlock(get_game_lock_redis_key(game_id)):
+            game_json = rget_json(get_game_redis_key(game_id))    
+            if not game_json:
+                return
+            game_from_json = Game.from_json(game_json)
 
-        # Should be redundant, but I think there's some issue on the first turn where this sometimes isn't true
-        game_from_json.is_bot_by_player[player_num] = True 
+            # Should be redundant, but I think there's some issue on the first turn where this sometimes isn't true
+            game_from_json.is_bot_by_player[player_num] = True 
 
-        assert game_from_json.game_info
+            assert game_from_json.game_info
 
-        game_from_json.game_info.game_state.has_moved_by_player[player_num] = True        
+            game_from_json.game_info.game_state.has_moved_by_player[player_num] = True        
 
-        have_moved = game_from_json.game_info.game_state.all_players_have_moved()
-        if have_moved:
-            for card_id, lane_number in bot_move.items():
-                try:
-                    game_from_json.game_info.game_state.play_card(player_num, card_id, lane_number)
-                except Exception:
-                    logger.warning(f'The bot tried to play an invalid move: {bot_move}.')
-                    continue
+            have_moved = game_from_json.game_info.game_state.all_players_have_moved()
+            if have_moved:
+                for card_id, lane_number in bot_move.items():
+                    try:
+                        game_from_json.game_info.game_state.play_card(player_num, card_id, lane_number)
+                    except Exception:
+                        logger.warning(f'The bot tried to play an invalid move: {bot_move}.')
+                        continue
 
-            staged_moves_for_other_player = rget_json(get_staged_moves_redis_key(game_id, 1 - player_num)) or {}
-            for card_id, lane_number in staged_moves_for_other_player.items():
-                try:
-                    game_from_json.game_info.game_state.play_card(1 - player_num, card_id, lane_number)
-                except Exception:
-                    logger.warning(f'The player tried to play an invalid move: {bot_move}.')
-                    continue
+                staged_moves_for_other_player = rget_json(get_staged_moves_redis_key(game_id, 1 - player_num)) or {}
+                for card_id, lane_number in staged_moves_for_other_player.items():
+                    try:
+                        game_from_json.game_info.game_state.play_card(1 - player_num, card_id, lane_number)
+                    except Exception:
+                        logger.warning(f'The player tried to play an invalid move: {bot_move}.')
+                        continue
 
-            game_from_json.game_info.roll_turn()
-            rdel(get_game_with_hidden_information_redis_key(game.id))
-            rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
-            rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
-            rdel(get_staged_game_redis_key(game_id, 0))
-            rdel(get_staged_game_redis_key(game_id, 1))
+                game_from_json.game_info.roll_turn(sess, game_from_json.id)
+                rdel(get_game_with_hidden_information_redis_key(game.id))
+                rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
+                rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
+                rdel(get_staged_game_redis_key(game_id, 0))
+                rdel(get_staged_game_redis_key(game_id, 1))
 
-        else:
-            rset_json(get_staged_moves_redis_key(game_id, player_num), bot_move, ex=24 * 60 * 60)
+            else:
+                rset_json(get_staged_moves_redis_key(game_id, player_num), bot_move, ex=24 * 60 * 60)
 
-        rset_json(get_game_redis_key(game_id), game_from_json.to_json(), ex=24 * 60 * 60)
+            rset_json(get_game_redis_key(game_id), game_from_json.to_json(), ex=24 * 60 * 60)
 
-        if have_moved:
-            socketio.emit('update', room=game_id)  # type: ignore
+            if have_moved:
+                socketio.emit('update', room=game_id)  # type: ignore
 
-            if not game.game_info.game_state.turn > 8:
-                for player_num in [0, 1]:
-                    if game.is_bot_by_player[player_num]:
-                        start_new_thread(bot_move_in_game, (game, player_num))
+                if not game.game_info.game_state.turn > 8:
+                    for player_num in [0, 1]:
+                        if game.is_bot_by_player[player_num]:
+                            start_new_thread(bot_move_in_game, (game, player_num))
 
 
 def maybe_schedule_forced_turn_roll(game: Game, extra_time: int = 0) -> None:
@@ -107,19 +108,20 @@ def maybe_schedule_forced_turn_roll(game: Game, extra_time: int = 0) -> None:
 
 
 def load_and_roll_turn_in_game(game_id: str, only_if_turn: int) -> None:
-    with rlock(get_game_lock_redis_key(game_id)):
-        game_json = rget_json(get_game_redis_key(game_id))
-        if not game_json:
-            return
-        game = Game.from_json(game_json)
+    with SessionLocal() as sess:
+        with rlock(get_game_lock_redis_key(game_id)):
+            game_json = rget_json(get_game_redis_key(game_id))
+            if not game_json:
+                return
+            game = Game.from_json(game_json)
 
-        assert game.game_info
+            assert game.game_info
 
-        if game.game_info.game_state.turn == only_if_turn:
-            roll_turn_in_game(game)
+            if game.game_info.game_state.turn == only_if_turn:
+                roll_turn_in_game(sess, game)
 
 
-def roll_turn_in_game(game: Game) -> None:
+def roll_turn_in_game(sess, game: Game) -> None:
     assert game.game_info
 
     for player_num_to_make_moves_for in [0, 1]:
@@ -134,7 +136,7 @@ def roll_turn_in_game(game: Game) -> None:
 
         game.game_info.game_state.has_mulliganed_by_player[player_num_to_make_moves_for] = True
 
-    game.game_info.roll_turn()
+    game.game_info.roll_turn(sess, game.id)
     rdel(get_game_with_hidden_information_redis_key(game.id))
     rset_json(get_staged_moves_redis_key(game.id, 0), {}, ex=24 * 60 * 60)
     rset_json(get_staged_moves_redis_key(game.id, 1), {}, ex=24 * 60 * 60)
@@ -575,7 +577,7 @@ def take_turn(sess, game_id):
         game.game_info.game_state.has_moved_by_player[player_num] = True
         have_moved = game.game_info.game_state.all_players_have_moved()
         if have_moved:
-            game.game_info.roll_turn()
+            game.game_info.roll_turn(sess, game.id)
             rdel(get_game_with_hidden_information_redis_key(game.id))
             rset_json(get_staged_moves_redis_key(game_id, 0), {}, ex=24 * 60 * 60)
             rset_json(get_staged_moves_redis_key(game_id, 1), {}, ex=24 * 60 * 60)
@@ -666,7 +668,7 @@ def submit_turn(sess, game_id):
         game.game_info.game_state.has_moved_by_player[player_num] = True
         have_moved = game.game_info.game_state.all_players_have_moved()
         if have_moved:
-            roll_turn_in_game(game)
+            roll_turn_in_game(sess, game)
         else:
             rset_json(get_game_redis_key(game.id), game.to_json(), ex=24 * 60 * 60)
 

@@ -3,9 +3,10 @@ import random
 from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
 from deck import Deck
+from game_state_record import GameStateRecord
 from lane import Lane
 from card import Card
-from typing import Optional
+from typing import Any, Optional
 import math
 
 from utils import sigmoid
@@ -110,7 +111,18 @@ class GameState:
             self.mulligan_card(player_num, card_id)
         self.has_mulliganed_by_player[player_num] = True
 
-    def roll_turn(self, animations: list):
+    def roll_turn(self, animations: list, sess: Optional[Any] = None, game_id: Optional[str] = None):
+        if sess:
+            game_state_record = GameStateRecord(
+                game_id=game_id, 
+                turn=self.turn,
+                player_0_username=self.usernames_by_player[0],
+                player_1_username=self.usernames_by_player[1],
+                game_state=self.to_json(),
+            )
+            sess.add(game_state_record)
+            sess.commit()
+
         self.turn += 1
         animations.clear()
         animations.append({
