@@ -5,6 +5,20 @@ from db_card import DbCard
 from db_deck import DbDeck
 from game_state_record import GameStateRecord
 
+from game_state import GameState
+from deck import Deck
+from card_template import CardTemplate
+from card_templates_list import CARD_TEMPLATES
+from card import Card
+from game import Game
+from game_info import GameInfo
+from character import Character
+from lane import Lane
+from lane_rewards import LANE_REWARDS
+from ability import Ability
+from abilities_list import ABILITIES
+
+
 from redis_utils import *
 from utils import *
 
@@ -29,6 +43,19 @@ def main():
         "get_staged_moves_redis_key": get_staged_moves_redis_key,
         "get_deck_description_json_from_deck": get_deck_description_json_from_deck,
         "run_with_timeout": run_with_timeout,
+        "generate_unique_id": generate_unique_id,
+        "CARD_TEMPLATES": CARD_TEMPLATES,
+        "CardTemplate": CardTemplate,
+        "Card": Card,
+        "Deck": Deck,
+        "GameState": GameState,
+        "Game": Game,
+        "GameInfo": GameInfo,
+        "Character": Character,
+        "Lane": Lane,
+        "LANE_REWARDS": LANE_REWARDS,
+        "Ability": Ability,
+        "ABILITIES": ABILITIES,
     }
 
     embed(user_ns=user_ns)
