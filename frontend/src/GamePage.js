@@ -1429,7 +1429,7 @@ export default function GamePage({ }) {
     // }, [submittedMove || !gameState]); // Depend on submittedMove, so the effect re-runs if its value changes
 
     useEffect(() => {
-        socket.emit('join', { room: gameId });
+        socket.emit('join', { room: gameId, username: username });
         socket.on('update', () => {
             console.log('update received')
             setSecondsElapsed(null);
