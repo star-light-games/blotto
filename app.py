@@ -921,7 +921,7 @@ def rematch(sess, game_id):
 
 @socketio.on('connect')
 def on_connect():
-    logger.info('Connected')
+    pass
 
 @socketio.on('join')
 def on_join(data):
