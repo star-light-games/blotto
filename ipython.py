@@ -1,4 +1,5 @@
 from IPython import embed
+from bot import find_bot_move_rufus
 from card import Card
 from database import SessionLocal
 from db_card import DbCard
@@ -56,6 +57,7 @@ def main():
         "LANE_REWARDS": LANE_REWARDS,
         "Ability": Ability,
         "ABILITIES": ABILITIES,
+        "find_bot_move_rufus": find_bot_move_rufus,
     }
 
     embed(user_ns=user_ns)
