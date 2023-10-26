@@ -8,6 +8,10 @@ if TYPE_CHECKING:
     from lane import Lane
     from game_state import GameState
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Character:
     def __init__(self, template: CardTemplate, lane: 'Lane', owner_number: int, owner_username: str):
@@ -77,7 +81,7 @@ class Character:
         try:
             attacking_character_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
         except Exception:
-            print('Attacking character not found')
+            logger.warning('Attacking character not found')
             attacking_character_array_index = None
 
         animations.append({

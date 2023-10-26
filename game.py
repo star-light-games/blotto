@@ -42,8 +42,6 @@ class Game:
         self.game_info.do_start_of_game()
         self.rematch_game_id = generate_unique_id()
 
-        print(f'game_info: {self.game_info}')
-
 
     def all_players_are_done_with_animations(self) -> bool:
         assert self.game_info is not None

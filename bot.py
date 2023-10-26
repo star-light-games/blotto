@@ -1,4 +1,5 @@
 import random
+import traceback
 from typing import Optional
 from card_templates_list import CARD_TEMPLATES
 from common_decks import BOT_DRAFT_DECKS, COMMON_DECKS
@@ -10,6 +11,9 @@ from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import BOT_DECK_USERNAME, COMMON_DECK_USERNAME
 from utils import get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, run_with_timeout, sigmoid
 from sqlalchemy import func, not_
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 RANDOM_CARDS_TO_PLAY = {
@@ -103,7 +107,17 @@ def find_bot_move(bot_username: str, player_num: int, game: Game) -> dict[str, i
         return find_bot_move_randy(player_num, game.game_info.game_state)
     
     elif bot_username == 'RUFUS_THE_ROBOT':
-        rufus_move = run_with_timeout(find_bot_move_rufus, time_to_think, player_num, game.game_info.game_state)
+        try:
+            rufus_move = run_with_timeout(find_bot_move_rufus, time_to_think, player_num, game.game_info.game_state)
+        except Exception as e:
+            logger.error(f'Error in find_bot_move_rufus in game {game.id} on turn {game.game_info.game_state.turn}: {e}')
+            logger.error(traceback.print_exc())
+            rufus_move = None
+        else:
+            if rufus_move is None:
+                logger.warning(f'Rufus timed out in game {game.id} on turn {game.game_info.game_state.turn}')
+            else:
+                logger.info(f'Rufus played turn {game.game_info.game_state.turn} of game {game.id} without issues: {rufus_move}')
 
         if rufus_move is None:
             return find_bot_move_randy(player_num, game.game_info.game_state)
@@ -144,31 +158,30 @@ def find_bot_move_randy(player_num: int, game_state: GameState) -> dict[str, int
 def find_bot_move_rufus(player_num: int, game_state: GameState) -> dict[str, int]:
     cards_in_hand = game_state.hands_by_player[player_num][:5]
 
-    print('My cards: ', [card.template.name for card in cards_in_hand])
-    print('My cards: ', [card.to_json() for card in cards_in_hand])
+    logger.debug('My cards: ', [card.to_json() for card in cards_in_hand])
     # Stores dict of mana spent to a tuple of (best game state, card id to lane number)
     best_game_state_spending_x_mana = {0: (game_state.copy(), {})}
     for x in range(1, game_state.mana_by_player[player_num] + 1):
-        print(f'Trying to find the best move in the position that spends {x} mana.')
+        logger.debug(f'Trying to find the best move in the position that spends {x} mana.')
         mana_amounts_by_player = game_state.mana_by_player.copy()
         mana_amounts_by_player[player_num] -= x
         best_probability_so_far = assess_intermediate_position(player_num, mana_amounts_by_player, game_state)
-        print('My assessment of the base position: ', best_probability_so_far)
+        logger.debug('My assessment of the base position: ', best_probability_so_far)
         best_game_state_spending_x_mana[x] = (best_game_state_spending_x_mana[x-1][0], best_game_state_spending_x_mana[x-1][1].copy())
         for card in cards_in_hand:
             if card.template.cost <= x:
-                print('Considering playing card', card.template.name, card.to_json())
+                logger.debug('Considering playing card', card.template.name, card.to_json())
                 best_game_state_playing_that_card = best_game_state_spending_x_mana[x - card.template.cost][0].copy()
                 cards_played = best_game_state_spending_x_mana[x - card.template.cost][1]
-                print('Here are the cards in my hand in this scenario: ', [card.to_json() for card in best_game_state_playing_that_card.hands_by_player[player_num]])
+                logger.debug('Here are the cards in my hand in this scenario: ', [card.to_json() for card in best_game_state_playing_that_card.hands_by_player[player_num]])
                 if card.id in [c.id for c in best_game_state_playing_that_card.hands_by_player[player_num]]:
                     for lane_number in [0, 1, 2]:
                         if len(best_game_state_playing_that_card.lanes[lane_number].characters_by_player[player_num]) < 4:
                             best_game_state_playing_that_card_copy = best_game_state_playing_that_card.copy()
                             best_game_state_playing_that_card_copy.play_card(player_num, card.id, lane_number)
-                            print('Trying to play card: ', card.to_json(), ' in lane: ', lane_number)
+                            logger.debug('Trying to play card: ', card.to_json(), ' in lane: ', lane_number)
                             probability_of_winning = assess_intermediate_position(player_num, mana_amounts_by_player, best_game_state_playing_that_card_copy)
-                            print('My assessment of the resulting position: ', probability_of_winning)
+                            logger.debug('My assessment of the resulting position: ', probability_of_winning)
 
                             if probability_of_winning > best_probability_so_far:
                                 new_cards_played = cards_played.copy()
@@ -176,20 +189,20 @@ def find_bot_move_rufus(player_num: int, game_state: GameState) -> dict[str, int
                                 best_game_state_spending_x_mana[x] = (best_game_state_playing_that_card_copy, new_cards_played)
                                 best_probability_so_far = probability_of_winning
 
-        print(f'I think the best move that spends {x} mana is: ', best_game_state_spending_x_mana[x][1])
+        logger.debug(f'I think the best move that spends {x} mana is: ', best_game_state_spending_x_mana[x][1])
 
     return best_game_state_spending_x_mana[game_state.mana_by_player[player_num]][1]
 
 
 def bot_take_mulligan(game_state: GameState, player_num: int) -> None:
     cards_in_hand = game_state.hands_by_player[player_num]
-    print('My cards: ', [card.template.name for card in cards_in_hand])
+    logger.debug('My cards: ', [card.template.name for card in cards_in_hand])
 
     game_state.has_mulliganed_by_player[player_num] = True
 
     if all([card.template.cost > 2 for card in cards_in_hand]):
         # Mulligan everything if I have no one or two drops
-        print('Pitching all cards; I have no one or two drops')
+        logger.debug('Pitching all cards; I have no one or two drops')
         # return game_state.mulligan_cards(player_num, [card.id for card in cards_in_hand])
         return game_state.mulligan_all(player_num)
 

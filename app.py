@@ -25,7 +25,17 @@ from threading import Timer
 from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import COMMON_DECK_USERNAME, COYOTE_TIME, EXTRA_TIME_ON_FIRST_TURN, LOCAL
 from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, get_staged_game_lock_redis_key, get_staged_game_redis_key, get_staged_moves_redis_key
+import logging
+from logging.handlers import RotatingFileHandler
 
+# Create a logger
+logger = logging.getLogger('__name__')
+logger.setLevel(logging.DEBUG if LOCAL else logging.INFO)
+
+# Create a handler that writes log messages to a file, with a max size of 1MB, and keep 3 backup logs
+handler = RotatingFileHandler('app.log', maxBytes=1_000_000, backupCount=10)
+handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -37,7 +47,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
     bot_username = game.usernames_by_player[player_num]
     assert bot_username is not None
     bot_move = find_bot_move(bot_username, player_num, game)
-    print('The bot has chosen the following move: ', bot_move)
+    logger.debug('The bot has chosen the following move: ', bot_move)
     game_id = game.id
     with rlock(get_game_lock_redis_key(game_id)):
         game_json = rget_json(get_game_redis_key(game_id))    
@@ -50,30 +60,6 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
 
         assert game_from_json.game_info
 
-        # if not game.game_state.has_moved_by_player[1 - player_num]:
-        #     rset_json(get_game_with_hidden_information_redis_key(game.id), {1 - player_num: game.to_json()}, ex=24 * 60 * 60)
-
-        # try:
-        #     for card_id, lane_number in bot_move.items():
-        #         staged_game_from_json.game_state.play_card(player_num, card_id, lane_number)
-        # except Exception:
-        #     print(f'The bot tried to play an invalid move: {bot_move}.')
-        #     hidden_info_game = rget_json(get_game_with_hidden_information_redis_key(game.id))
-        #     if hidden_info_game is not None and hidden_info_game.get(player_num) is not None:
-        #         game_from_hidden_json = Game.from_json(hidden_info_game[player_num])
-        #         assert game_from_hidden_json.game_state
-        #         bot_move = find_bot_move(player_num, game_from_hidden_json.game_state)
-        #     else:
-        #         game_from_nonhidden_json = Game.from_json(game_json)
-        #         assert game_from_nonhidden_json.game_state
-        #         bot_move = find_bot_move(player_num, game_from_nonhidden_json.game_state)
-
-        #     try:
-        #         for card_id, lane_number in bot_move.items():
-        #             game_from_json.game_state.play_card(player_num, card_id, lane_number)
-        #     except Exception:
-        #         print(f'The bot tried to play an invalid move: {bot_move} again. Giving up.')
-
         game_from_json.game_info.game_state.has_moved_by_player[player_num] = True        
 
         have_moved = game_from_json.game_info.game_state.all_players_have_moved()
@@ -82,7 +68,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
                 try:
                     game_from_json.game_info.game_state.play_card(player_num, card_id, lane_number)
                 except Exception:
-                    print(f'The bot tried to play an invalid move: {bot_move}.')
+                    logger.warning(f'The bot tried to play an invalid move: {bot_move}.')
                     continue
 
             staged_moves_for_other_player = rget_json(get_staged_moves_redis_key(game_id, 1 - player_num)) or {}
@@ -90,7 +76,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
                 try:
                     game_from_json.game_info.game_state.play_card(1 - player_num, card_id, lane_number)
                 except Exception:
-                    print(f'The player tried to play an invalid move: {bot_move}.')
+                    logger.warning(f'The player tried to play an invalid move: {bot_move}.')
                     continue
 
             game_from_json.game_info.roll_turn()
@@ -128,7 +114,6 @@ def load_and_roll_turn_in_game(game_id: str, only_if_turn: int) -> None:
         game = Game.from_json(game_json)
 
         assert game.game_info
-        print(game.game_info.game_state.turn, only_if_turn)
 
         if game.game_info.game_state.turn == only_if_turn:
             roll_turn_in_game(game)
@@ -140,14 +125,11 @@ def roll_turn_in_game(game: Game) -> None:
     for player_num_to_make_moves_for in [0, 1]:
         staged_moves = rget_json(get_staged_moves_redis_key(game.id, player_num_to_make_moves_for)) or {}
 
-        print('Making moves for player ', player_num_to_make_moves_for)
-        print(staged_moves)
-
         for card_id, lane_number in staged_moves.items():
             try:
                 game.game_info.game_state.play_card(player_num_to_make_moves_for, card_id, lane_number)
             except Exception:
-                print(f'Player {player_num_to_make_moves_for} tried to play an invalid move: {card_id} -> {lane_number}.')
+                logger.warning(f'Player {player_num_to_make_moves_for} tried to play an invalid move: {card_id} -> {lane_number}.')
                 continue
 
         game.game_info.game_state.has_mulliganed_by_player[player_num_to_make_moves_for] = True
@@ -196,7 +178,7 @@ def api_endpoint(func):
                     sess.close()
             return recurse_to_json(response)
         except Exception as e:
-            print(traceback.print_exc())
+            logger.error(traceback.print_exc())
             return jsonify({"error": "Unexpected error"}), 500
 
     return wrapper
@@ -205,7 +187,6 @@ def api_endpoint(func):
 @app.route('/api/card_pool', methods=['GET'])
 @api_endpoint
 def get_card_pool(sess):
-    print('Getting card pool')
     return recurse_to_json({'cards': CARD_TEMPLATES, 'laneRewards': LANE_REWARDS})
 
 
@@ -649,8 +630,6 @@ def play_card(sess, game_id):
         assert player_num is not None
         assert game.game_info is not None
 
-        print([card.id for card in game.game_info.game_state.hands_by_player[player_num]])
-
         game.game_info.game_state.play_card(player_num, card_id, lane_number)
         staged_moves[card_id] = lane_number
 
@@ -821,7 +800,6 @@ def mulligan_all(sess, game_id):
         assert game.game_info is not None
 
         if mulliganing:
-            print('The player has chosen to mulligan all')
             game.game_info.game_state.mulligan_all(player_num)
 
         game.game_info.game_state.has_mulliganed_by_player[player_num] = True
@@ -941,21 +919,21 @@ def rematch(sess, game_id):
 
 @socketio.on('connect')
 def on_connect():
-    print('Connected')
+    logger.info('Connected')
 
 @socketio.on('join')
 def on_join(data):
     username = data['username'] if 'username' in data else 'anonymous'
     room = data['room']
     join_room(room)
-    print(f'{username} joined {room}')
+    logger.info(f'{username} joined {room}')
     
 @socketio.on('leave')
 def on_leave(data):
     username = data['username'] if 'username' in data else 'anonymous'
     room = data['room']
     leave_room(room)
-    print(f'{username} left {room}') 
+    logger.info(f'{username} left {room}') 
 
 if __name__ == '__main__':
     create_common_decks()
