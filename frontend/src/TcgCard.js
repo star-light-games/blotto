@@ -1,7 +1,7 @@
 import { Card, CardContent, Typography, Box, useTheme } from '@mui/material';
 import { snakeCase, getCardBackgroundColor } from './utils';
 
-function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, displayArt , height, width, displayRedX }) {
+function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHighlight, doNotShowPointerCursor, displayArt, height, width, displayRedX }) {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === 'dark';
 
@@ -60,7 +60,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
           style={{
               border: isSelected ? `${outlineSize}px solid black` : 'none',
               boxSizing: 'border-box',
-              ...(doNotBorderOnHighlight ? {} : {cursor: 'pointer'}),
+              ...(doNotShowPointerCursor ? {} : {cursor: 'pointer'}),
               width: width || 250 + (outlineSize * 2),
               height: height || (displayArt ? 400 : 250) + (outlineSize * 2),
           }}

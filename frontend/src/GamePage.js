@@ -381,6 +381,7 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
                                         () => { }
                                     }
                                     doNotBorderOnHighlight={yourManaAmount < card.template.cost || animating}
+                                    doNotShowPointerCursor={yourManaAmount < card.template.cost || animating}
                                     displayArt={true}
                                     displayRedX={cardsToMulligan.includes(card.id) && mulliganing}
                                 />
@@ -1559,7 +1560,7 @@ export default function GamePage({ }) {
             width: '100%', 
         }}>
             <div style={{ flex: 1 }}>
-                {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} displayArt />}
+                {hoveredCard && <TcgCard card={hoveredCard} doNotBorderOnHighlight={true} doNotShowPointerCursor={true} displayArt />}
             </div>
             <div style={{ flex: 10 }}>
                 <div style={{margin: '1px'}}>

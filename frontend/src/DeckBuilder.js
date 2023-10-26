@@ -670,7 +670,7 @@ function DeckBuilder({ cards, laneRewards }) {
 
   {hoveredCard && (
     <Box position="fixed" top="10px" right="10px" zIndex={10}>
-        <TcgCard card={cards.find(card => card.name === hoveredCard)} doNotBorderOnHighlight={true} displayArt />
+        <TcgCard card={cards.find(card => card.name === hoveredCard)} doNotBorderOnHighlight={true} doNotShowPointerCursor={true} displayArt />
     </Box>
   )}
 
