@@ -285,7 +285,7 @@ class Character:
             "game_state": game_state.to_json(),
         })
 
-        if self.is_attacker() and not do_not_attack_tower:
+        if self.is_attacker() and not do_not_attack_tower and self.has_ability('Twinstrike'):
             self.deal_tower_damage(self.owner_number, self.lane.characters_by_player[defending_character.owner_number], self.lane.damage_by_player, lane_number, combat_modification_auras, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
         self.lane.process_dying_characters(log, animations, game_state)

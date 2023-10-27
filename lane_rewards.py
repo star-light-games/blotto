@@ -5,7 +5,7 @@ LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enume
     {
         'name': 'Earth Empire',
         'threshold': 45,
-        'reward_description': 'Create an 8/8 attacker in another lane.',
+        'reward_description': 'Create an 8/8 Attacker with Twinstrike in another lane.',
         'effect': ['spawn', 'The Colossus'],
     },
     {

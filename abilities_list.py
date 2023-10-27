@@ -7,10 +7,12 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'Defender': Ability(
         name='Defender',
         description='Defender',
+        is_keyword=True,
     ),
     'Attacker': Ability(
         name='Attacker',
         description='Attacker',
+        is_keyword=True,
     ),
     'OnRevealShackle': Ability(
         name='OnRevealShackle',
@@ -104,7 +106,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'SwitchLanesInsteadOfDying': Ability(
         name='SwitchLanesInsteadOfDying',
-        description='When I would die, I heal fully and switch lanes instead.',
+        description='When I would die for the first time each turn, I heal fully and switch lanes instead.',
     ),
     'CharacterMovesHerePumps': lambda x, y: Ability(
         name='CharacterMovesHerePumps',
@@ -383,6 +385,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     'Shield': Ability(
         name='Shield',
         description='Shield',
+        is_keyword=True,
     ),
     'HitTowerShackle': Ability(
         name='HitTowerShackle',
@@ -474,5 +477,10 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         description=f'Death: until the lane is full, friendly characters switch into this lane. Each one gets +{x}/+{y}.',
         number=x,
         number_2=y,
+    ),
+    'Twinstrike': Ability(
+        name='Twinstrike',
+        description='Twinstrike',
+        is_keyword=True,
     ),
 }
