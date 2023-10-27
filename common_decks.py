@@ -242,7 +242,7 @@ COMMON_DECKS = [
         'cards': [
             'Tsemo',
             'Resistance Fighter',
-            'Resistance Fighter',
+            'Cabbage Man',
             'Teo',
             'Teo',
             'Kai',
@@ -251,7 +251,7 @@ COMMON_DECKS = [
             'Yung',
             'Yung',
             'Izumi',
-            'Izumi',
+            'Joo Dee',
             'Council of Elders',
             'Champion Ming',
             'Champion Ming',
