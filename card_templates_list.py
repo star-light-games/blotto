@@ -369,7 +369,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealDamageToAll', 1)],
         cost=3,
         attack=3,
-        health=6,
+        health=7,
         creature_types=['Air'],
         rarity='common',
     ),
