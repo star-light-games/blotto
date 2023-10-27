@@ -32,7 +32,7 @@ CARD_TEMPLATES = {
     ),
     'Korra': CardTemplate(
         name='Korra',
-        abilities=['Attacker', ('OnSurviveDamagePump', 1, 1)],
+        abilities=['Attacker', 'Twinstrike', ('OnSurviveDamagePump', 1, 1)],
         cost=5,
         attack=6,
         health=8,
@@ -978,10 +978,10 @@ CARD_TEMPLATES = {
     ),
     'Guru Laghima': CardTemplate(
         name='Guru Laghima',
-        abilities=['Attacker', 'FriendliesDealDamageEqualToCurrentHealth'],
+        abilities=['Attacker', 'Twinstrike', 'FriendliesDealDamageEqualToCurrentHealth'],
         cost=5,
         attack=3,
-        health=8,
+        health=7,
         creature_types=['Air'],
         rarity='rare',
     ),
