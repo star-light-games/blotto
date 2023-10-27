@@ -427,7 +427,9 @@ function DeckBuilder({ cards, laneRewards }) {
           <CardContent>
             <Typography variant="h5">Recent changes:</Typography>
             <ul>
-              <li>When you <emph>silence</emph> a character, that character permanently loses all its abilities, its attack reverts to its original base attack, its base health reverts to its original base health, and its current health reverts to whichever is smaller of its original base health and its current health.</li>
+              <li>Attackers no longer attack both an enemy character and an enemy tower by default. Instead, they only attack an enemy character. They also attack the enemy tower if they have the "Twinstrike" ability. Only attackers ever have Twinstrike.</li>
+              <li>Characters can have a shield; this means that the next instance of damage is negated and the shield is lost instead. The Shield ability means it gains a shield when it enters the lane.</li>
+              <li>When you <emph>silence</emph> a character, that character permanently loses all its abilities, its attack reverts to its original base attack, its base health reverts to its original base health, and its current health reverts to whichever is smaller of its original base health and its current health, and any shield it has is broken.</li>
               <li>The same character can no longer be shackled several times. Shackles never last more than one turn.</li>
               <li>Characters that switch lanes can attack several times if they switch rightwards. This was not true for a bit but is back to being true.</li>
               <li>There is no more final battle. After turn 8, there's one fight, and then the game ends.</li>
