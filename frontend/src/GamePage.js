@@ -1137,8 +1137,8 @@ export default function GamePage({ }) {
        
         log(defendingTowerPos, attackingCharacterPos)
 
-        const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - characterWidth / 2 - 18;
-        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - characterHeight / 2 + (event.attacking_player !== playerNum ? -20 : 8);
+        const dx = defendingTowerPos.left + 35 - attackingCharacterPos.left - characterWidth / 2 - 28;
+        const dy = defendingTowerPos.top + 37.5 - attackingCharacterPos.top - characterHeight / 2 + (event.acting_player !== playerNum ? -32 : 16);
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Create an arrow element and set its position and rotation
