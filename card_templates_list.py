@@ -978,10 +978,10 @@ CARD_TEMPLATES = {
     ),
     'Guru Laghima': CardTemplate(
         name='Guru Laghima',
-        abilities=['Attacker', 'Twinstrike', 'FriendliesDealDamageEqualToCurrentHealth'],
+        abilities=['Attacker', 'FriendliesDealDamageEqualToCurrentHealth'],
         cost=5,
         attack=3,
-        health=7,
+        health=8,
         creature_types=['Air'],
         rarity='rare',
     ),
