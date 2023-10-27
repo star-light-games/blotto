@@ -481,6 +481,8 @@ class Character:
             }
         )
 
+        self.has_attacked = False
+
         # pump friendly characters with CharacterMovesHerePumps ability
         for character in target_lane.characters_by_player[self.owner_number]:
             if character.has_ability('CharacterMovesHerePumps') and character.id != self.id:
@@ -748,8 +750,7 @@ class Character:
                 friendlies = self.lane.characters_by_player[self.owner_number][:]
                 self.add_basic_animation(animations, game_state)                
                 for character in friendlies:
-                    if not character.id == self.id:
-                        character.switch_lanes(log, animations, game_state)
+                    character.switch_lanes(log, animations, game_state)
 
             if self.has_ability('OnRevealDrawCards'):
                 cards_to_draw = self.number_of_ability('OnRevealDrawCards')

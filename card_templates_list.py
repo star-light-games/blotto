@@ -230,7 +230,7 @@ CARD_TEMPLATES = {
     ),
     'Momo': CardTemplate(
         name='Momo',
-        abilities=['SwitchLanesAfterAttacking'],
+        abilities=['SwitchLanesAtEndOfTurn'],
         cost=2,
         attack=4,
         health=6,
@@ -302,7 +302,7 @@ CARD_TEMPLATES = {
     ),
     'Opal': CardTemplate(
         name='Opal',
-        abilities=['Attacker', 'SwitchLanesAfterAttacking'],
+        abilities=['Attacker', 'SwitchLanesAtEndOfTurn'],
         cost=3,
         attack=3,
         health=7,
@@ -348,10 +348,10 @@ CARD_TEMPLATES = {
     ),
     'Appa': CardTemplate(
         name='Appa',
-        abilities=['OnRevealFriendliesSwitchLanes', 'SurviveSwitchLanes'],
+        abilities=['OnRevealFriendliesSwitchLanes'],
         cost=3,
         attack=4,
-        health=6,
+        health=4,
         creature_types=['Air'],
         rarity='common',
     ),
