@@ -137,13 +137,24 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                 </Typography>}
                 <Typography>
                     <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
-                        {card.abilities.map((ability, index) => (
-                            <li key={index}>{ability.description}</li>
+                        {/* Display keyword abilities in a single line */}
+                        {card.abilities.filter(ability => ability.is_keyword).length > 0 && (
+                            <li>
+                                {card.abilities
+                                    .filter(ability => ability.is_keyword)
+                                    .map(ability => ability.description)
+                                    .join(', ')}
+                            </li>
+                        )}
+                        {/* Display non-keyword abilities */}
+                        {card.abilities
+                            .filter(ability => !ability.is_keyword)
+                            .map((ability, index) => (
+                                <li key={index}>{ability.description}</li>
                         ))}
                     </ul>
                 </Typography>
-                </Box>
-
+            </Box>
             <Box 
                 position="absolute" 
                 bottom={10} 
