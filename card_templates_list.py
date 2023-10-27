@@ -226,7 +226,7 @@ CARD_TEMPLATES = {
         attack=2,
         health=6,
         creature_types=['Air'],
-        rarity='rare',
+        rarity='common',
     ),
     'Momo': CardTemplate(
         name='Momo',
@@ -821,7 +821,7 @@ CARD_TEMPLATES = {
         attack=3,
         health=5,
         creature_types=['Air'],
-        rarity='common',
+        rarity='rare',
     ),
     'Ryu': CardTemplate(
         name='Ryu',
