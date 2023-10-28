@@ -871,9 +871,9 @@ CARD_TEMPLATES = {
     'Joo Dee': CardTemplate(
         name='Joo Dee',
         abilities=['AttackersDontDealDamage'],
-        cost=3,
-        attack=3,
-        health=1,
+        cost=2,
+        attack=1,
+        health=6,
         creature_types=['Earth'],
         rarity='rare',
     ),
