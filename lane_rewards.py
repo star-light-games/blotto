@@ -40,7 +40,7 @@ LANE_REWARDS = {reward['name']: {**reward, 'priority': i} for i, reward in enume
     },    
     {
         'name': 'Ba Sing Se',
-        'threshold': 15,
+        'threshold': 20,
         'reward_description': 'Gain 2 mana next turn.',
         'effect': ['gainMana', 2],
     },    
