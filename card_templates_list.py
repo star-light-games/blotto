@@ -870,7 +870,7 @@ CARD_TEMPLATES = {
     ),
     'Joo Dee': CardTemplate(
         name='Joo Dee',
-        abilities=['AttackersDontDealDamage'],
+        abilities=['Defender', 'AttackersDontDealDamage'],
         cost=2,
         attack=1,
         health=6,
