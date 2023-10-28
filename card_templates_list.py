@@ -565,7 +565,7 @@ CARD_TEMPLATES = {
     ),
     'Cabbage Man': CardTemplate(
         name='Cabbage Man',
-        abilities=['Attacker', 'Twinstrike', 'OnRevealFillEnemyLaneWithCabbages', 'CannotSwitchLanes'],
+        abilities=['Attacker', 'Twinstrike', 'CannotSwitchLanes', 'OnRevealFillEnemyLaneWithCabbages'],
         cost=1,
         attack=3,
         health=2,
