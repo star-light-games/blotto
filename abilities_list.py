@@ -368,7 +368,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'HitTowerGiveShield': Ability(
         name='HitTowerGiveShield',
-        description='Hit tower: give a friendly character a shield.',
+        description='Hit tower: give another friendly character a shield.',
     ),
     'OnRevealDiscardHandAndPump': lambda x, y: Ability(
         name='OnRevealDiscardHandAndPump',
