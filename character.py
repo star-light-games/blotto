@@ -445,6 +445,9 @@ class Character:
         return self.can_fight() and not self.has_attacked and self.shackled_turns == 0 and self.current_attack > 0
 
     def switch_lanes(self, log: list[str], animations: list, game_state: 'GameState', lane_number: Optional[int] = None, and_fully_heal_if_switching: bool = False) -> bool:
+        if self.has_ability('CannotSwitchLanes'):
+            return False
+        
         original_spot_array_index = [c.id for c in self.lane.characters_by_player[self.owner_number]].index(self.id)
         original_lane_number = self.lane.lane_number
 

@@ -483,4 +483,8 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         description='Twinstrike',
         is_keyword=True,
     ),
+    'CannotSwitchLanes': Ability(
+        name='CannotSwitchLanes',
+        description='I cannot switch lanes.',
+    ),
 }
