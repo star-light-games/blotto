@@ -14,6 +14,8 @@ from deck import Deck
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from flask_cors import CORS
+from draft_choice import DraftChoice
+from draft_pick import DraftPick
 from game import Game
 import traceback
 from functools import wraps
@@ -859,6 +861,69 @@ def be_done_with_animations(sess, game_id):
 def get_draft_pick(sess):
     pick_num = request.args.get('pickNum')
     
+    DEFAULT_RARE_CHANCE = 0.07
+
+    pick_num_to_rare_chance: dict[Optional[int], float] = {
+        1: 1,
+        2: 0.25,
+        3: 0.2,
+        4: 0.15,
+        5: 0.15,
+        18: 0.2,
+    }
+
+    rare_chance = pick_num_to_rare_chance.get(int(pick_num) if pick_num is not None else None) or DEFAULT_RARE_CHANCE
+
+    if random.random() < rare_chance:
+        return {'options': get_sample_card_templates_of_rarity('rare', 3)}
+    else:
+        return {'options': get_sample_card_templates_of_rarity('common', 5)}
+
+
+@app.route('/api/draft_pick', methods=['POST'])
+@api_endpoint
+def get_draft_pick_and_store_info(sess):
+    pick_num = request.args.get('pickNum')
+    
+    data = request.json
+
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
+
+    username = data.get('username')
+
+    last_card_options = data.get('lastCardOptions')
+    last_card_picked = data.get('lastCardPicked')
+
+    print(last_card_options)
+    print(last_card_picked)
+
+    if last_card_options != []:
+        draft_pick = DraftPick(
+            username=username,
+            pick_num=pick_num,
+        )
+        sess.add(draft_pick)
+        sess.commit()
+
+        selected_draft_choice_id = None
+
+        for card in last_card_options:
+            picked = card == last_card_picked
+            draft_choice = DraftChoice(
+                draft_pick_id=draft_pick.id,
+                card=card,
+                picked=picked,
+            )
+            sess.add(draft_choice)
+            sess.commit()
+
+            if picked:
+                selected_draft_choice_id = draft_choice.id
+
+        draft_pick.selected_draft_choice_id = selected_draft_choice_id  # type: ignore
+        sess.commit()
+
     DEFAULT_RARE_CHANCE = 0.07
 
     pick_num_to_rare_chance: dict[Optional[int], float] = {
