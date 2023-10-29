@@ -17,7 +17,7 @@ COMMON_DECKS = [
             'Yung',
             'Momo',
             'Southern Raider',
-            'Ty Lee',
+            'Katara',
             'Badgermole',
             'Opal',
             'Yon Rha',
