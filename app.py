@@ -509,8 +509,11 @@ def join_game(sess):
 @app.route('/api/open_games', methods = ['GET'])
 @api_endpoint
 def get_available_games(sess):
+    username = request.args.get('username')
+
     game_ids_with_no_player_1 = (
         sess.query(DbGame)
+        .filter(*[DbGame.player_0_username != username if username else []])
         .filter(DbGame.player_1_username.is_(None))
         .filter(DbGame.created_at > datetime.now() - timedelta(hours=2))
         .filter(~DbGame.rematch)
