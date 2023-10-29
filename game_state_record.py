@@ -1,6 +1,4 @@
-
-
-from sqlalchemy import Column, ForeignKey, Index, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, String, func
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy.dialects.postgresql import JSONB
@@ -21,6 +19,8 @@ class GameStateRecord(Base):
     player_1_username = Column(String)
 
     game_state = Column(JSONB)
+
+    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 
     __table_args__ = (
         Index("game_state_records_idx_game_id_turn_number", game_id, turn),
