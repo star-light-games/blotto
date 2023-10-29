@@ -48,7 +48,7 @@ def bot_move_in_game(game: Game, player_num: int) -> None:
         bot_username = game.usernames_by_player[player_num]
         assert bot_username is not None
         bot_move = find_bot_move(bot_username, player_num, game)
-        logger.debug('The bot has chosen the following move: ', bot_move)
+        logger.debug(f'The bot has chosen the following move: {bot_move}')
         game_id = game.id
         with rlock(get_game_lock_redis_key(game_id)):
             game_json = rget_json(get_game_redis_key(game_id))    

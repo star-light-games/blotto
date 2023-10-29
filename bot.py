@@ -158,7 +158,7 @@ def find_bot_move_randy(player_num: int, game_state: GameState) -> dict[str, int
 def find_bot_move_rufus(player_num: int, game_state: GameState) -> dict[str, int]:
     cards_in_hand = game_state.hands_by_player[player_num][:5]
 
-    logger.debug('My cards: ', [card.to_json() for card in cards_in_hand])
+    logger.debug(f'My cards: {[card.to_json() for card in cards_in_hand]}')
     # Stores dict of mana spent to a tuple of (best game state, card id to lane number)
     best_game_state_spending_x_mana = {0: (game_state.copy(), {})}
     for x in range(1, game_state.mana_by_player[player_num] + 1):
@@ -166,22 +166,22 @@ def find_bot_move_rufus(player_num: int, game_state: GameState) -> dict[str, int
         mana_amounts_by_player = game_state.mana_by_player.copy()
         mana_amounts_by_player[player_num] -= x
         best_probability_so_far = assess_intermediate_position(player_num, mana_amounts_by_player, game_state)
-        logger.debug('My assessment of the base position: ', best_probability_so_far)
+        logger.debug(f'My assessment of the base position: {best_probability_so_far}')
         best_game_state_spending_x_mana[x] = (best_game_state_spending_x_mana[x-1][0], best_game_state_spending_x_mana[x-1][1].copy())
         for card in cards_in_hand:
             if card.template.cost <= x:
-                logger.debug('Considering playing card', card.template.name, card.to_json())
+                logger.debug(f'Considering playing card {card.template.name}, {card.to_json()}')
                 best_game_state_playing_that_card = best_game_state_spending_x_mana[x - card.template.cost][0].copy()
                 cards_played = best_game_state_spending_x_mana[x - card.template.cost][1]
-                logger.debug('Here are the cards in my hand in this scenario: ', [card.to_json() for card in best_game_state_playing_that_card.hands_by_player[player_num]])
+                logger.debug(f'Here are the cards in my hand in this scenario: {[card.to_json() for card in best_game_state_playing_that_card.hands_by_player[player_num]]}')
                 if card.id in [c.id for c in best_game_state_playing_that_card.hands_by_player[player_num]]:
                     for lane_number in [0, 1, 2]:
                         if len(best_game_state_playing_that_card.lanes[lane_number].characters_by_player[player_num]) < 4:
                             best_game_state_playing_that_card_copy = best_game_state_playing_that_card.copy()
                             best_game_state_playing_that_card_copy.play_card(player_num, card.id, lane_number)
-                            logger.debug('Trying to play card: ', card.to_json(), ' in lane: ', lane_number)
+                            logger.debug(f'Trying to play card: {card.to_json()} in lane: {lane_number}')
                             probability_of_winning = assess_intermediate_position(player_num, mana_amounts_by_player, best_game_state_playing_that_card_copy)
-                            logger.debug('My assessment of the resulting position: ', probability_of_winning)
+                            logger.debug(f'My assessment of the resulting position: {probability_of_winning}')
 
                             if probability_of_winning > best_probability_so_far:
                                 new_cards_played = cards_played.copy()
@@ -189,14 +189,14 @@ def find_bot_move_rufus(player_num: int, game_state: GameState) -> dict[str, int
                                 best_game_state_spending_x_mana[x] = (best_game_state_playing_that_card_copy, new_cards_played)
                                 best_probability_so_far = probability_of_winning
 
-        logger.debug(f'I think the best move that spends {x} mana is: ', best_game_state_spending_x_mana[x][1])
+        logger.debug(f'I think the best move that spends {x} mana is: {best_game_state_spending_x_mana[x][1]}')
 
     return best_game_state_spending_x_mana[game_state.mana_by_player[player_num]][1]
 
 
 def bot_take_mulligan(game_state: GameState, player_num: int) -> None:
     cards_in_hand = game_state.hands_by_player[player_num]
-    logger.debug('My cards: ', [card.template.name for card in cards_in_hand])
+    logger.debug(f'My cards: {[card.template.name for card in cards_in_hand]}')
 
     game_state.has_mulliganed_by_player[player_num] = True
 
