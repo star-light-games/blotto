@@ -438,6 +438,9 @@ def _join_game_inner(sess, game_id: str, username: str, deck_id: Optional[str], 
         
         game = Game.from_json(game_json)
 
+        if game.usernames_by_player[0] == username:
+            return {"error": "You can't join your own game"}, 400
+
         if deck_id:
             db_deck = sess.query(DbDeck).get(deck_id)
             if not db_deck:
