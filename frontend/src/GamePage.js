@@ -380,8 +380,8 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
                                         () => setSelectedCard(card) : 
                                         () => { }
                                     }
-                                    doNotBorderOnHighlight={yourManaAmount < card.template.cost || animating}
-                                    doNotShowPointerCursor={yourManaAmount < card.template.cost || animating}
+                                    doNotBorderOnHighlight={yourManaAmount < card.template.cost || animating || mulliganing}
+                                    doNotShowPointerCursor={yourManaAmount < card.template.cost || animating || mulliganing}
                                     displayArt={true}
                                     displayRedX={cardsToMulligan.includes(card.id) && mulliganing}
                                 />
