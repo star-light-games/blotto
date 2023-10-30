@@ -2,8 +2,12 @@
 
 from datetime import datetime, timedelta
 from typing import Optional, Union
+
+from sqlalchemy import func
 from bot import bot_take_mulligan, find_bot_move, get_bot_deck
 from card import Card
+from card_balance_change_record import CardBalanceChangeRecord
+from card_outcome import CardOutcome
 from card_templates_list import CARD_TEMPLATES, get_random_card_template_of_rarity, get_sample_card_templates_of_rarity, record_card_balance_changes
 from common_decks import create_common_decks
 from database import SessionLocal
@@ -987,6 +991,61 @@ def rematch(sess, game_id):
     
     # Return error
     return jsonify(game[0]), game[1]
+
+
+@app.route('/api/seventeen_lands/', methods=['GET'])
+@api_endpoint
+def get_17lands_data(sess):
+    data = {}
+
+    for card in CARD_TEMPLATES:
+        latest_balance_change_record = (
+            sess.query(CardBalanceChangeRecord)
+            .filter(CardBalanceChangeRecord.card == card)
+            .order_by(CardBalanceChangeRecord.created_at.desc())
+            .first()
+        )
+
+        if latest_balance_change_record is not None:
+            latest_balance_change_record_time = latest_balance_change_record.created_at
+
+            total_card_outcomes = (
+                sess.query(func.count(CardOutcome.id))
+                .filter(CardOutcome.card == card)
+                .filter(CardOutcome.created_at > latest_balance_change_record_time)
+                .scalar()
+            ) or 0
+
+            card_win_outcomes = (
+                sess.query(func.count(CardOutcome.id))
+                .filter(CardOutcome.card == card)
+                .filter(CardOutcome.created_at > latest_balance_change_record_time)
+                .filter(CardOutcome.win)
+                .scalar()
+            ) or 0
+            
+            total_card_draft_choices = (
+                sess.query(func.count(DraftChoice.id))
+                .filter(DraftChoice.card == card)
+                .filter(DraftChoice.created_at > latest_balance_change_record_time)
+                .scalar()
+            ) or 0
+
+            card_draft_choices_picked = (
+                sess.query(func.count(DraftChoice.id))
+                .filter(DraftChoice.card == card)
+                .filter(DraftChoice.created_at > latest_balance_change_record_time)
+                .filter(DraftChoice.picked)
+                .scalar()
+            ) or 0
+
+            data[card] = {
+                'win_rate': card_win_outcomes / total_card_outcomes if total_card_outcomes > 0 else None,
+                'pick_rate': card_draft_choices_picked / total_card_draft_choices if total_card_draft_choices > 0 else None,
+                'last_changed_time': latest_balance_change_record_time.timestamp(),
+            }
+
+    return recurse_to_json(data)
 
 
 @socketio.on('connect')
