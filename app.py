@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Union
 from bot import bot_take_mulligan, find_bot_move, get_bot_deck
 from card import Card
-from card_templates_list import CARD_TEMPLATES, get_random_card_template_of_rarity, get_sample_card_templates_of_rarity
+from card_templates_list import CARD_TEMPLATES, get_random_card_template_of_rarity, get_sample_card_templates_of_rarity, record_card_balance_changes
 from common_decks import create_common_decks
 from database import SessionLocal
 from db_card import DbCard
@@ -1009,6 +1009,7 @@ def on_leave(data):
 
 if __name__ == '__main__':
     create_common_decks()
+    record_card_balance_changes()
 
     if LOCAL:
         socketio.run(app, host='0.0.0.0', port=5001, debug=True)  # type: ignore

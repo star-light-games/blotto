@@ -1,5 +1,9 @@
+import datetime
+import json
 import random
+from card_balance_change_record import CardBalanceChangeRecord
 from card_template import CardTemplate
+from database import SessionLocal
 
 
 CARD_TEMPLATES = {
@@ -1112,3 +1116,23 @@ def get_random_card_template_of_rarity(rarity: str) -> CardTemplate:
 def get_sample_card_templates_of_rarity(rarity: str, n: int) -> list[CardTemplate]:
     return random.sample([card for card in CARD_TEMPLATES.values() if card.rarity == rarity and not card.not_in_card_pool], n)
 
+
+def record_card_balance_changes():
+    with SessionLocal() as sess:
+        for card_name, card_template in CARD_TEMPLATES.items():
+            card_balance_change_record = (
+                sess.query(CardBalanceChangeRecord)
+                .filter(CardBalanceChangeRecord.card == card_name)
+                .order_by(CardBalanceChangeRecord.created_at.desc())
+                .first()
+            )
+
+            card_template_str = json.dumps(card_template.to_json())
+
+            if card_balance_change_record is None or card_balance_change_record.card_template_str != card_template_str:  # type: ignore
+                card_balance_change_record = CardBalanceChangeRecord(
+                    card=card_name,
+                    card_template_str=card_template_str,
+                )
+                sess.add(card_balance_change_record)
+                sess.commit()
