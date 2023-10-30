@@ -1,5 +1,6 @@
 from datetime import datetime
 import random
+from card_outcome import CardOutcome
 from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
 from deck import Deck
@@ -8,6 +9,7 @@ from lane import Lane
 from card import Card
 from typing import Any, Optional
 import math
+from player_outcome import PlayerOutcome
 
 from utils import sigmoid
 
@@ -30,6 +32,7 @@ class GameState:
         self.decks_by_player = decks_by_player
         self.winner = None
         self.last_timer_start: Optional[float] = None
+        self.cards_ever_drawn_by_player = {0: [card.template.name for card in self.player_0_hand], 1: [card.template.name for card in self.player_1_hand]}
         self.roll_turn([])
 
     def draw_initial_hand(self, deck: Deck):
@@ -48,6 +51,7 @@ class GameState:
             if len(self.draw_piles_by_player[player_num]) > 0:
                 self.hands_by_player[player_num].append(self.draw_piles_by_player[player_num][0])
                 self.draw_piles_by_player[player_num] = self.draw_piles_by_player[player_num][1:]
+                self.cards_ever_drawn_by_player[player_num].append(self.hands_by_player[player_num][-1].template.name)
             else:
                 self.log.append(f"{self.usernames_by_player[player_num]} has no cards left in their deck.")
         else:
@@ -58,6 +62,7 @@ class GameState:
         if len(self.hands_by_player[player_num]) < 7:
             random_template = random.choice([card_template for card_template in CARD_TEMPLATES.values() if not card_template.not_in_card_pool])
             self.hands_by_player[player_num].append(Card(random_template))
+            self.cards_ever_drawn_by_player[player_num].append(random_template.name)
         else:
             self.log.append(f"{self.usernames_by_player[player_num]} has a full hand.")
         self.run_card_draw_triggers(player_num)
@@ -179,6 +184,33 @@ class GameState:
                     self.log.append(f"{self.usernames_by_player[1]} won the game!")
                     self.winner = 1
 
+            if sess and self.winner:
+                for card in self.cards_ever_drawn_by_player[self.winner]:
+                    sess.add(CardOutcome(
+                        game_id=game_id,
+                        card=card,
+                        win=True,
+                    ))
+                for card in self.cards_ever_drawn_by_player[1 - self.winner]:
+                    sess.add(CardOutcome(
+                        game_id=game_id,
+                        card=card,
+                        win=False,
+                    ))
+                sess.add(PlayerOutcome(
+                    game_id=game_id,
+                    username=self.usernames_by_player[self.winner],
+                    player_num=self.winner,
+                    win=True,
+                ))
+                sess.add(PlayerOutcome(
+                    game_id=game_id,
+                    username=self.usernames_by_player[1 - self.winner],
+                    player_num=1 - self.winner,
+                    win=False,
+                ))
+                sess.commit()
+
     def play_card(self, player_num: int, card_id: str, lane_number: int):
         if len(self.lanes[lane_number].characters_by_player[player_num]) < 4:
             card = [card for card in self.hands_by_player[player_num] if card.id == card_id][0]
@@ -235,6 +267,7 @@ class GameState:
             "done_with_animations_by_player": self.done_with_animations_by_player,
             "winner": self.winner,
             "last_timer_start": self.last_timer_start,
+            "cards_ever_drawn_by_player": self.cards_ever_drawn_by_player,
         }
     
     @staticmethod
@@ -252,6 +285,7 @@ class GameState:
         game_state.has_mulliganed_by_player = {int(k): v for k, v in json['has_mulliganed_by_player'].items()}
         game_state.winner = json.get('winner')
         game_state.last_timer_start = json.get('last_timer_start')
+        game_state.cards_ever_drawn_by_player = {int(k): v for k, v in json['cards_ever_drawn_by_player'].items()}
 
         return game_state
     
