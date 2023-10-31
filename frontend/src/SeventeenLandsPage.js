@@ -5,6 +5,7 @@ import { Typography } from '@mui/material';
 import { Grid } from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import { formatPercentage } from './utils';
 
 export const getOrganizedCardPool = (data) => {
     // Custom order map for creature types
@@ -91,8 +92,8 @@ export default function SeventeenLandsPage() {
                             <Card>
                                 <CardContent>
                                     <Typography variant="h3">Stats</Typography>
-                                    <Typography variant="h4">Win Rate: {stats?.[card.name]?.win_rate}</Typography>
-                                    <Typography variant="h4">Pick Rate: {stats?.[card.name]?.pick_rate}</Typography>
+                                    {stats?.[card.name]?.win_rate != null && <Typography variant="h4">Win Rate: {formatPercentage(stats?.[card.name]?.win_rate)}</Typography>}
+                                    {stats?.[card.name]?.pick_rate != null && <Typography variant="h4">Pick Rate: {formatPercentage(stats?.[card.name]?.pick_rate)}</Typography>}
                                     <Typography variant="h4">Last changed time: {new Date(stats?.[card.name]?.last_changed_time * 1000).toLocaleString()}</Typography>
                                 </CardContent>
                             </Card>

@@ -35,3 +35,10 @@ export function generateRandomString(length) {
     }
     return result;
 }
+
+export const formatPercentage = (value) => {
+    return new Intl.NumberFormat('en-US', {
+        style: 'percent',
+        maximumFractionDigits: 2, // You can adjust the number of decimal places
+    }).format(value);
+};
