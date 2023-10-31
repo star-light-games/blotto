@@ -131,7 +131,6 @@ class GameState:
             sess.add(game_state_record)
             sess.commit()
 
-        self.turn += 1
         animations.clear()
         animations.append({
             'event_type': 'StartOfRoll',
@@ -139,7 +138,7 @@ class GameState:
             'game_state': self.to_json(),
         })
         for player_num in [0, 1]:
-            self.mana_by_player[player_num] = self.turn        
+            self.mana_by_player[player_num] = self.turn + 1   
         for lane in self.lanes:
             lane.do_start_of_turn(self.log, animations, self)
         for lane in sorted(self.lanes, key=lambda lane: lane.lane_number + lane.additional_combat_priority):
@@ -152,8 +151,9 @@ class GameState:
                         'game_state': self.to_json(),
                     })
                     
-        for player_num in [0, 1]:
-            self.draw_card(player_num)
+        if self.turn < 8:
+            for player_num in [0, 1]:
+                self.draw_card(player_num)
         self.log.append(f"Turn {self.turn}")
         self.has_moved_by_player = {0: False, 1: False}
         self.done_with_animations_by_player = {0: False, 1: False}
@@ -162,7 +162,7 @@ class GameState:
         #     self.log.append("The moon rises.")
         #     self.mana_by_player = {0: 0, 1: 0}
 
-        if self.turn == 9:
+        if self.turn == 8:
             self.log.append("The moon is full.")
             
             lane_winners = [lane.compute_winner() for lane in self.lanes]
@@ -213,6 +213,8 @@ class GameState:
                     win=False,
                 ))
                 sess.commit()
+
+        self.turn += 1
 
     def play_card(self, player_num: int, card_id: str, lane_number: int) -> Optional['Character']:
         if len(self.lanes[lane_number].characters_by_player[player_num]) < 4:

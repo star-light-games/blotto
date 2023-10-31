@@ -46,7 +46,7 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
     const opponentHandSize = (gameState && gameState.hands_by_player)
         ? gameState.hands_by_player[opponentNum].length
         : 0;
-    const turnNumber = game?.game_info?.game_state?.turn || 0;
+    const turnNumber = gameState?.turn || game?.game_info?.game_state?.turn || 0;
 
     return (
         <Card variant="outlined">
