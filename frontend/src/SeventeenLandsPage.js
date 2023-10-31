@@ -44,7 +44,21 @@ export const getOrganizedCardPool = (data) => {
     });
 }
 
-function descendingComparator(a, b, orderBy) {
+function descendingComparator(a, b, orderBy, stats) {
+    if (orderBy === 'win_rate' || orderBy === 'pick_rate' || orderBy === 'last_changed_time') {
+        // Retrieve the values from the stats object
+        const aValue = stats[a.name] ? stats[a.name][orderBy] : null;
+        const bValue = stats[b.name] ? stats[b.name][orderBy] : null;
+
+        if (bValue < aValue) {
+            return -1;
+        }
+        if (bValue > aValue) {
+            return 1;
+        }
+        return 0;
+    }
+    // Fallback to other properties
     if (b[orderBy] < a[orderBy]) {
         return -1;
     }
@@ -54,10 +68,10 @@ function descendingComparator(a, b, orderBy) {
     return 0;
 }
 
-function getComparator(order, orderBy) {
+function getComparator(order, orderBy, stats) {
     return order === 'desc'
-        ? (a, b) => descendingComparator(a, b, orderBy)
-        : (a, b) => -descendingComparator(a, b, orderBy);
+        ? (a, b) => descendingComparator(a, b, orderBy, stats)
+        : (a, b) => -descendingComparator(a, b, orderBy, stats);
 }
 
 function stableSort(array, comparator) {
@@ -152,11 +166,19 @@ export default function SeventeenLandsPage() {
                                     Pick Rate
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right">Last Changed Time</TableCell>
+                            <TableCell align="right">
+                                <TableSortLabel
+                                    active={orderBy === 'last_changed_time'}
+                                    direction={orderBy === 'last_changed_time' ? order : 'asc'}
+                                    onClick={createSortHandler('last_changed_time')}
+                                >
+                                    Last Changed Time
+                                </TableSortLabel>
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {stableSort(cardPool, getComparator(order, orderBy)).map((card) => (
+                        {stableSort(cardPool, getComparator(order, orderBy, stats)).map((card) => (
                             <TableRow key={card.name}>
                                 <TableCell component="th" scope="row">{card.name}</TableCell>
                                 <TableCell align="right">{renderCellData(stats?.[card.name]?.win_rate)}</TableCell>
