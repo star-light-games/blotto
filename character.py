@@ -249,14 +249,16 @@ class Character:
             return 0
         elif self.is_attacker() and (combat_modification_auras[0]['AttackersDontDealDamage'] > 0 or combat_modification_auras[1]['AttackersDontDealDamage'] > 0):
             return 0
-        elif self.has_ability('Deathtouch'):
-            return defending_character.current_health
-        elif defending_character.is_defender() and self.has_ability('DeathtouchAgainstDefenders'):
-            return defending_character.current_health
         elif self.has_ability('DoNotDamageEnemyCharacters'):
-            return 0
+            return 0        
+        
+        damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player, combat_modification_auras, defending_character=defending_character)
+        
+        if self.has_ability('Deathtouch') and damage_to_deal > 0:
+            return defending_character.current_health
+        elif defending_character.is_defender() and self.has_ability('DeathtouchAgainstDefenders') and damage_to_deal > 0:
+            return defending_character.current_health
         else:
-            damage_to_deal = self.compute_damage_to_deal(self.lane.damage_by_player, combat_modification_auras, defending_character=defending_character)
             return damage_to_deal
 
     def exists(self):

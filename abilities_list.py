@@ -31,7 +31,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'Deathtouch': Ability(
         name='Deathtouch',
-        description='I kill any character I fight with.',
+        description='I kill any character I deal damage to.',
     ),
     'InvincibilityWhileAttacking': Ability(
         name='InvincibilityWhileAttacking',
@@ -397,7 +397,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'DeathtouchAgainstDefenders': Ability(
         name='DeathtouchAgainstDefenders',
-        description='I kill any defender I fight with.',
+        description='I kill any defender I deal damage to.',
     ),
     'OnRevealShieldFriendlies': Ability(
         name='OnRevealShieldFriendlies',
