@@ -915,7 +915,7 @@ export default function GamePage({ }) {
                 navigate(`/game/${data.gameId}?playerNum=${data.playerNum}`);
                 
                 // Then refresh the page
-                window.location.reload();                        
+                window.location.reload();
             })
     }
 
@@ -1529,6 +1529,7 @@ export default function GamePage({ }) {
 
     const handleBackToMenu = () => {
         navigate(`/`);
+        window.location.reload();
     }
 
     return (

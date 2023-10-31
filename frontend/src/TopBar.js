@@ -4,8 +4,9 @@ import logo from './tempLogo.svg';  // Make sure to update the path to your SVG 
 import { useContext } from 'react';
 import {DarkModeContext} from './DarkModeContext';
 import Switch from '@mui/material/Switch';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Grid } from '@mui/material';
+import Button from '@mui/material/Button';
 
 function DarkModeToggle() {
     const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
@@ -19,7 +20,15 @@ function DarkModeToggle() {
   }
   
 
-  const TopBar = () => {
+
+  function TopBar() {
+    const navigate = useNavigate();
+
+    const handleBackToMenu = () => {
+      navigate(`/`);
+      window.location.reload();
+    }  
+
     return (
       <AppBar position="static" style={{ backgroundColor: 'black' }}>
         <Toolbar>
@@ -27,9 +36,11 @@ function DarkModeToggle() {
             
             {/* Left: Logo */}
             <Grid item xs={4} container alignItems="center">
-              <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-                <img src={logo} alt="BlottoBattler Logo" style={{ height: '50px', marginRight: '10px' }} />
-              </Link>
+              <div onClick={handleBackToMenu} variant="contained" color="primary" style={{cursor: 'pointer'}}>
+                <Typography variant='h3'>
+                  🏠
+                </Typography>
+              </div>
             </Grid>
             
             {/* Center: How to play */}

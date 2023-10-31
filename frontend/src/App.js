@@ -23,6 +23,10 @@ function CardPoolPage() {
   const [error, setError] = useState(null);
   const [toastOpen, setToastOpen] = useState(false);
 
+  window.onload = function () {
+    document.body.style.zoom = `${window.innerWidth / 1400 * 100}%`
+  }
+
   // console.log(cards);
 
   useEffect(() => {
