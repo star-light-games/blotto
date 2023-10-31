@@ -1550,6 +1550,10 @@ export default function GamePage({ }) {
             })
         };
 
+    const handleBackToMenu = () => {
+        navigate(`/`);
+    }
+
     return (
         <div style={{
             display: 'flex',
@@ -1677,6 +1681,11 @@ export default function GamePage({ }) {
                         alignItems: 'center'
                     }}
                 >
+                    {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleBackToMenu}>
+                        <Typography variant="h6">
+                            Back to Menu
+                        </Typography>
+                    </Button>}
                     {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={onRematch}>
                         <Typography variant="h6">
                             Rematch
