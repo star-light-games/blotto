@@ -7,6 +7,7 @@ import Switch from '@mui/material/Switch';
 import { Link, useNavigate } from 'react-router-dom';
 import { Grid } from '@mui/material';
 import Button from '@mui/material/Button';
+import { HOW_TO_PLAY_URL } from './settings';
 
 function DarkModeToggle() {
     const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
@@ -45,7 +46,7 @@ function DarkModeToggle() {
             
             {/* Center: How to play */}
             <Grid item xs={4} container justifyContent="center">
-              <Link external to="https://docs.google.com/document/d/12pSa81NvMgi8WRoDZQO4FrHMudNGaGx1aVrUjOtKp6w/edit?usp=sharing">
+              <Link external to={HOW_TO_PLAY_URL}>
                 <Typography variant='h5'>How to play</Typography>
               </Link>
             </Grid>

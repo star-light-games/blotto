@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import TcgCard from './TcgCard';
 
-import { URL } from './settings';
+import { URL, HOW_TO_PLAY_URL } from './settings';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { objectToArray, generateRandomString } from './utils';
@@ -444,6 +444,7 @@ function DeckBuilder({ cards, laneRewards }) {
           <CardContent>
             <Typography variant="h5">Recent changes:</Typography>
             <ul>
+              <li>If are new to the game, read the full rules <Link external to={HOW_TO_PLAY_URL}>here</Link>.</li>
               <li>Attackers no longer attack both an enemy character and an enemy tower by default. Instead, they only attack an enemy character. They also attack the enemy tower if they have the "Twinstrike" ability. Only attackers ever have Twinstrike.</li>
               <li>Characters can have a shield; this means that the next instance of damage is negated and the shield is lost instead. The Shield ability means it gains a shield when it enters the lane.</li>
               <li>When you <emph>silence</emph> a character, that character permanently loses all its abilities, its attack reverts to its original base attack, its base health reverts to its original base health, and its current health reverts to whichever is smaller of its original base health and its current health, and any shield it has is broken.</li>
