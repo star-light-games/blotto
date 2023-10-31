@@ -2,7 +2,7 @@ from collections import defaultdict
 import random
 from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
-from utils import generate_unique_id, on_reveal_animation, product
+from utils import basic_lane_animation, generate_unique_id, on_reveal_animation, product
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from lane import Lane
@@ -645,7 +645,9 @@ class Character:
 
         self.current_attack += sum(attack_buffs) + sum(element_specific_attack_buffs) + lane_attack_buff  # type: ignore
         self.current_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
+        self.current_health = max(self.current_health, 1)
         self.max_health += sum(defense_buffs) + sum(element_specific_defense_buffs) + lane_defense_buff  # type: ignore
+        self.max_health = max(self.max_health, 1)
 
         if self.has_ability('Shield'):
             self.gain_shield(log, animations, game_state)
@@ -853,6 +855,14 @@ class Character:
                                 character.max_health += self.number_2_of_ability('OnRevealPumpFriendliesIfFullMatchingLane')
                             self.add_basic_animation(animations, game_state)                                
                             break
+            
+            if self.lane.lane_reward.effect[0] == 'pumpAllCharactersPlayedHereWhenFilled' and len(self.lane.characters_by_player[self.owner_number]) >= 4:
+                for character in self.lane.characters_by_player[self.owner_number]:
+                    character.current_attack += self.lane.lane_reward.effect[1]  # type: ignore
+                    character.current_health += self.lane.lane_reward.effect[2]  # type: ignore
+                    character.max_health += self.lane.lane_reward.effect[2]  # type: ignore
+                
+                animations.append(basic_lane_animation(self.lane.lane_number, game_state))
 
     def do_late_on_reveal(self, log: list[str], animations: list, game_state: 'GameState'):
         if self.did_on_reveal:

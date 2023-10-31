@@ -21,7 +21,8 @@ class Lane:
 
     def maybe_give_lane_reward(self, player_num: int, game_state: 'GameState', log: list[str], animations: list) -> None:
         if not self.earned_rewards_by_player[player_num] and self.lane_reward.threshold is not None and self.damage_by_player[player_num] >= self.lane_reward.threshold:
-            early_animation = self.lane_reward.effect[0] in ['bonusAttackAllFriendlies']
+            early_animation = self.lane_reward.effect[0] in ['bonusAttackAllFriendlies', 'playAllCardsInHandForFree', 
+                                                             'healAllFriendlies', 'friendlyCharactersInThisLaneSwitchLanes']
             self.earned_rewards_by_player[player_num] = True
             if early_animation:
                 animations.append(basic_lane_animation(self.lane_number, game_state))
@@ -58,6 +59,35 @@ class Lane:
 
         elif self.lane_reward.effect[0] == 'gainMana':
             game_state.mana_by_player[player_num] += self.lane_reward.effect[1]  # type: ignore
+
+        elif self.lane_reward.effect[0] == 'playAllCardsInHandForFree':
+            for card in game_state.hands_by_player[player_num]:
+                lane_to_play_in = game_state.find_random_empty_slot_in_other_lane(self.lane_number, player_num)
+                if lane_to_play_in is not None:
+                    character = game_state.play_card(player_num, card.id, lane_to_play_in.lane_number)
+                    if character is not None:
+                        character.do_all_on_reveal(log, animations, game_state)
+
+        elif self.lane_reward.effect[0] == 'pumpRandomCharacterInAnotherLane':
+            lanes_to_find_characters_in = [lane for lane in game_state.lanes if not lane.lane_number == self.lane_number]
+            
+            if len(lanes_to_find_characters_in) > 0:
+                possible_characters_to_pump = [*lanes_to_find_characters_in[0].characters_by_player[player_num], *lanes_to_find_characters_in[1].characters_by_player[player_num]]
+                if len(possible_characters_to_pump) > 0:
+                    character_to_pump = random.choice(possible_characters_to_pump)
+
+                    character_to_pump.current_attack += self.lane_reward.effect[1]  # type: ignore
+                    character_to_pump.current_health += self.lane_reward.effect[2]  # type: ignore
+                    character_to_pump.max_health += self.lane_reward.effect[2]  # type: ignore
+
+        elif self.lane_reward.effect[0] == 'healAllFriendlies':
+            for lane in game_state.lanes:
+                for character in lane.characters_by_player[player_num]:
+                    character.fully_heal()
+
+        elif self.lane_reward.effect[0] == 'friendlyCharactersInThisLaneSwitchLanes':
+            for character in self.characters_by_player[player_num]:
+                character.switch_lanes(log, animations, game_state)
 
 
     def do_start_of_game(self, log: list[str], animations: list, game_state: 'GameState') -> None:
@@ -121,6 +151,12 @@ class Lane:
                 animations.append(basic_lane_animation(self.lane_number, game_state))
 
             self.process_dying_characters(log, animations, game_state)
+
+        if self.lane_reward.effect[0] == 'firstCharacterSwitchesLanesAtEndOfTurn':
+            for player_num in [0, 1]:
+                if len(self.characters_by_player[player_num]) > 0:
+                    character_to_switch = self.characters_by_player[player_num][0]
+                    character_to_switch.switch_lanes(log, animations, game_state)
 
 
     def resolve_combat(self, 
