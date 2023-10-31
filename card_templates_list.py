@@ -675,7 +675,7 @@ CARD_TEMPLATES = {
     ),
     'Ty Lee': CardTemplate(
         name='Ty Lee',
-        abilities=['OnRevealSilenceRandomEnemy'],
+        abilities=['OnRevealSilenceLastEnemy'],
         cost=3,
         attack=4,
         health=4,

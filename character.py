@@ -666,10 +666,10 @@ class Character:
             return
 
         if self.new:
-            if self.has_ability('OnRevealSilenceRandomEnemy'):
-                random_enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.silenced)
-                if random_enemy_character is not None:
-                    random_enemy_character.silence(self, log, animations, game_state)
+            if self.has_ability('OnRevealSilenceLastEnemy'):
+                enemy_characters = self.lane.characters_by_player[1 - self.owner_number]
+                if len(enemy_characters) > 0:
+                    enemy_characters[-1].silence(self, log, animations, game_state)
 
             if self.has_ability('OnRevealSilenceAllCharacters'):
                 for character in [*self.lane.characters_by_player[1 - self.owner_number], *self.lane.characters_by_player[self.owner_number]]:

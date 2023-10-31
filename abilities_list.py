@@ -254,9 +254,9 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
         name='OnRevealAllAttackersMakeBonusAttack',
         description='On reveal: your friendly attackers in ALL lanes (including me) make a bonus attack.',
     ),
-    'OnRevealSilenceRandomEnemy': Ability(
-        name='OnRevealSilenceRandomEnemy',
-        description='On reveal: silence a random enemy character. This can counter on reveals.',
+    'OnRevealSilenceLastEnemy': Ability(
+        name='OnRevealSilenceLastEnemy',
+        description='On reveal: silence the last enemy character. This can counter on reveals.',
     ),
     'OnRevealSilenceAllCharacters': Ability(
         name='OnRevealSilenceAllCharacters',
