@@ -246,6 +246,11 @@ class Character:
                                        or (self.is_attacker() and combat_modification_auras[self.owner_number].get('FriendlyAttackersAreInvincibleWhileAttacking'))) 
                                    else defending_character.get_damage_to_deal_in_punch(self, lane_number, combat_modification_auras, log, animations, game_state))
 
+        fight_animations = []
+
+        defending_character.sustain_damage(attacker_damage_to_deal, log, fight_animations, game_state, suppress_trigger=True)
+        self.sustain_damage(defender_damage_to_deal, log, fight_animations, game_state, suppress_trigger=True)
+
         animations.append({
             "event_type": "FriendlyAttack" if friendly else "CharacterAttack",
             "data": {
@@ -257,8 +262,7 @@ class Character:
             "game_state": game_state.to_json(),
         })
 
-        defending_character.sustain_damage(attacker_damage_to_deal, log, animations, game_state, suppress_trigger=True)
-        self.sustain_damage(defender_damage_to_deal, log, animations, game_state, suppress_trigger=True)
+        animations.extend(fight_animations)
 
         if self.is_attacker() and not do_not_attack_tower and self.has_ability('Twinstrike'):
             self.deal_tower_damage(self.owner_number, self.lane.characters_by_player[defending_character.owner_number], self.lane.damage_by_player, lane_number, combat_modification_auras, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
