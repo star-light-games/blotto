@@ -39,7 +39,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'DoubleTowerDamage': Ability(
         name='DoubleTowerDamage',
-        description='When I attack the enemy tower, I deal double damage.',
+        description='I deal double damage to towers.',
     ),
     'EndOfTurnFullHeal': Ability(
         name='EndOfTurnFullHeal',
