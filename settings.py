@@ -6,6 +6,7 @@ BOT_DECK_USERNAME = 'BOT_DECK'
 DATABASE_URL = "postgresql://bb:blotto@localhost:5432/bb"
 EXTRA_TIME_ON_FIRST_TURN = 5
 COYOTE_TIME = 1
+OPEN_GAME_LIFETIME_HOURS = 2
 
 if os.path.exists('local_settings.py'):
     from local_settings import *

@@ -29,7 +29,7 @@ from lane_rewards import LANE_REWARDS
 from threading import Timer
 
 from redis_utils import rdel, rget_json, rlock, rset_json
-from settings import COMMON_DECK_USERNAME, COYOTE_TIME, EXTRA_TIME_ON_FIRST_TURN, LOCAL
+from settings import COMMON_DECK_USERNAME, COYOTE_TIME, EXTRA_TIME_ON_FIRST_TURN, LOCAL, OPEN_GAME_LIFETIME_HOURS
 from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, get_staged_game_lock_redis_key, get_staged_game_redis_key, get_staged_moves_redis_key
 import logging
 from logging.handlers import RotatingFileHandler
@@ -477,6 +477,20 @@ def _join_game_inner(sess, game_id: str, username: str, deck_id: Optional[str], 
 
     sess.commit()
 
+    for player_username in [game.usernames_by_player[0], game.usernames_by_player[1]]:
+        orphan_db_games = (
+            sess.query(DbGame)
+            .filter(DbGame.player_0_username == player_username)
+            .filter(DbGame.player_1_username.is_(None))
+            .filter(DbGame.created_at > datetime.now() - timedelta(hours=OPEN_GAME_LIFETIME_HOURS))
+            .all()
+        )
+
+        for orphan_db_game in orphan_db_games:
+            sess.delete(orphan_db_game)
+    
+    sess.commit()
+
     socketio.emit('updateGames')
 
     return game
@@ -524,7 +538,7 @@ def get_available_games(sess):
         sess.query(DbGame)
         .filter(*[DbGame.player_0_username != username if username else []])
         .filter(DbGame.player_1_username.is_(None))
-        .filter(DbGame.created_at > datetime.now() - timedelta(hours=2))
+        .filter(DbGame.created_at > datetime.now() - timedelta(hours=OPEN_GAME_LIFETIME_HOURS))
         .filter(~DbGame.rematch)
         .all()
     )
