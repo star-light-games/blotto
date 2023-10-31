@@ -12,6 +12,12 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
 
     const displayCreatureTypes = card.creatureTypes.includes('Avatar');
 
+    const hasAttackerAbility = card.abilities.some(ability => ability.name == 'Attacker');
+    const hasTwinstrikeAbility = card.abilities.some(ability => ability.name == 'Twinstrike');
+    const hasDefenderAbility = card.abilities.some(ability => ability.name == 'Defender');
+
+    const iconType = hasTwinstrikeAbility ? 'crossed-swords' : hasAttackerAbility ? 'sword' : hasDefenderAbility ? 'defender-shield' : null;
+
     const getRarityColor = (rarity) => {
         switch (rarity) {
           case 'common':
@@ -155,6 +161,23 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
                     </ul>
                 </Typography>
             </Box>
+            {iconType && <Box 
+                position="absolute" 
+                bottom={10} 
+                left={10} 
+                display="flex" 
+                alignItems="center"
+                >
+                <img
+                    src={`/images/${snakeCase(iconType)}.png`}  // Replace with the correct path to your skull image
+                    alt={`${iconType}-icon`}
+                    style={{
+                        width: '30px',  // Adjust the size as needed
+                        height: '30px',  // Adjust the size as needed
+                        filter: 'invert(1)',
+                    }}
+                />
+            </Box>}
             <Box 
                 position="absolute" 
                 bottom={10} 

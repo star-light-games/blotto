@@ -138,6 +138,13 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
     const isDead = character.current_health <= 0;
     const isShielded = character.shielded;
 
+    const hasAttackerAbility = character.template.abilities.some(ability => ability.name == 'Attacker');
+    const hasTwinstrikeAbility = character.template.abilities.some(ability => ability.name == 'Twinstrike');
+    const hasDefenderAbility = character.template.abilities.some(ability => ability.name == 'Defender');
+
+    const iconType = character.silenced ? null : hasTwinstrikeAbility ? 'crossed-swords' : hasAttackerAbility ? 'sword' : hasDefenderAbility ? 'defender-shield' : null;
+
+
     let filterStyle = '';
     if (character.shackled_turns > 0) {
         filterStyle += 'brightness(0.5)'; // darken image if shackled_turns is greater than zero
@@ -219,6 +226,32 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
                     />
                 </Box>
             </Grid>}
+            {iconType && (
+                <Box 
+                    position="absolute" 
+                    bottom={10} 
+                    left={10} 
+                    display="flex" 
+                    justifyContent="center"
+                    alignItems="center"
+                    style={{
+                        backgroundColor: backgroundColor,  // Use card's background color
+                        borderRadius: '50%',  // Make it circular
+                        width: '50px',  // Adjust the size as needed (should be larger than icon size)
+                        height: '50px',  // Adjust the size as needed (should be larger than icon size)
+                    }}
+                >
+                    <img
+                        src={`/images/${snakeCase(iconType)}.png`}
+                        alt={`${iconType}-icon`}
+                        style={{
+                            width: '30px',  // Adjust the size as needed
+                            height: '30px',  // Adjust the size as needed
+                            filter: 'invert(1)',
+                        }}
+                    />
+                </Box>
+            )} 
         </Grid>
     );
 }
