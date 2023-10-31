@@ -93,7 +93,7 @@ CARD_TEMPLATES = {
         abilities=['Attacker', ('OnRevealPumpFriends', 1, 1)],
         cost=2,
         attack=2,
-        health=3,
+        health=4,
         creature_types=['Earth'],
         rarity='common',
     ),
