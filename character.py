@@ -271,9 +271,6 @@ class Character:
                                        or (self.is_attacker() and combat_modification_auras[self.owner_number].get('FriendlyAttackersAreInvincibleWhileAttacking'))) 
                                    else defending_character.get_damage_to_deal_in_punch(self, lane_number, combat_modification_auras, log, animations, game_state))
 
-        defending_character.sustain_damage(attacker_damage_to_deal, log, animations, game_state, suppress_trigger=True)
-        self.sustain_damage(defender_damage_to_deal, log, animations, game_state, suppress_trigger=True)
-
         animations.append({
             "event_type": "FriendlyAttack" if friendly else "CharacterAttack",
             "data": {
@@ -284,6 +281,9 @@ class Character:
             },
             "game_state": game_state.to_json(),
         })
+
+        defending_character.sustain_damage(attacker_damage_to_deal, log, animations, game_state, suppress_trigger=True)
+        self.sustain_damage(defender_damage_to_deal, log, animations, game_state, suppress_trigger=True)
 
         if self.is_attacker() and not do_not_attack_tower and self.has_ability('Twinstrike'):
             self.deal_tower_damage(self.owner_number, self.lane.characters_by_player[defending_character.owner_number], self.lane.damage_by_player, lane_number, combat_modification_auras, log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
@@ -865,8 +865,6 @@ class Character:
                 damage_to_deal = random_card.template.cost
                 defending_character = self.lane.get_random_enemy_character(self.owner_number)
                 if defending_character is not None:
-                    defending_character.sustain_damage(damage_to_deal, log, animations, game_state)
-
                     animations.append({
                         "event_type": "CharacterAttack",
                         "data": {
@@ -878,15 +876,17 @@ class Character:
                         "game_state": game_state.to_json(),
                     })
 
+                    defending_character.sustain_damage(damage_to_deal, log, animations, game_state)
+
                     self.lane.process_dying_characters(log, animations, game_state) 
 
         if self.has_ability('OnRevealDamageToAll'):
+            self.add_basic_animation(animations, game_state)
             damage_amount = self.number_of_ability('OnRevealDamageToAll')
             for character in [*self.lane.characters_by_player[self.owner_number], *self.lane.characters_by_player[1 - self.owner_number]]:
                 character.sustain_damage(damage_amount, log, animations, game_state)
                 log.append(f"{self.owner_username}'s {self.template.name} dealt {damage_amount} damage to {character.owner_username}'s {character.template.name} in Lane {self.lane.lane_number + 1}. "
                             f"{character.template.name}'s health is now {character.current_health}.")
-            self.add_basic_animation(animations, game_state)
             self.lane.process_dying_characters(log, animations, game_state)
 
         if self.has_ability('OnRevealBonusAttack'):
