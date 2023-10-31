@@ -40,7 +40,7 @@ const opponentColorToneReversed = (isDarkMode) => isDarkMode ? '#ffd7d7' : '#995
 
 const getBackgroundColor = (isDarkMode) => isDarkMode ? '#555' : '#f5f5f5';
 
-function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmount, secondsElapsed, setSecondsElapsed, doNotUpdateTimer }) {
+function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmount, secondsElapsed, setSecondsElapsed, doNotUpdateTimer, animating }) {
     const opponentNum = playerNum === 0 ? 1 : 0;
     const opponentUsername = game.usernames_by_player[opponentNum];
     const opponentHandSize = (gameState && gameState.hands_by_player)
@@ -59,7 +59,8 @@ function GameInfo({ game, gameState, playerNum, yourManaAmount, opponentManaAmou
                     <Grid item xs={4}>
                         <Typography variant="h6">You</Typography>
                         <Typography>Username: {game.usernames_by_player[playerNum]}</Typography>
-                        <Typography>Mana: {yourManaAmount}</Typography>
+                        <br />
+                        {!animating && <Typography variant="h5">Mana: {yourManaAmount}</Typography>}
                     </Grid>
 
                     {/* Opponent Info Column */}
@@ -1573,6 +1574,7 @@ export default function GamePage({ }) {
                         secondsElapsed={secondsElapsed}
                         setSecondsElapsed={setSecondsElapsed}
                         doNotUpdateTimer={doNotUpdateTimer}
+                        animating={animating}
                     />
                 </div>
                 {gameOver && !animating && <div style={{ margin: '10px' }}>
