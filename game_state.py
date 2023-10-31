@@ -184,7 +184,7 @@ class GameState:
                     self.log.append(f"{self.usernames_by_player[1]} won the game!")
                     self.winner = 1
 
-            if sess and self.winner is not None:
+            if sess and self.winner is not None and self.usernames_by_player[1] not in ["GOLDA_THE_GOLDFISH", "RANDY_THE_ROBOT"]:
                 for card in self.cards_ever_drawn_by_player[self.winner]:
                     sess.add(CardOutcome(
                         game_id=game_id,
