@@ -816,30 +816,7 @@ export default function GamePage({ }) {
     const socket = useSocket();
 
     window.onload = function () {
-        if (window.innerWidth < 350) {
-            document.body.style.zoom = "10%";
-        }
-        else if (window.innerWidth < 700) {
-            document.body.style.zoom = "20%";
-        }
-        else if (window.innerWidth < 950) {
-            document.body.style.zoom = "30%";
-        }
-        else if (window.innerWidth < 1300) {
-            document.body.style.zoom = "40%";
-        }
-        else if (window.innerWidth < 1600) {
-            document.body.style.zoom = "50%";
-        }
-        else if (window.innerWidth < 2000) {
-            document.body.style.zoom = "67%";
-        }
-        else if (window.innerWidth < 2500) {
-            document.body.style.zoom = "80%";
-        }
-        else if (window.innerWidth < 3000) {
-            document.body.style.zoom = "100%";
-        }
+        document.body.style.zoom = `${window.innerWidth / 2800 * 100}%`
     }
     window.addEventListener('unload', function () {
         socket.emit('leave', { room: gameId });
