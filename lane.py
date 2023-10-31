@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import TYPE_CHECKING, Callable
 import random
 from typing import Optional
@@ -236,6 +237,28 @@ class Lane:
                         character_to_switch.max_health += dead_character.number_of_ability('DeathMoveCharactersHereAndPumpThem')
 
 
+    def compute_combat_modification_auras(self) -> dict[int, defaultdict[str, int]]:
+        combat_modification_auras = {
+            0: defaultdict(int),
+            1: defaultdict(int),
+        }
+
+        aura_ability_names = ['FriendliesDealDamageEqualToCurrentHealth', 
+                              'AttackersDontDealDamage', 
+                              'MoreStrengthMeansDoubleDamage', 
+                              'ShieldedCharactersDealExtraDamage', 
+                              'FriendlyAttackersAreInvincibleWhileAttacking']
+
+        for player_num in [0, 1]:
+            for character in self.characters_by_player[player_num]:
+                if not character.silenced:
+                    for ability in character.template.abilities:
+                        if ability.name in aura_ability_names:
+                            combat_modification_auras[player_num][ability.name] += 1 if ability.number is None else ability.number
+
+        return combat_modification_auras
+
+
     def player_single_attack(self, 
                              attacking_player: int,
                              done_attacking_by_player: dict[int, bool], 
@@ -243,7 +266,9 @@ class Lane:
                              animations: list,
                              game_state: 'GameState', 
                              first_strikers_only: bool = False):
-        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack() and (not first_strikers_only or character.has_ability('EarlyFighter'))]
+        combat_modification_auras = self.compute_combat_modification_auras()
+
+        characters_that_can_attack = [character for character in self.characters_by_player[attacking_player] if character.can_attack(combat_modification_auras) and (not first_strikers_only or character.has_ability('EarlyFighter'))]
         
         characters_that_can_attack_without_last_strike = [character for character in characters_that_can_attack if not character.has_ability('LateFighter')]
         characters_that_can_attack_with_last_strike = [character for character in characters_that_can_attack if character.has_ability('LateFighter')]
@@ -255,7 +280,7 @@ class Lane:
         else:
             character = characters_that_can_attack[0]
             defending_characters = [character for character in self.characters_by_player[1 - attacking_player] if character.can_fight()]
-            character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, log, animations, game_state)
+            character.attack(attacking_player, self.damage_by_player, defending_characters, self.lane_number, combat_modification_auras, log, animations, game_state)
 
         self.process_dying_characters(log, animations, game_state)
 
