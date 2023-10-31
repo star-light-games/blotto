@@ -119,7 +119,7 @@ export default function SeventeenLandsPage() {
           return response.json();
         })
         .then((data) => {
-          setCardPool(getOrganizedCardPool(data));
+          setCardPool(getOrganizedCardPool(data).filter(card => !card.notInCardPool));
         })
         .catch((error) => {
           console.error('Error:', error);
