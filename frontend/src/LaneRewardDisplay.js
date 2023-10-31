@@ -11,7 +11,7 @@ export default function LaneRewardDisplay({ laneReward, currentLaneReward, setCu
             onClick={notSelectable ? () => {} : () => setCurrentLaneReward(laneReward)}
             style={{
                 ...(notSelectable ? {} : {cursor: 'pointer'}),
-                border: isSelected ? '2px solid black' : 'none',  // Apply border if selected
+                border: isSelected ? '5px solid black' : 'none',  // Apply border if selected
                 maxWidth: 500,
             }}
         >
