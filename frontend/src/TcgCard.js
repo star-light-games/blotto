@@ -8,7 +8,7 @@ function TcgCard({ card, isSelected, onCardClick, onMouseEnter, doNotBorderOnHig
     // Define card background color based on theme mode
     const cardBackgroundColor = getCardBackgroundColor(card, isDarkMode);
 
-    const outlineSize = 2;
+    const outlineSize = 5;
 
     const displayCreatureTypes = card.creatureTypes.includes('Avatar');
 

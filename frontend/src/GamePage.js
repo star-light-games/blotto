@@ -251,7 +251,7 @@ function LaneCard({ children, selectedCard, onClick, doNotOutlineOnHover }) {
             }}
             onMouseEnter={e => {
                 if (selectedCard && !doNotOutlineOnHover) {
-                    e.currentTarget.style.outline = '2px solid blue';
+                    e.currentTarget.style.outline = '5px solid blue';
                 }
             }}
             onMouseLeave={e => {
@@ -362,7 +362,7 @@ function HandDisplay({ cards, selectedCard, setSelectedCard, setHoveredCard, you
             </Grid>
             <Grid item>
                 <div style={{ 
-                    width: '800px', // Adjusted width to fit three cards
+                    width: '820px', // Adjusted width to fit three cards
                     maxHeight: '120vh', 
                     overflowY: 'auto', 
                     border: '1px solid gray',

@@ -484,7 +484,7 @@ function DeckBuilder({ cards, laneRewards }) {
               key={index}
               component="button"
               display="block"
-              border={deck === selectedDeck ? "2px solid #3f51b5" : "none"} // Highlight if selected
+              border={deck === selectedDeck ? "5px solid #3f51b5" : "none"} // Highlight if selected
               borderRadius="4px"
               padding="10px"
               margin="5px 0"
