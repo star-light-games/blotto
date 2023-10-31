@@ -403,7 +403,7 @@ function ResetButton({ onReset, disabled }) {
                 onClick={onReset}
                 disabled={disabled}
             >
-                <Typography variant="h6">
+                <Typography variant="h6" style={{ fontSize: '2em' }}>
                     Reset
                 </Typography>
             </Button>
@@ -1682,33 +1682,33 @@ export default function GamePage({ }) {
                     }}
                 >
                     {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleBackToMenu}>
-                        <Typography variant="h6">
+                        <Typography variant="h6" style={{ fontSize: '2em' }}>
                             Back to Menu
                         </Typography>
                     </Button>}
                     {gameOver && !animating && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={onRematch}>
-                        <Typography variant="h6">
+                        <Typography variant="h6" style={{ fontSize: '2em' }}>
                             Rematch
                         </Typography>
                     </Button>}
                     {!animating && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={replayAnimations} disabled={submittedMove || (secondsElapsed !== null && game?.seconds_per_turn && secondsElapsed <= 4)}>
-                        <Typography variant="h6">
+                        <Typography variant="h6" style={{ fontSize: '2em' }}>
                             Replay animations
                         </Typography>
                     </Button>}
                     {!gameOver && !mulliganing && <ResetButton onReset={() => handleReset(true)} disabled={animating || submittedMove || gameOver || (secondsElapsed !== null && game?.seconds_per_turn && secondsElapsed <= 1)} />}
                     {!gameOver && !mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={handleSubmit} disabled={animating || gameOver}>
-                        <Typography variant="h6">
+                        <Typography variant="h6" style={{ fontSize: '2em' }}>
                             {submittedMove ? 'Unsubmit' : 'Submit'}
                         </Typography>
                     </Button>}
                     {mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={() => handleMulligan(false)}>
-                        <Typography variant="h6">
+                        <Typography variant="h6" style={{ fontSize: '2em' }}>
                             Keep
                         </Typography>
                     </Button>}                    
                     {mulliganing && <Button variant="contained" color="primary" size="large" style={{ margin: '10px' }} onClick={() => handleMulligan(true)}>
-                        <Typography variant="h6">
+                        <Typography variant="h6" style={{ fontSize: '2em' }}>
                             Mulligan
                         </Typography>
                     </Button>}
