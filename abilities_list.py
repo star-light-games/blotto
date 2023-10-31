@@ -378,7 +378,7 @@ ABILITIES: dict[str, Union[Ability, Callable]] = {
     ),
     'OnShieldBreakPumpSelf': lambda x, y: Ability(
         name='OnShieldBreakPumpSelf',
-        description=f'When a friendly character\'s shield breaks, I get +{x}/+{y}.',
+        description=f'When a friendly character\'s shield breaks (including mine), I get +{x}/+{y}.',
         number=x,
         number_2=y,
     ),
