@@ -1041,7 +1041,9 @@ def get_17lands_data(sess):
 
             data[card] = {
                 'win_rate': card_win_outcomes / total_card_outcomes if total_card_outcomes > 0 else None,
+                'total_games': total_card_outcomes,
                 'pick_rate': card_draft_choices_picked / total_card_draft_choices if total_card_draft_choices > 0 else None,
+                'total_picks': total_card_draft_choices,
                 'last_changed_time': latest_balance_change_record_time.timestamp(),
             }
 

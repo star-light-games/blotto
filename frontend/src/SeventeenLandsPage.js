@@ -181,8 +181,8 @@ export default function SeventeenLandsPage() {
                         {stableSort(cardPool, getComparator(order, orderBy, stats)).map((card) => (
                             <TableRow key={card.name}>
                                 <TableCell component="th" scope="row">{card.name}</TableCell>
-                                <TableCell align="right">{renderCellData(stats?.[card.name]?.win_rate)}</TableCell>
-                                <TableCell align="right">{renderCellData(stats?.[card.name]?.pick_rate)}</TableCell>
+                                <TableCell align="right">{`${renderCellData(stats?.[card.name]?.win_rate)} (${stats?.[card.name]?.total_games})`}</TableCell>
+                                <TableCell align="right">{`${renderCellData(stats?.[card.name]?.pick_rate)} (${stats?.[card.name]?.total_picks})`}</TableCell>
                                 <TableCell align="right">{new Date(stats?.[card.name]?.last_changed_time * 1000).toLocaleString()}</TableCell>
                             </TableRow>
                         ))}
