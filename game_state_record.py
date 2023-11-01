@@ -19,6 +19,7 @@ class GameStateRecord(Base):
     player_1_username = Column(String)
 
     game_state = Column(JSONB)
+    game_info = Column(JSONB, none_as_null=True)
 
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 

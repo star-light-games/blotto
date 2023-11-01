@@ -16,6 +16,7 @@ from utils import sigmoid
 
 if TYPE_CHECKING:
     from character import Character
+    from game_info import GameInfo
 
 
 class GameState:
@@ -120,7 +121,8 @@ class GameState:
             self.mulligan_card(player_num, card_id)
         self.has_mulliganed_by_player[player_num] = True
 
-    def roll_turn(self, animations: list, sess: Optional[Any] = None, game_id: Optional[str] = None):
+    def roll_turn(self, animations: list, sess: Optional[Any] = None, game_id: Optional[str] = None, game_info: Optional['GameInfo'] = None):
+        game_state_record = None
         if sess:
             game_state_record = GameStateRecord(
                 game_id=game_id, 
@@ -162,6 +164,10 @@ class GameState:
         # if self.turn == 9:
         #     self.log.append("The moon rises.")
         #     self.mana_by_player = {0: 0, 1: 0}
+
+        if sess and game_info:
+            assert game_state_record is not None
+            game_state_record.game_info = game_info.to_json()  # type: ignore
 
         if self.turn == 8:
             self.log.append("The moon is full.")
