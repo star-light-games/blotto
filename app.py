@@ -30,7 +30,7 @@ from threading import Timer
 
 from redis_utils import rdel, rget_json, rlock, rset_json
 from settings import COMMON_DECK_USERNAME, COYOTE_TIME, EXTRA_TIME_ON_FIRST_TURN, LOCAL, OPEN_GAME_LIFETIME_HOURS
-from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, get_staged_game_lock_redis_key, get_staged_game_redis_key, get_staged_moves_redis_key
+from utils import generate_unique_id, get_game_lock_redis_key, get_game_redis_key, get_game_with_hidden_information_redis_key, get_staged_game_lock_redis_key, get_staged_game_redis_key, get_staged_moves_redis_key, parse_optional_int
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -899,7 +899,7 @@ def get_draft_pick(sess):
 @app.route('/api/draft_pick', methods=['POST'])
 @api_endpoint
 def get_draft_pick_and_store_info(sess):
-    pick_num = request.args.get('pickNum') + 1
+    pick_num = (parse_optional_int(request.args.get('pickNum')) or 0) + 1
     
     data = request.json
 

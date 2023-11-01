@@ -3,7 +3,7 @@ import secrets
 import random
 import math
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from game_state import GameState
 
@@ -86,6 +86,13 @@ def product(l):
     for x in l:
         result *= x
     return result
+
+
+def parse_optional_int(s: Optional[str]) -> Optional[int]:
+    if s == '' or s is None:
+        return None
+    else:
+        return int(s)
 
 
 def run_with_timeout(func, timeout, *args, **kwargs):
