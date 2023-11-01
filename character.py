@@ -544,7 +544,6 @@ class Character:
 
     def silence(self, silencing_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
         self.silenced = True
-        self.break_shield(log, animations, game_state)
         self.current_attack = self.template.attack
         self.current_health = min(self.template.health, self.current_health)
         self.max_health = self.template.health
@@ -561,6 +560,8 @@ class Character:
                 },
                 "game_state": game_state.to_json(),
             })
+
+        self.break_shield(log, animations, game_state)
 
 
     def shackle(self, shackling_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
