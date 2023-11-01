@@ -168,6 +168,7 @@ class GameState:
         if sess and game_info:
             assert game_state_record is not None
             game_state_record.game_info = game_info.to_json()  # type: ignore
+            sess.commit()
 
         if self.turn == 8:
             self.log.append("The moon is full.")
