@@ -420,8 +420,8 @@ class Character:
     def can_fight(self):
         return self.current_health > 0
 
-    def can_attack(self, combat_modification_auras: dict[int, defaultdict[str, int]]):
-        return (self.can_fight() and not self.has_attacked and self.shackled_turns == 0 
+    def can_attack(self, combat_modification_auras: dict[int, defaultdict[str, int]], ignore_has_attacked: bool = False):
+        return (self.can_fight() and (not self.has_attacked or ignore_has_attacked) and self.shackled_turns == 0 
                 # Redundant or clause is for performance reasons
                 and (self.current_attack > 0 or self.compute_damage_to_deal(self.lane.damage_by_player, combat_modification_auras) > 0))
 
@@ -613,7 +613,7 @@ class Character:
     def make_bonus_attack(self, log: list[str], animations: list, game_state: 'GameState', suppress_hit_tower_bonus_attack_triggers: bool = False):
         if self.exists():
             combat_modification_auras = self.lane.compute_combat_modification_auras()
-            if self.can_attack(combat_modification_auras):
+            if self.can_attack(combat_modification_auras, ignore_has_attacked=True):
                 defending_characters = [character for character in self.lane.characters_by_player[1 - self.owner_number] if character.can_fight()]
                 self.attack(self.owner_number, self.lane.damage_by_player, defending_characters, self.lane.lane_number, combat_modification_auras, log, animations, game_state, do_not_set_has_attacked=True, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
