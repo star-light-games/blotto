@@ -548,6 +548,10 @@ class Character:
         self.current_health = min(self.template.health, self.current_health)
         self.max_health = self.template.health
 
+        shield_animations = []
+
+        self.break_shield(log, shield_animations, game_state)
+
         log.append(f"{silencing_character.owner_username}'s {silencing_character.template.name} silenced {self.owner_username}'s {self.template.name}.")
         if not do_not_animate:
             animations.append({
@@ -561,7 +565,7 @@ class Character:
                 "game_state": game_state.to_json(),
             })
 
-        self.break_shield(log, animations, game_state)
+        animations.extend(shield_animations)
 
 
     def shackle(self, shackling_character: 'Character', log: list[str], animations: list, game_state: 'GameState', do_not_animate: bool = False):
