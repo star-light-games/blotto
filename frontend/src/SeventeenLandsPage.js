@@ -134,7 +134,7 @@ export default function SeventeenLandsPage() {
 
     return (
         <div>
-            <Typography variant="h2">17Lands</Typography>
+            <Typography variant="h2">Card Stats</Typography>
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
