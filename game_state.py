@@ -3,6 +3,7 @@ import random
 from card_outcome import CardOutcome
 from card_template import CardTemplate
 from card_templates_list import CARD_TEMPLATES
+from db_deck import DbDeck
 from deck import Deck
 from game_state_record import GameStateRecord
 from lane import Lane
@@ -195,12 +196,24 @@ class GameState:
                             card=card,
                             win=True,
                         ))
+
                     for card in self.cards_ever_drawn_by_player[1 - self.winner]:
                         sess.add(CardOutcome(
                             game_id=game_id,
                             card=card,
                             win=False,
                         ))
+
+                    sess.commit()
+
+                    for player_num in [0, 1]:
+                        db_deck = sess.query(DbDeck).get(self.decks_by_player[player_num].id)
+
+                        if db_deck is not None and db_deck.unique_draft_identifier is not None:
+                            db_deck.is_bot_draft_deck = True
+
+                    sess.commit()
+
                 sess.add(PlayerOutcome(
                     game_id=game_id,
                     username=self.usernames_by_player[self.winner],

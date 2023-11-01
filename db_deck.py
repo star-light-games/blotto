@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, Index, Integer, String, ForeignKey, func
+from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, ForeignKey, func
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -18,12 +18,15 @@ class DbDeck(Base):
     associated_lane_reward_name = Column(String)
     unique_draft_identifier = Column(String, index=True)
 
-    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)    
+    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
+
+    is_bot_draft_deck = Column(Boolean, nullable=False, default=False, server_default='f')
 
     # cards: list['DbCard']
 
     __table_args__ = (
         Index("db_decks_idx_username_name", username, name),
+        Index("db_decks_idx_is_bot_draft_deck_created_at", is_bot_draft_deck, created_at),
     )
 
     def __repr__(self):

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import random
 import traceback
 from typing import Optional
@@ -39,6 +40,15 @@ def get_bot_deck(sess, player_deck_name: str) -> Optional[Deck]:
     elif player_deck_name in [common_deck['name'] for common_deck in COMMON_DECKS]:
         return Deck.from_db_deck(db_deck) if (db_deck := sess.query(DbDeck).filter(not_(DbDeck.name.in_(['Learn to play', player_deck_name]))).filter(DbDeck.username == COMMON_DECK_USERNAME).order_by(func.random()).first()) else None
     elif 'Draft deck' in player_deck_name:
+        bot_draft_deck = (
+            sess.query(DbDeck)
+            .filter(DbDeck.is_bot_draft_deck)
+            .filter(DbDeck.created_at > datetime.now() - timedelta(days=15))
+            .order_by(func.random())
+            .first()
+        )
+        if bot_draft_deck is not None:
+            return Deck.from_db_deck(bot_draft_deck)
         return Deck.from_db_deck(db_deck) if (db_deck := sess.query(DbDeck).filter(DbDeck.username == BOT_DECK_USERNAME).order_by(func.random()).first()) else None
     else:
         return Deck.from_db_deck(db_deck) if (db_deck := sess.query(DbDeck).filter(DbDeck.name != 'Learn to play').filter(DbDeck.username == COMMON_DECK_USERNAME).order_by(func.random()).first()) else None
