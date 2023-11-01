@@ -137,6 +137,7 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
 
     const isDead = character.current_health <= 0;
     const isShielded = character.shielded;
+    const isSilenced = character.silenced && !isDead;
 
     const hasAttackerAbility = character.template.abilities.some(ability => ability.name == 'Attacker');
     const hasTwinstrikeAbility = character.template.abilities.some(ability => ability.name == 'Twinstrike');
@@ -149,9 +150,9 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
     if (character.shackled_turns > 0) {
         filterStyle += 'brightness(0.5)'; // darken image if shackled_turns is greater than zero
     }
-    if (character.silenced) {
-        filterStyle += 'brightness(1.5)'; // brighten image if shackled_turns is greater than zero
-    }
+    // if (character.silenced) {
+    //     filterStyle += 'brightness(1.5)'; // brighten image if shackled_turns is greater than zero
+    // }
 
     return (
         <Grid container style={{
@@ -202,7 +203,24 @@ function CharacterDisplay({ character, setHoveredCard, type , displayArt }) {
                         filter: 'invert(1)',
                     }}
                 />
-            )}            
+            )}
+            {isSilenced && (
+                <img
+                    src={'/images/silence.png'}
+                    alt="silence-icon"
+                    style={{
+                        position: 'absolute',
+                        top: 50,
+                        left: 45,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 2,
+                        maxWidth: '50%',
+                        maxHeight: '50%',
+                        filter: 'invert(1)',
+                    }}
+                />
+            )}              
             <Grid item xs={12}>
                 <Box
                     display="flex"
