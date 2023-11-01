@@ -12,7 +12,7 @@ from card_templates_list import CARD_TEMPLATES, get_random_card_template_of_rari
 from common_decks import create_common_decks
 from database import SessionLocal
 from db_card import DbCard
-from db_deck import DbDeck, add_db_deck
+from db_deck import DbDeck, add_db_deck, delete_db_deck
 from db_game import DbGame
 from deck import Deck
 from flask import Flask, jsonify, request
@@ -266,11 +266,7 @@ def delete_deck(sess):
         if not db_deck:
             return jsonify({"error": "Deck not found"}), 404
 
-    for card in db_deck.cards:
-        sess.delete(card)
-    sess.commit()
-    sess.delete(db_deck)
-    sess.commit()
+    delete_db_deck(sess, db_deck)
 
     return jsonify({"success": True})
 

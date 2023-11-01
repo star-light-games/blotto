@@ -55,3 +55,11 @@ def add_db_deck(sess, cards: list[str], username: str, deck_name: str,
     sess.commit()
 
     return db_deck
+
+
+def delete_db_deck(sess, db_deck: DbDeck):
+    for card in db_deck.cards:
+        sess.delete(card)
+    sess.commit()
+    sess.delete(db_deck)
+    sess.commit()
