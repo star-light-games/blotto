@@ -24,6 +24,7 @@ import { useSocket } from './SocketContext';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import Timer from './Timer';
+import TextField from '@mui/material/TextField';
 
 
 function log(...args) {
@@ -902,6 +903,8 @@ export default function GamePage({ }) {
     const [yourManaAmount, setYourManaAmount] = useState(1);
     const [animating, setAnimating] = useState(false);
 
+    const [gameStateRecordId, setGameStateRecordId] = useState('');
+
     const ANIMATION_DELAY_STORAGE_KEY = 'animationDelay'
     const BASE_ANIMATION_DELAY = 1000;
     const [animationDelay, setAnimationDelay] = useState(() => {
@@ -1663,6 +1666,46 @@ export default function GamePage({ }) {
                         ))}
                     </Select>
                 </FormControl>
+                <TextField
+                    id="outlined-basic"
+                    label="Debug tool"
+                    variant="outlined"
+                    value={gameStateRecordId}
+                    style={{
+                        margin: '1px',
+                        minWidth: 120,
+                        position: 'fixed',
+                        bottom: '20px',
+                        left: '410px',
+                        backgroundColor: getBackgroundColor(darkMode),
+                    }}
+                    onChange={(event) => setGameStateRecordId(event.target.value)}
+                />
+                <Button 
+                    variant="contained" 
+                    color="primary" 
+                    size="large" 
+                    style={{
+                        margin: '1px',
+                        minWidth: 120,
+                        position: 'fixed',
+                        bottom: '20px',
+                        left: '630px',
+                        backgroundColor: getBackgroundColor(darkMode),
+                    }}
+                    onClick={() => {
+                        fetch(`${URL}/api/old_game_states/${gameStateRecordId}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                setGameState(data);
+                            })
+                            .catch(error => {
+                                console.error("There was an error fetching game data:", error);
+                            });
+                    }}
+                >
+                    Debug
+                </Button>
                 <Grid container direction="row" style={{margin: '1px'}} spacing={2}>
                     <Grid item>
                         <HandDisplay

@@ -25,6 +25,8 @@ import traceback
 from functools import wraps
 import random
 from _thread import start_new_thread
+from game_state import GameState
+from game_state_record import GameStateRecord
 from lane_rewards import LANE_REWARDS
 from threading import Timer
 
@@ -1060,6 +1062,17 @@ def get_17lands_data(sess):
             }
 
     return recurse_to_json(data)
+
+
+@app.route('/api/old_game_states/<int:game_state_record_id>', methods=['GET'])
+@api_endpoint
+def get_old_game_state(sess, game_state_record_id: int):
+    game_state_record = sess.query(GameStateRecord).get(game_state_record_id)
+
+    if not game_state_record:
+        return jsonify({"error": "Game state record not found"}), 404
+
+    return recurse_to_json(GameState.from_json(game_state_record.game_state).to_json())
 
 
 @socketio.on('connect')
