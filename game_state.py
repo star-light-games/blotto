@@ -188,18 +188,19 @@ class GameState:
                     self.winner = 1
 
             if sess and self.winner is not None and self.usernames_by_player[1] not in ["GOLDA_THE_GOLDFISH", "RANDY_THE_ROBOT"]:
-                for card in self.cards_ever_drawn_by_player[self.winner]:
-                    sess.add(CardOutcome(
-                        game_id=game_id,
-                        card=card,
-                        win=True,
-                    ))
-                for card in self.cards_ever_drawn_by_player[1 - self.winner]:
-                    sess.add(CardOutcome(
-                        game_id=game_id,
-                        card=card,
-                        win=False,
-                    ))
+                if self.decks_by_player[0].id != self.decks_by_player[1].id:
+                    for card in self.cards_ever_drawn_by_player[self.winner]:
+                        sess.add(CardOutcome(
+                            game_id=game_id,
+                            card=card,
+                            win=True,
+                        ))
+                    for card in self.cards_ever_drawn_by_player[1 - self.winner]:
+                        sess.add(CardOutcome(
+                            game_id=game_id,
+                            card=card,
+                            win=False,
+                        ))
                 sess.add(PlayerOutcome(
                     game_id=game_id,
                     username=self.usernames_by_player[self.winner],
