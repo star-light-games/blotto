@@ -97,7 +97,7 @@ function DraftComponent({ cardPool, setCurrentDeck, currentDeck, setDrafting, sa
       // setDraftOptions(getRandomCards());
     }
     else {
-      saveDeck(`Draft deck with ${currentDeck[0]} and ${currentDeck[1]}`, currentLaneReward.name);
+      saveDeck(`Draft deck with ${currentDeck[0]} and ${currentDeck[1]}`, currentLaneReward.name, null, uniqueDraftIdentifier);
       setDrafting(false);
       setCurrentLaneReward(null);
       fetchDraftOptions();
@@ -361,12 +361,13 @@ function DeckBuilder({ cards, laneRewards }) {
     setCurrentDeck([...currentDeck, cardName]);
   };
 
-  const saveDeck = (deckName, laneRewardName, deckArray) => {
+  const saveDeck = (deckName, laneRewardName, deckArray, uniqueDraftIdentifier) => {
     const deckData = {
       name: deckName,
       username: userName,
       cards: deckArray ? deckArray : currentDeck,
       laneRewardName: laneRewardName || null,
+      uniqueDraftIdentifier: uniqueDraftIdentifier,
     };
 
     fetch(`${URL}/api/decks`, {

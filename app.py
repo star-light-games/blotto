@@ -219,6 +219,8 @@ def create_deck(sess):
 
     lane_reward_name = data.get('laneRewardName') or None
 
+    unique_draft_identifier = data.get('uniqueDraftIdentifier') or None
+
     # Process the cards data as needed, e.g., save to a database or check game state
     
     deck_with_same_name = (
@@ -235,7 +237,7 @@ def create_deck(sess):
         sess.delete(deck_with_same_name)
         sess.commit()
     
-    db_deck = add_db_deck(sess, cards, username, deck_name, lane_reward_name)
+    db_deck = add_db_deck(sess, cards, username, deck_name, lane_reward_name, unique_draft_identifier)
 
     return jsonify(Deck.from_db_deck(db_deck).to_json())
 
