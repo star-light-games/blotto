@@ -899,7 +899,7 @@ def get_draft_pick(sess):
 @app.route('/api/draft_pick', methods=['POST'])
 @api_endpoint
 def get_draft_pick_and_store_info(sess):
-    pick_num = request.args.get('pickNum')
+    pick_num = request.args.get('pickNum') + 1
     
     data = request.json
 
