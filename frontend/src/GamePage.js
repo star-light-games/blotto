@@ -1698,6 +1698,8 @@ export default function GamePage({ }) {
                             .then(res => res.json())
                             .then(data => {
                                 setGameState(data);
+                                setLaneData(null);
+                                setHandData(null);
                             })
                             .catch(error => {
                                 console.error("There was an error fetching game data:", error);
