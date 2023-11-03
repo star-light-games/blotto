@@ -151,13 +151,13 @@ class Character:
             friendly_character = self.lane.get_random_friendly_character(self.owner_number, exclude_characters=lambda c: c.shielded or c.id == self.id)
             if friendly_character is not None:
                 friendly_character.gain_shield(log, animations, game_state)
-                self.on_trigger_hit_tower_ability(log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
+            self.on_trigger_hit_tower_ability(log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
         if self.has_ability('HitTowerShackle'):
             enemy_character = self.lane.get_random_enemy_character(self.owner_number, exclude_characters=lambda c: c.shackled_turns > 0)
             if enemy_character is not None:
                 enemy_character.shackle(self, log, animations, game_state)
-                self.on_trigger_hit_tower_ability(log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
+            self.on_trigger_hit_tower_ability(log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
 
         if self.has_ability('HitTowerDamageAllEnemiesEqualToDamage'):
             self.add_basic_animation(animations, game_state)
@@ -574,7 +574,7 @@ class Character:
         cards_drawn_from_shackles = len([character for character in self.lane.characters_by_player[1 - self.owner_number] if character.has_ability('OnShackleDrawCard')])
 
         self.shackled_turns += 1 + num_enemy_characters_that_increase_shackled_turns
-        self.current_health -= total_damage_from_shackles
+        self.sustain_damage(total_damage_from_shackles, log, animations, game_state)
 
         for _ in range(cards_drawn_from_shackles):
             game_state.draw_random_card(1 - self.owner_number)
