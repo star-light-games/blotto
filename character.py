@@ -148,7 +148,7 @@ class Character:
                         character.switch_lanes(log, animations, game_state)
 
         if self.has_ability('HitTowerGiveShield'):
-            friendly_character = self.lane.get_random_friendly_character(self.owner_number, exclude_characters=lambda c: c.shielded and c.id != self.id)
+            friendly_character = self.lane.get_random_friendly_character(self.owner_number, exclude_characters=lambda c: c.shielded or c.id == self.id)
             if friendly_character is not None:
                 friendly_character.gain_shield(log, animations, game_state)
                 self.on_trigger_hit_tower_ability(log, animations, game_state, suppress_hit_tower_bonus_attack_triggers=suppress_hit_tower_bonus_attack_triggers)
