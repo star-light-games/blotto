@@ -289,7 +289,7 @@ class Character:
                 nyla_character = Character(CARD_TEMPLATES['Nyla'], self.lane, self.owner_number, game_state.usernames_by_player[self.owner_number])
                 self.lane.characters_by_player[self.owner_number].append(nyla_character)
                 nyla_character.do_all_on_reveal(log, animations, game_state)
-                self.on_trigger_kill_enemy_ability(log, animations, game_state)
+            self.on_trigger_kill_enemy_ability(log, animations, game_state)
 
         if self.has_ability('OnKillBuffHealth'):
             self.current_attack += self.number_of_ability('OnKillBuffHealth')
