@@ -446,6 +446,7 @@ function DeckBuilder({ cards, laneRewards }) {
           <Typography variant="h5"><Link external to={'https://docs.google.com/document/d/1gV5gGPb3KYmG4ytCLPGublZ9fhyIre_t44O1zAkQD24/edit?usp=sharing'}>Blotto battler tournament!</Link></Typography>
         </CardContent>
       </Card>
+      <br />
       <Card>
           <CardContent>
             <Typography variant="h5">Recent changes:</Typography>
